@@ -1,0 +1,28 @@
+# data artifacts — regenerable, never committed
+data/hindsight.db
+data/hindsight.db-wal
+data/hindsight.db-shm
+data/raw/
+data/manifests/
+logs/
+
+# secrets
+.env
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+dist/
+build/
+
+# editors / os
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
