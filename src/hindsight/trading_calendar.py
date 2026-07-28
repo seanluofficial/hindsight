@@ -1,15 +1,17 @@
-"""NYSE trading-day arithmetic.
+"""NYSE trading-day arithmetic, and the §4 entry-timing rule built on it.
 
-Never assume a weekday is a trading day. 2018 alone has nine market holidays, and
-Good Friday moves every year. Everything here goes through a real NYSE calendar.
+Never assume a weekday is a trading day. 2018 alone has nine market holidays, Good Friday
+moves every year, and the NYSE closed on Wednesday 2018-12-05 for a state funeral.
+Everything here goes through a real NYSE calendar.
 
-Note on scope: this module deliberately stops at calendar arithmetic. The §4 entry-timing
-rule is built on top of it in the evaluate stage, not here.
+`entry_date_for()` implements PREREGISTRATION §4 — the single most important rule in the
+project, since it fixes the price every position is opened at. It lives here rather than
+in the evaluate stage because it is pure date arithmetic: no prices, no returns.
 """
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 from functools import lru_cache
 
 import pandas as pd
@@ -85,3 +87,50 @@ def add_trading_days(day: date, n: int) -> date:
     if pos + n >= len(idx):
         raise ValueError(f"{day} + {n} sessions runs past the calendar; extend _CALENDAR_END")
     return _session_at(idx, pos + n)
+
+
+def entry_date_for(accepted_at_utc: datetime) -> date:
+    """The session whose OPEN is the entry price for a filing (PREREGISTRATION §4).
+
+    The rule, in one sentence: **filings that arrive while the market is open enter at the
+    next open; everything else skips one open.**
+
+        accepted before 16:00 ET on a trading day  ->  the next session's open
+        accepted at/after 16:00 ET, or on a
+        non-trading day                            ->  the session after that one
+
+    Worked examples, all verified in the tests:
+
+        Mon 15:59      -> Tue          (market was open; next open)
+        Mon 16:01      -> Wed          (after close; Tuesday's open is skipped)
+        Fri 16:01      -> Tue          (next open is Mon, skipped)
+        Sat / Sun      -> Tue          (next open is Mon, skipped)
+        Wed 16:01 before Thanksgiving  -> the following Mon
+
+    Why the skipped open. A filing accepted after the close is first tradeable at the next
+    morning's open, and that open frequently *gaps* on the news. Claiming that price
+    invites the obvious objection that the fill was never realistically available. Giving
+    it up costs a day of signal and buys a result that is harder to argue with — the right
+    trade for a study whose deliverable is an honest measurement. If the edge only exists
+    in the gap, that is itself a finding.
+
+    Weekend and holiday filings are grouped with the after-close case because §4 groups
+    them in one clause, and because treating them differently would mean a Saturday filing
+    entered *earlier* than a Friday-evening one despite being newer.
+
+    Same-day returns are never used at any horizon, which this guarantees: the returned
+    date is always strictly after the acceptance date.
+    """
+    if accepted_at_utc.tzinfo is None:
+        raise ValueError(
+            "accepted_at_utc must be timezone-aware. A naive timestamp here would be "
+            "silently read as local time and could land on the wrong side of the 16:00 "
+            "ET cutoff."
+        )
+
+    eastern = accepted_at_utc.astimezone(config.MARKET_TZ)
+    day = eastern.date()
+
+    if is_trading_day(day) and eastern.time() < config.ENTRY_CUTOFF_ET:
+        return next_trading_day(day)
+    return next_trading_day(next_trading_day(day))

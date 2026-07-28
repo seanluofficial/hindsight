@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 
 import pytest
 
+from hindsight import config
 from hindsight import trading_calendar as tc
 
 
@@ -76,3 +77,147 @@ class TestNavigation:
     def test_add_trading_days_rejects_negative(self) -> None:
         with pytest.raises(ValueError, match="non-negative"):
             tc.add_trading_days(date(2018, 6, 4), -1)
+
+
+def et(y: int, m: int, d: int, hh: int, mm: int) -> datetime:
+    """An Eastern wall-clock instant, as the market experiences it."""
+    return datetime(y, m, d, hh, mm, tzinfo=config.MARKET_TZ)
+
+
+class TestEntryTimingCutoff:
+    """PREREGISTRATION §4. These fix the price every position is opened at."""
+
+    # Mon 2018-03-05 .. Fri 2018-03-09 is a clean week: no holidays either side.
+    def test_1559_enters_next_open(self) -> None:
+        assert tc.entry_date_for(et(2018, 3, 5, 15, 59)) == date(2018, 3, 6)
+
+    def test_1601_skips_an_open(self) -> None:
+        assert tc.entry_date_for(et(2018, 3, 5, 16, 1)) == date(2018, 3, 7)
+
+    def test_exactly_1600_is_after_the_cutoff(self) -> None:
+        # §4 says "at or after 16:00", so 16:00:00 itself belongs to the later branch.
+        assert tc.entry_date_for(et(2018, 3, 5, 16, 0)) == date(2018, 3, 7)
+
+    def test_one_minute_apart_lands_a_day_apart(self) -> None:
+        before = tc.entry_date_for(et(2018, 3, 5, 15, 59))
+        after = tc.entry_date_for(et(2018, 3, 5, 16, 1))
+        assert (before, after) == (date(2018, 3, 6), date(2018, 3, 7))
+
+    def test_early_morning_still_enters_next_open(self) -> None:
+        # 06:00 ET is pre-market but inside the §3 acceptance window, and before 16:00.
+        assert tc.entry_date_for(et(2018, 3, 6, 6, 0)) == date(2018, 3, 7)
+
+
+class TestEntryTimingWeekends:
+    def test_friday_evening_enters_tuesday(self) -> None:
+        # Fri 2018-03-09 after close: next open is Mon 12th, which is skipped.
+        assert tc.entry_date_for(et(2018, 3, 9, 16, 1)) == date(2018, 3, 13)
+
+    def test_friday_afternoon_enters_monday(self) -> None:
+        assert tc.entry_date_for(et(2018, 3, 9, 15, 59)) == date(2018, 3, 12)
+
+    def test_saturday_enters_tuesday(self) -> None:
+        assert tc.entry_date_for(et(2018, 3, 10, 11, 0)) == date(2018, 3, 13)
+
+    def test_sunday_enters_tuesday(self) -> None:
+        assert tc.entry_date_for(et(2018, 3, 11, 11, 0)) == date(2018, 3, 13)
+
+    def test_weekend_filings_agree_with_each_other(self) -> None:
+        # The resolution of Q1: a Sunday filing must not enter later than a Saturday one.
+        assert tc.entry_date_for(et(2018, 3, 10, 11, 0)) == tc.entry_date_for(
+            et(2018, 3, 11, 11, 0)
+        )
+
+    def test_saturday_is_not_earlier_than_friday_evening(self) -> None:
+        # A newer filing must never get an earlier entry than an older one.
+        assert tc.entry_date_for(et(2018, 3, 10, 11, 0)) >= tc.entry_date_for(et(2018, 3, 9, 16, 1))
+
+
+class TestEntryTimingHolidays:
+    def test_day_before_thanksgiving_after_close(self) -> None:
+        # Wed 2018-11-21 16:01. Thu 22nd closed, Fri 23rd is the next open and is
+        # skipped, so entry is Mon 2018-11-26.
+        assert tc.entry_date_for(et(2018, 11, 21, 16, 1)) == date(2018, 11, 26)
+
+    def test_day_before_thanksgiving_during_session(self) -> None:
+        assert tc.entry_date_for(et(2018, 11, 21, 15, 0)) == date(2018, 11, 23)
+
+    def test_filed_on_a_holiday(self) -> None:
+        # Thanksgiving itself: next open Fri 23rd is skipped -> Mon 26th.
+        assert tc.entry_date_for(et(2018, 11, 22, 10, 0)) == date(2018, 11, 26)
+
+    def test_good_friday_moves_with_the_year(self) -> None:
+        # Thu 2018-03-29 after close; Good Friday closed; Mon 4/2 skipped -> Tue 4/3.
+        assert tc.entry_date_for(et(2018, 3, 29, 16, 30)) == date(2018, 4, 3)
+
+    def test_national_day_of_mourning_is_skipped(self) -> None:
+        # Tue 2018-12-04 16:01. Wed 5th closed (Bush funeral), Thu 6th skipped -> Fri 7th.
+        assert tc.entry_date_for(et(2018, 12, 4, 16, 1)) == date(2018, 12, 7)
+
+
+class TestEntryTimingTimezone:
+    def test_utc_input_is_converted_before_the_cutoff_is_applied(self) -> None:
+        # 2018-02-01T21:30:17Z is 16:30 ET — after the cutoff, so an open is skipped.
+        apple = datetime(2018, 2, 1, 21, 30, 17, tzinfo=config.UTC)
+        assert tc.entry_date_for(apple) == date(2018, 2, 5)
+
+    def test_utc_input_just_before_the_cutoff(self) -> None:
+        # 20:59Z = 15:59 ET in February -> next open.
+        assert tc.entry_date_for(datetime(2018, 2, 1, 20, 59, tzinfo=config.UTC)) == date(
+            2018, 2, 2
+        )
+
+    def test_summer_utc_offset_is_four_hours(self) -> None:
+        # 19:59Z in July = 15:59 EDT -> next open, not a skipped one.
+        assert tc.entry_date_for(datetime(2018, 7, 16, 19, 59, tzinfo=config.UTC)) == date(
+            2018, 7, 17
+        )
+
+    def test_naive_datetime_is_rejected(self) -> None:
+        with pytest.raises(ValueError, match="timezone-aware"):
+            tc.entry_date_for(datetime(2018, 3, 5, 16, 1))
+
+
+class TestEntryTimingInvariants:
+    @pytest.mark.parametrize(
+        "moment",
+        [
+            et(2018, 3, 5, 9, 30),
+            et(2018, 3, 5, 16, 1),
+            et(2018, 3, 9, 16, 1),
+            et(2018, 3, 10, 11, 0),
+            et(2018, 11, 21, 16, 1),
+            et(2018, 12, 31, 18, 0),
+        ],
+    )
+    def test_entry_is_always_a_trading_day(self, moment: datetime) -> None:
+        assert tc.is_trading_day(tc.entry_date_for(moment))
+
+    @pytest.mark.parametrize(
+        "moment",
+        [
+            et(2018, 3, 5, 9, 30),
+            et(2018, 3, 5, 15, 59),
+            et(2018, 3, 10, 11, 0),
+            et(2018, 11, 21, 16, 1),
+        ],
+    )
+    def test_entry_is_strictly_after_acceptance(self, moment: datetime) -> None:
+        # Same-day returns are never used, at any horizon (§4).
+        assert tc.entry_date_for(moment) > moment.date()
+
+    def test_entry_is_monotonic_in_acceptance_time(self) -> None:
+        """A later filing can never receive an earlier entry."""
+        moments = [
+            et(2018, 3, 5, 9, 0),
+            et(2018, 3, 5, 15, 59),
+            et(2018, 3, 5, 16, 1),
+            et(2018, 3, 6, 9, 0),
+            et(2018, 3, 9, 15, 59),
+            et(2018, 3, 9, 16, 1),
+            et(2018, 3, 10, 12, 0),
+            et(2018, 3, 11, 12, 0),
+            et(2018, 3, 12, 9, 0),
+        ]
+        entries = [tc.entry_date_for(m) for m in moments]
+        assert entries == sorted(entries)

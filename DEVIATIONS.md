@@ -109,28 +109,46 @@ CLAUDE.md fixes the schema at five tables.
 
 ---
 
-## Open questions, not yet resolved
+## 2026-07-28 — §4 entry timing resolved
 
-### Q1. §4 entry timing for the at/after-16:00 case — **blocks Phase 4, not Phase 1**
+### D8. Weekend and holiday filings skip an open, exactly as after-close filings do
 
-§4 states: "If acceptance is at or after 16:00 ET, or on a non-trading day, the position is
-entered at the open of the next trading day following." CLAUDE.md's test spec sharpens it:
-"at 16:01 ET it enters the open after that."
+**Resolves Q1**, raised 2026-07-27 and now closed. `entry_date_for()` is implemented in
+`trading_calendar.py` with the rule:
 
-Read literally — entry is the first session strictly after the *calendar day following*
-acceptance — this gives sensible answers for the cases CLAUDE.md calls out:
+> Filings that arrive while the market is open enter at the next open. Everything else
+> skips one open.
 
-- Mon 16:01 → Wed open (Tuesday's open is skipped)
-- Fri 16:01 → Mon open
-- Sat, any time → Mon open
+| Accepted | Entry |
+|---|---|
+| Mon 15:59 | Tue |
+| Mon 16:00 or 16:01 | Wed |
+| Fri 16:01 | Tue |
+| Saturday or Sunday | Tue |
+| Wed 16:01 before Thanksgiving | the following Mon |
 
-but an odd one it does not:
+**Why the skipped open.** A filing accepted after the close is first tradeable at the next
+morning's open, and that open frequently *gaps* on the news. Claiming it invites the
+obvious objection that the fill was never realistically available. Surrendering it costs a
+day of signal and buys a result that is harder to argue with — the right trade for a study
+whose deliverable is an honest measurement. If the edge lives only in the gap, that is a
+finding, not a loss.
 
-- **Sun, any time → Tue open**, skipping an available Monday open for no informational reason.
+**Why weekends are grouped with after-close.** §4 puts them in the same clause, and
+separating them would let a Saturday filing enter *earlier* than a Friday-evening one
+despite being newer. A test asserts entry dates are monotonic in acceptance time, so no
+later filing can ever receive an earlier entry.
 
-The alternative reading — entry is simply the next session after acceptance — makes Sunday
-behave, but then Mon 16:01 enters Tuesday, contradicting "the open after that".
+The Q1 write-up previously described Saturday → Monday but Sunday → Tuesday as an anomaly
+inherent to the rule. That inversion was an artifact of the formulation used there
+("next calendar day, then next session"), not of §4. Expressed as "skip one open" the
+weekend cases agree with each other and no inversion arises.
 
-`trading_calendar.py` deliberately stops at session arithmetic and does **not** implement
-`entry_date_for()`. The rule must be pinned down before Phase 4, since it moves every
-entry price in the study. Resolution belongs here as a dated entry.
+**Note on placement.** `entry_date_for()` lives in `trading_calendar.py` rather than
+`evaluate/returns.py` as the CLAUDE.md tree suggests, because it is pure date arithmetic —
+no prices, no returns. Phase 4 builds return computation on top of it.
+
+Covered by 30 tests: both sides of the cutoff to the minute, Friday evening, both weekend
+days, Thanksgiving, Good Friday, the 2018-12-05 national day of mourning, DST in both
+directions, rejection of naive datetimes, and the invariants that entry is always a
+trading day, always strictly after acceptance, and monotonic in acceptance time.
