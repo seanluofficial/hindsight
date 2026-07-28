@@ -29,6 +29,17 @@ log = logging.getLogger(__name__)
 _UNSAFE = re.compile(r"[^A-Za-z0-9._-]")
 
 
+class RateLimitExhaustedError(RuntimeError):
+    """A quota was hit and retrying inside this run cannot clear it.
+
+    Distinct from a fetch failure on purpose. A vendor refusing to serve a ticker because
+    the hourly allocation is spent says nothing about whether that ticker has data — and
+    recording it as missing coverage would corrupt the one statistic that tells us whether
+    survivorship bias crept in. Callers should stop and resume later, not mark the
+    remaining work as unavailable.
+    """
+
+
 class RateLimiter:
     """Thread-safe minimum-interval limiter."""
 
@@ -106,6 +117,7 @@ class CachedFetcher:
 
     def _fetch_live(self, url: str, timeout: int) -> bytes:
         last_error: Exception | None = None
+        throttled = False
         for attempt in range(self.max_retries):
             self.limiter.wait()
             try:
@@ -114,6 +126,7 @@ class CachedFetcher:
                     response.raise_for_status()
                 if response.status_code in (429, 503):
                     # Backing off is mandatory here: SEC blocks persistent offenders.
+                    throttled = True
                     wait = 2.0 * (2**attempt)
                     log.warning(
                         "throttled (%s) on %s; sleeping %.1fs", response.status_code, url, wait
@@ -130,4 +143,11 @@ class CachedFetcher:
                 wait = 1.0 * (2**attempt)
                 log.warning("request failed on %s (%s); retrying in %.1fs", url, exc, wait)
                 time.sleep(wait)
+
+        if throttled:
+            # Every attempt was refused for throttling. Treat as a quota wall, not a
+            # verdict on whether this resource exists.
+            raise RateLimitExhaustedError(
+                f"still throttled after {self.max_retries} attempts: {url}"
+            ) from last_error
         raise RuntimeError(f"giving up on {url} after {self.max_retries} attempts") from last_error

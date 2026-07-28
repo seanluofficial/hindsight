@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import sqlite3
 from datetime import date
 from pathlib import Path
@@ -134,6 +135,103 @@ class TestCoverageReport:
         assert report["tickers_with_prices"] == 1
         # 2 of 251 sessions is nowhere near full coverage, and must be reported as such.
         assert report["tickers_near_full_coverage"] == 0
+
+
+class TestRateLimitIsNotMistakenForMissingData:
+    """A spent quota must never be recorded as absent coverage.
+
+    Conflating the two would invent a survivorship signal: tickers the vendor simply
+    wasn't asked about would look like tickers it had no data for.
+    """
+
+    class QuotaFetcher:
+        hits = misses = 0
+
+        def __init__(self, allow: int) -> None:
+            self.allow = allow
+            self.calls = 0
+
+        def get_text(self, url: str, **kwargs: object) -> str:
+            self.calls += 1
+            if self.calls > self.allow:
+                raise http.RateLimitExhaustedError("hourly allocation spent")
+            return json.dumps(TestUpsert.BARS)
+
+    def test_benchmark_is_fetched_before_the_quota_can_run_out(
+        self, conn: sqlite3.Connection
+    ) -> None:
+        """Without SPY no excess return is computable, so it cannot be last in line."""
+        manifest = RunManifest("test")
+        prices.ingest_prices(
+            conn,
+            ["AAA", "BBB", "CCC", "ZZZ"],
+            date(2018, 1, 1),
+            date(2018, 12, 31),
+            manifest,
+            fetcher=self.QuotaFetcher(allow=1),  # only one request succeeds
+        )
+        covered = prices.covered_tickers(conn, date(2018, 1, 1), date(2018, 12, 31))
+        assert covered == {config.BENCHMARK_TICKER}
+
+    def test_run_halts_instead_of_marking_the_rest_unavailable(
+        self, conn: sqlite3.Connection
+    ) -> None:
+        manifest = RunManifest("test")
+        tickers = ["AAA", "BBB", "CCC", "DDD"]
+        prices.ingest_prices(
+            conn,
+            tickers,
+            date(2018, 1, 1),
+            date(2018, 12, 31),
+            manifest,
+            fetcher=self.QuotaFetcher(allow=2),  # type: ignore[arg-type]
+        )
+        assert manifest.counts["halted_on_rate_limit"] == 1
+        # Nothing was blamed on the vendor lacking data.
+        assert manifest.exclusions.get("tiingo_no_coverage", 0) == 0
+        assert manifest.exclusions.get("tiingo_fetch_failed", 0) == 0
+
+    def test_unattempted_tickers_are_counted(self, conn: sqlite3.Connection) -> None:
+        manifest = RunManifest("test")
+        prices.ingest_prices(
+            conn,
+            ["AAA", "BBB", "CCC", "DDD"],
+            date(2018, 1, 1),
+            date(2018, 12, 31),
+            manifest,
+            fetcher=self.QuotaFetcher(allow=2),  # type: ignore[arg-type]
+        )
+        # 5 wanted (4 + SPY); 2 succeeded, the 3rd hit the wall, so 3 go unattempted.
+        assert manifest.counts["tickers_unattempted"] == 3
+        assert any("resume" in e for e in manifest.errors)
+
+    def test_progress_before_the_wall_is_committed(self, conn: sqlite3.Connection) -> None:
+        manifest = RunManifest("test")
+        prices.ingest_prices(
+            conn,
+            ["AAA", "BBB", "CCC", "DDD"],
+            date(2018, 1, 1),
+            date(2018, 12, 31),
+            manifest,
+            fetcher=self.QuotaFetcher(allow=2),  # type: ignore[arg-type]
+        )
+        assert len(prices.covered_tickers(conn, date(2018, 1, 1), date(2018, 12, 31))) == 2
+
+    def test_resume_skips_what_already_landed(self, conn: sqlite3.Connection) -> None:
+        for attempt in range(2):
+            manifest = RunManifest("test")
+            prices.ingest_prices(
+                conn,
+                ["AAA", "BBB", "CCC", "DDD"],
+                date(2018, 1, 1),
+                date(2018, 12, 31),
+                manifest,
+                fetcher=self.QuotaFetcher(allow=2),  # type: ignore[arg-type]
+            )
+            if attempt == 1:
+                assert manifest.counts["tickers_already_covered"] == 2
+        # Two runs of two tickers each covers all four plus the benchmark.
+        assert len(prices.covered_tickers(conn, date(2018, 1, 1), date(2018, 12, 31))) == 4
 
 
 class TestNoCoverageIsRecorded:

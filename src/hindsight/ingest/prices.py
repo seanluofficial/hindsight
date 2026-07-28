@@ -30,7 +30,7 @@ from typing import Any
 import requests
 
 from hindsight import config, trading_calendar
-from hindsight.ingest.http import CachedFetcher, RateLimiter
+from hindsight.ingest.http import CachedFetcher, RateLimiter, RateLimitExhaustedError
 from hindsight.manifest import RunManifest
 
 log = logging.getLogger(__name__)
@@ -141,7 +141,12 @@ def ingest_prices(
     """Fetch daily bars for `tickers`, plus the benchmark. Resumable."""
     fetcher = fetcher or make_tiingo_fetcher()
 
-    wanted = sorted({t.upper() for t in tickers} | {config.BENCHMARK_TICKER})
+    # The benchmark goes first, always. Returns are market-excess (§5), so a run that
+    # exhausts its quota before reaching SPY produces a table that cannot be evaluated at
+    # all — and alphabetical order buries SPY near the end of ~500 names.
+    others = sorted({t.upper() for t in tickers} - {config.BENCHMARK_TICKER})
+    wanted = [config.BENCHMARK_TICKER, *others]
+
     if skip_covered:
         already = covered_tickers(conn, start, end)
         skipped = [t for t in wanted if t in already]
@@ -154,6 +159,20 @@ def ingest_prices(
     for i, ticker in enumerate(wanted, 1):
         try:
             bars = fetch_prices(ticker, start, end, fetcher)
+        except RateLimitExhaustedError:
+            # The hourly allocation is spent. Stop cleanly: every remaining ticker is
+            # simply unattempted, and calling them "no coverage" would fabricate a
+            # survivorship signal. Progress so far is committed, and `skip_covered`
+            # means the next run picks up exactly where this one stopped.
+            remaining = len(wanted) - i + 1
+            manifest.count("halted_on_rate_limit")
+            manifest.count("tickers_unattempted", remaining)
+            manifest.error(
+                f"Tiingo hourly allocation exhausted after {i - 1} tickers; "
+                f"{remaining} unattempted. Re-run to resume — nothing is lost."
+            )
+            log.warning("rate limit hit; stopping with %d tickers unattempted", remaining)
+            break
         except requests.HTTPError as exc:
             status = exc.response.status_code if exc.response is not None else "?"
             if status == 404:
