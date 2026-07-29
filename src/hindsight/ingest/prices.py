@@ -41,6 +41,60 @@ _tiingo_limiter = RateLimiter(max_per_second=5.0)
 _COLUMNS = ("open", "high", "low", "close", "adj_close", "volume")
 
 
+# Tiingo reports quota exhaustion as HTTP 200 with a plain-text body. Two variants seen:
+# the hourly allocation, and the free tier's 500-unique-symbols-per-month cap.
+_QUOTA_MARKERS = (
+    b"run over your",
+    b"symbol look up",
+    b"hourly request allocation",
+    b"upgrade at https://api.tiingo.com/pricing",
+)
+
+
+def looks_like_quota_error(body: bytes) -> bool:
+    """True if this 200 response is really a quota refusal.
+
+    Tiingo does not use 429 for these, so status codes alone cannot catch them.
+    """
+    head = body[:400].lower()
+    return any(marker in head for marker in _QUOTA_MARKERS)
+
+
+def _reject_quota_bodies(body: bytes) -> None:
+    """Validator: refuse to cache a quota error.
+
+    Without this the error text is written to `data/raw/` and every later run reads the
+    stored error instead of retrying — the ticker would never recover, even after the cap
+    resets. That is silent, permanent data loss, and it looks identical to missing coverage.
+    """
+    if looks_like_quota_error(body):
+        raise RateLimitExhaustedError(body[:200].decode("utf-8", errors="replace").strip())
+
+
+def purge_poisoned_cache(dry_run: bool = False) -> list[str]:
+    """Delete cached Tiingo responses that are really quota errors.
+
+    Needed once, because these were cached before the validator existed. Returns the
+    paths removed so the count lands in a manifest rather than happening invisibly.
+    """
+    root = config.RAW_DIR / "api.tiingo.com"
+    removed: list[str] = []
+    if not root.exists():
+        return removed
+    for path in root.rglob("*"):
+        if not path.is_file():
+            continue
+        try:
+            head = path.read_bytes()[:400]
+        except OSError:
+            continue
+        if looks_like_quota_error(head):
+            removed.append(str(path))
+            if not dry_run:
+                path.unlink()
+    return removed
+
+
 def make_tiingo_fetcher() -> CachedFetcher:
     """A fetcher authenticated by header.
 
@@ -48,7 +102,10 @@ def make_tiingo_fetcher() -> CachedFetcher:
     keyed by URL, and a token in the query would be written into filenames under data/raw/.
     """
     fetcher = CachedFetcher(
-        user_agent=config.EDGAR_USER_AGENT, limiter=_tiingo_limiter, max_retries=3
+        user_agent=config.EDGAR_USER_AGENT,
+        limiter=_tiingo_limiter,
+        max_retries=3,
+        body_validator=_reject_quota_bodies,
     )
     fetcher.session.headers.update(
         {
@@ -81,6 +138,10 @@ def fetch_prices(
     raw = fetcher.get_text(prices_url(ticker, start, end), encoding="utf-8")
     if not raw.strip():
         return []
+    # Belt and braces: the fetcher refuses to cache these, but an entry cached before that
+    # check existed must still not be mistaken for absent data.
+    if looks_like_quota_error(raw.encode("utf-8", errors="replace")):
+        raise RateLimitExhaustedError(f"quota error in response for {ticker}")
     payload: object = json.loads(raw)
     if isinstance(payload, dict):
         # Tiingo reports errors as a JSON object rather than a list.

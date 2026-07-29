@@ -109,6 +109,64 @@ CLAUDE.md fixes the schema at five tables.
 
 ---
 
+## 2026-07-29 — price coverage: a cache-poisoning bug and a vendor limitation
+
+### D9. Tiingo reports quota exhaustion as HTTP 200, and it was being cached
+
+Tiingo signals both of its free-tier caps with a **200 response carrying a plain-text
+body**, not a 429:
+
+    You have run over your 500 symbol look up for this month.
+
+Because the status code was fine, `CachedFetcher` wrote that text to `data/raw/` as though
+it were price data. The consequence was worse than the failed run: every later attempt read
+the *cached error* instead of retrying, so those tickers could never recover — not even
+after the cap reset. Silent, permanent data loss, presenting as missing coverage, which is
+precisely the statistic that reveals survivorship bias.
+
+Fixed three ways:
+
+* `CachedFetcher` takes a `body_validator` that runs **before** anything is written, so a
+  rejected body leaves no trace on disk.
+* `_reject_quota_bodies` recognises both cap messages and raises `RateLimitExhaustedError`,
+  not a generic failure.
+* `fetch_prices` re-checks bodies read from cache, so entries written before the validator
+  existed cannot be mistaken for absent data.
+
+25 already-poisoned entries were found and purged. Covered by 10 tests, including one
+asserting a valid body is still cached — the fix must not disable caching.
+
+### D10. The free tier caps unique symbols per month at 500, so 2018 coverage is 488/530
+
+The hourly limit was known (D1). The **monthly 500-unique-symbol cap** was not, and it is
+the binding constraint. Current 2018 state:
+
+| | Tickers | Filings affected |
+|---|---|---|
+| Covered, incl. SPY at all 251 sessions | 488 | — |
+| Quota-blocked, recoverable when the cap resets 1 Aug | 25 | 468 (7.0%) |
+| Renamed or acquired, ticker no longer resolves | 17 | 152 (2.3%) |
+
+### D11. Tiingo's delisted-ticker retention is weaker than D1 assumed
+
+D1 chose Tiingo over yfinance specifically because it "keeps serving history for tickers
+that have since been delisted or acquired." That is only partly true. 17 tickers return an
+empty array: ADS, APC, ARNC, BCR, CA, DISCA, FBHS, GPS, HFC, INFO, MON, NFX, PSKY, RE, STI,
+SW, VTRS — Monsanto, Anadarko, SunTrust, C.R. Bard, CA Inc and similar. Tiingo appears to
+serve history under the *successor* symbol rather than the historical one.
+
+This does not invalidate D1 — Tiingo did serve the acquired names ANDV, COL and AET with
+correct partial-year history, which yfinance would likely have dropped. But the coverage is
+not complete, and the gap is concentrated in exactly the survivorship-relevant population,
+so it cannot be treated as random missingness.
+
+**Open follow-up:** these are recoverable by mapping historical tickers to successor
+symbols, which needs a point-in-time symbol-change table. Until then the 2.3% of filings
+they account for must be reported as an excluded, non-random subset — not quietly dropped.
+Decide before Phase 5, since the full 2010–2024 universe will contain far more of them.
+
+---
+
 ## 2026-07-28 — §4 entry timing resolved
 
 ### D8. Weekend and holiday filings skip an open, exactly as after-close filings do

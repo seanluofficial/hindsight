@@ -17,6 +17,7 @@ import logging
 import re
 import threading
 import time
+from collections.abc import Callable
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -81,9 +82,11 @@ class CachedFetcher:
         user_agent: str = config.EDGAR_USER_AGENT,
         limiter: RateLimiter | None = None,
         max_retries: int = 4,
+        body_validator: Callable[[bytes], None] | None = None,
     ) -> None:
         self.max_retries = max_retries
         self.limiter = limiter or _edgar_limiter
+        self.body_validator = body_validator
         self.session = requests.Session()
         self.session.headers.update(
             {
@@ -99,6 +102,12 @@ class CachedFetcher:
 
         Raises `requests.HTTPError` after exhausting retries. A 404 fails immediately —
         retrying a missing document just wastes the rate-limit budget.
+
+        `body_validator` runs on live responses *before* anything is written to disk. Some
+        APIs report quota errors as HTTP 200 with a plain-text body; caching one of those
+        would poison the entry permanently, because every later run would read the stored
+        error instead of retrying. Validation happens before the write so a rejected body
+        leaves no trace.
         """
         path = cache_path_for(url)
         if use_cache and path.exists():
@@ -106,6 +115,8 @@ class CachedFetcher:
             return path.read_bytes()
 
         body = self._fetch_live(url, timeout=timeout)
+        if self.body_validator is not None:
+            self.body_validator(body)
         self.misses += 1
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(body)

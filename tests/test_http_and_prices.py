@@ -137,6 +137,104 @@ class TestCoverageReport:
         assert report["tickers_near_full_coverage"] == 0
 
 
+class TestQuotaErrorsAreNeverCached:
+    """Tiingo reports quota exhaustion as HTTP 200 with a plain-text body.
+
+    Caching one of those is the worst possible failure mode: every later run reads the
+    stored error instead of retrying, so the ticker never recovers even after the cap
+    resets — and it looks exactly like missing coverage, which is the statistic that
+    reveals survivorship bias.
+    """
+
+    MONTHLY = (
+        b"You have run over your 500 symbol look up for this month. "
+        b"Please upgrade at https://api.tiingo.com/pricing to have your limits increased."
+    )
+    HOURLY = b'{"detail":"Error: You have run over your hourly request allocation."}'
+
+    def test_monthly_cap_body_is_recognised(self) -> None:
+        assert prices.looks_like_quota_error(self.MONTHLY)
+
+    def test_hourly_cap_body_is_recognised(self) -> None:
+        assert prices.looks_like_quota_error(self.HOURLY)
+
+    def test_real_payload_is_not_flagged(self) -> None:
+        assert not prices.looks_like_quota_error(json.dumps(TestUpsert.BARS).encode())
+
+    def test_empty_body_is_not_flagged(self) -> None:
+        assert not prices.looks_like_quota_error(b"")
+
+    def test_validator_raises_rate_limit_not_generic_failure(self) -> None:
+        with pytest.raises(http.RateLimitExhaustedError):
+            prices._reject_quota_bodies(self.MONTHLY)
+
+    def test_valid_body_passes_validator(self) -> None:
+        prices._reject_quota_bodies(json.dumps(TestUpsert.BARS).encode())
+
+    def test_quota_body_is_not_written_to_disk(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(config, "RAW_DIR", tmp_path)
+        fetcher = http.CachedFetcher(body_validator=prices._reject_quota_bodies)
+        monkeypatch.setattr(fetcher, "_fetch_live", lambda url, timeout: self.MONTHLY)
+
+        url = "https://api.tiingo.com/tiingo/daily/wfc/prices?startDate=2018-01-01"
+        with pytest.raises(http.RateLimitExhaustedError):
+            fetcher.get(url)
+        assert not http.cache_path_for(url).exists()
+
+    def test_valid_body_is_still_cached(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(config, "RAW_DIR", tmp_path)
+        payload = json.dumps(TestUpsert.BARS).encode()
+        fetcher = http.CachedFetcher(body_validator=prices._reject_quota_bodies)
+        monkeypatch.setattr(fetcher, "_fetch_live", lambda url, timeout: payload)
+
+        url = "https://api.tiingo.com/tiingo/daily/aapl/prices?startDate=2018-01-01"
+        assert fetcher.get(url) == payload
+        assert http.cache_path_for(url).exists()
+
+    def test_cached_quota_error_raises_instead_of_reading_as_no_data(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A poisoned entry written before the validator existed must not read as empty."""
+        monkeypatch.setattr(config, "RAW_DIR", tmp_path)
+        url = prices.prices_url("WFC", date(2018, 1, 1), date(2019, 3, 31))
+        path = http.cache_path_for(url)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(self.MONTHLY)
+
+        fetcher = http.CachedFetcher()
+        with pytest.raises(http.RateLimitExhaustedError):
+            prices.fetch_prices("WFC", date(2018, 1, 1), date(2019, 3, 31), fetcher)
+
+    def test_purge_removes_poisoned_entries_only(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(config, "RAW_DIR", tmp_path)
+        root = tmp_path / "api.tiingo.com" / "tiingo" / "daily"
+        root.mkdir(parents=True)
+        (root / "wfc").write_bytes(self.MONTHLY)
+        (root / "aapl").write_bytes(json.dumps(TestUpsert.BARS).encode())
+
+        removed = prices.purge_poisoned_cache()
+        assert len(removed) == 1
+        assert not (root / "wfc").exists()
+        assert (root / "aapl").exists()
+
+    def test_purge_dry_run_reports_without_deleting(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(config, "RAW_DIR", tmp_path)
+        root = tmp_path / "api.tiingo.com"
+        root.mkdir(parents=True)
+        (root / "wfc").write_bytes(self.MONTHLY)
+
+        assert len(prices.purge_poisoned_cache(dry_run=True)) == 1
+        assert (root / "wfc").exists()
+
+
 class TestRateLimitIsNotMistakenForMissingData:
     """A spent quota must never be recorded as absent coverage.
 
