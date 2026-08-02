@@ -282,6 +282,29 @@ def parse_filing_headers(html: str, accession_no: str, cik: int) -> FilingMetada
     )
 
 
+_RE_CONFORMED_NAME = re.compile(r"COMPANY CONFORMED NAME:\s*([^\r\n<]+)", re.I)
+_RE_FORMER_NAME = re.compile(r"FORMER CONFORMED NAME:\s*([^\r\n<]+)", re.I)
+
+
+def parse_company_names(html: str) -> tuple[str, list[str]]:
+    """(current name, former names) from a filing header.
+
+    Former names matter as much as current ones for anonymization: "Apple Computer Inc"
+    identifies the issuer exactly as well as "Apple Inc" does, and §6 requires both to go.
+    """
+    text = html.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&")
+    current = _RE_CONFORMED_NAME.search(text)
+    formers = [m.strip() for m in _RE_FORMER_NAME.findall(text) if m.strip()]
+    return (current.group(1).strip() if current else ""), sorted(set(formers))
+
+
+def fetch_company_names(
+    cik: int, accession_no: str, fetcher: CachedFetcher
+) -> tuple[str, list[str]]:
+    """Names for one filing. Reads the cached header, so this costs no requests."""
+    return parse_company_names(fetcher.get_text(headers_url(cik, accession_no)))
+
+
 def fetch_filing_metadata(cik: int, accession_no: str, fetcher: CachedFetcher) -> FilingMetadata:
     html = fetcher.get_text(headers_url(cik, accession_no))
     return parse_filing_headers(html, accession_no, cik)

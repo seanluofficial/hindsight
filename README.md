@@ -14,18 +14,48 @@ including a null result — not a profitable trading system.
 
 ## Status
 
-**Phase 1 (foundation) — filings done, prices pending a Tiingo key.**
+**Phases 1, 2 and 4 run end-to-end on a 500-filing pilot.** The LLM half of Phase 2 is
+written but unrun — it needs an `ANTHROPIC_API_KEY`.
 
 | | |
 |---|---|
-| Point-in-time universe | 886 membership intervals, 501–506 members per study year |
+| Point-in-time universe | 886 intervals, 501–506 members per study year |
 | 2018 8-K filings | 6,720 across 501 tickers, mean 13.4 per company |
-| 2018 prices | **not yet ingested** — needs `TIINGO_API_KEY` |
+| 2018 prices | 156,987 rows, 512/530 tickers, SPY complete at 251 sessions |
+| Filings joinable to prices | 97.6% |
+| Anonymized | 500, zero detected leaks, ~123 redactions per filing |
+| Scored | 500 by the Loughran-McDonald baseline |
+| Evaluated | 483 trades × 3 horizons × 3 cost levels |
 
-Exclusion accounting for 2018 reconciles exactly: 6,835 in-universe filings = 6,720 stored
-+ 107 accepted outside the 04:00–20:00 ET window (§3) + 8 with no acceptance timestamp.
+Exclusion accounting reconciles exactly: 6,835 in-universe filings = 6,720 stored + 107
+accepted outside the 04:00–20:00 ET window (§3) + 8 with no acceptance timestamp.
 
-Phases 2–8 not started; see the build order in `CLAUDE.md`.
+### First result — the lexicon baseline has no directional skill
+
+Directional hit rate is **47.2% at 5 days** (48.5% at 1 day, 50.3% at 20 days) against a
+50% null. Brier ≈ 0.29–0.30, worse than the 0.25 an always-0.50 forecaster would score.
+
+More interesting, the baseline is **overconfident, and the gap widens with confidence** —
+the pattern H2 predicts for the LLM:
+
+| stated confidence | n | realised | gap |
+|---|---|---|---|
+| 0.50–0.60 | 216 | 0.481 | +0.066 |
+| 0.60–0.70 | 126 | 0.452 | +0.188 |
+| 0.70–0.80 | 70 | 0.529 | +0.211 |
+| 0.80–0.90 | 37 | 0.297 | +0.549 |
+| 0.90–1.00 | 34 | 0.559 | +0.419 |
+
+Read that as a property of the score→probability mapping, not a claim about the
+dictionary: §7 requires a confidence, and mapping a sentiment magnitude onto one is
+arbitrary. It is monotonic, so it cannot affect H1 or H3.
+
+**Portfolio statistics are not yet interpretable.** The 500-filing pilot is the earliest
+500 filings by acceptance time, so it spans two calendar months — two monthly rebalances.
+Sharpe ratios and t-statistics over two observations are arithmetic, not evidence; the
+report flags them `[!]` and the §14 null-result test refuses to fire.
+
+Phases 3, 5–8 not started; see the build order in `CLAUDE.md`.
 
 ## Setup
 
