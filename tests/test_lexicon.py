@@ -100,6 +100,38 @@ class TestProbabilityMapping:
         assert lexicon.score_to_probability(99.0) == pytest.approx(1.0)
 
 
+class TestScoringTextCap:
+    """The lexicon and the LLM must read identical text (§8), so both go through the cap."""
+
+    def test_short_text_is_untouched(self) -> None:
+        from hindsight.score import anonymize as anon
+
+        assert anon.scoring_text("short filing") == "short filing"
+
+    def test_long_text_is_capped(self) -> None:
+        from hindsight.score import anonymize as anon
+
+        text = "word " * 10_000
+        assert len(anon.scoring_text(text)) <= 12_000
+
+    def test_cut_lands_on_a_word_boundary(self) -> None:
+        from hindsight.score import anonymize as anon
+
+        capped = anon.scoring_text("revenue " * 5_000)
+        assert not capped.endswith("reven")
+
+    def test_truncation_is_detectable(self) -> None:
+        from hindsight.score import anonymize as anon
+
+        assert anon.was_truncated("x" * 20_000)
+        assert not anon.was_truncated("x" * 100)
+
+    def test_explicit_cap_overrides_default(self) -> None:
+        from hindsight.score import anonymize as anon
+
+        assert len(anon.scoring_text("a b c d e f g h", max_chars=5)) <= 5
+
+
 class TestRealFilingText:
     NEGATIVE = """
     [COMPANY] announced that it will restate previously issued financial statements

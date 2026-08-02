@@ -28,6 +28,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
+from hindsight import config
+
 ANON_VERSION = "anon-v1"
 
 # Placeholders are bracketed and uppercase so they are unmistakable in the output and easy
@@ -506,6 +508,28 @@ def find_leaks(
             leaks.append(f"{label}:{found.group(0)[:40]}")
 
     return sorted(set(leaks))
+
+
+def scoring_text(anonymized_text: str, max_chars: int | None = None) -> str:
+    """The text a scorer actually sees: anonymized, then capped.
+
+    One function so the lexicon and the LLM cannot drift apart. §8 requires the baseline
+    to run on identical text, and H3 is meaningless if the two read different inputs.
+
+    Truncation is on a whitespace boundary so the final token is a whole word rather than
+    a fragment the lexicon would fail to match.
+    """
+    limit = max_chars if max_chars is not None else config.MAX_SCORING_CHARS
+    if len(anonymized_text) <= limit:
+        return anonymized_text
+    cut = anonymized_text[:limit]
+    boundary = cut.rfind(" ")
+    return cut[:boundary] if boundary > limit * 0.9 else cut
+
+
+def was_truncated(anonymized_text: str, max_chars: int | None = None) -> bool:
+    limit = max_chars if max_chars is not None else config.MAX_SCORING_CHARS
+    return len(anonymized_text) > limit
 
 
 class NotAnonymizedError(RuntimeError):

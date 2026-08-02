@@ -25,7 +25,11 @@ from pathlib import Path
 
 from hindsight import config
 
-LEXICON_VERSION = "lm-v1"
+# lm-v2 supersedes lm-v1. The dictionary and formula are unchanged; the *input* is not.
+# v1 scored the full anonymized filing, v2 scores the capped text defined by
+# `config.MAX_SCORING_CHARS`, so the baseline reads exactly what the LLM reads and H3
+# compares two readers rather than two inputs.
+LEXICON_VERSION = "lm-v2"
 
 # Words only: drops digits, punctuation and the [PLACEHOLDER] tokens the anonymizer
 # leaves behind, which are not words and must not dilute the denominator.

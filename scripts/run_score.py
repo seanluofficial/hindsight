@@ -148,8 +148,12 @@ def cmd_lexicon(args: argparse.Namespace) -> int:
                 manifest.exclude("refused_not_anonymized", f"{row['accession_no']}: {exc}")
                 continue
 
-            result = lexicon.score_text(text)
+            # Identical capping to the LLM path, so §8's "identical anonymized text"
+            # holds and H3 compares readers rather than inputs.
+            result = lexicon.score_text(anon.scoring_text(text))
             probability = lexicon.score_to_probability(result.score)
+            if anon.was_truncated(text):
+                manifest.count("truncated_to_cap")
             conn.execute(
                 """
                 INSERT OR IGNORE INTO predictions
@@ -230,11 +234,11 @@ def main(argv: list[str] | None = None) -> int:
     p_llm = sub.add_parser("llm", help="score with the LLM")
     p_llm.add_argument("--limit", type=int)
     p_llm.add_argument("--mode", choices=["historical", "live"], default="historical")
-    p_llm.add_argument("--provider", choices=["gemini", "anthropic"], default="gemini")
+    p_llm.add_argument("--provider", choices=["groq", "gemini", "anthropic"], default="groq")
     p_llm.add_argument(
         "--throttle",
         type=float,
-        default=4.0,
+        default=1.0,
         help="seconds between calls; paces free-tier per-minute limits",
     )
     p_llm.set_defaults(func=cmd_llm)

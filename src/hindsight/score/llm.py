@@ -38,9 +38,20 @@ from hindsight.score import prompt as prompts
 log = logging.getLogger(__name__)
 
 MAX_RETRIES = 2
-MAX_TOKENS = 300
+# Generous on purpose. At 300 the model was cut off mid-rationale, so the closing brace
+# never arrived and the strict parser refused a response that was otherwise fine — schema
+# failures that looked like incompetence but were a truncated buffer.
+MAX_TOKENS = 800
 
 _RE_JSON = re.compile(r"\{.*\}", re.S)
+
+
+class RateLimitedError(RuntimeError):
+    """Provider throttling. Distinct from a schema failure, and waited out, not counted."""
+
+    def __init__(self, retry_after_seconds: float) -> None:
+        super().__init__(f"rate limited; retry after {retry_after_seconds:.0f}s")
+        self.retry_after_seconds = retry_after_seconds
 
 
 @dataclass(frozen=True)
@@ -68,10 +79,17 @@ def parse_response(raw: str) -> Prediction:
     text = raw.strip()
     if text.startswith("```"):
         text = re.sub(r"^```(?:json)?|```$", "", text, flags=re.M).strip()
-    match = _RE_JSON.search(text)
-    if not match:
+
+    # Take the FIRST balanced object, not a greedy span to the last brace: when the model
+    # emits two objects, a greedy match captures both and json.loads reports "Extra data".
+    # A truncated response yields no balanced object and is rejected, which is correct —
+    # half a rationale is not a prediction.
+    decoder = json.JSONDecoder()
+    start = text.find("{")
+    if start == -1:
         raise ValueError(f"no JSON object in response: {raw[:200]!r}")
-    return Prediction.model_validate(json.loads(match.group(0)))
+    payload, _ = decoder.raw_decode(text[start:])
+    return Prediction.model_validate(payload)
 
 
 # --------------------------------------------------------------------------
@@ -96,7 +114,10 @@ class GeminiBackend:
 
     BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 
-    def __init__(self, model_id: str = "gemini-2.0-flash", pricing: Pricing | None = None):
+    # Pinned, never a `-latest` alias: a floating alias would silently change the model
+    # between runs and break reproducibility (invariant 4). gemini-2.5-flash is capped at
+    # 20 requests/day on the free tier, which is too tight for a 500-filing pilot.
+    def __init__(self, model_id: str = "gemini-3.5-flash", pricing: Pricing | None = None):
         self.model_id = model_id
         # Free tier bills nothing; the table exists so a paid upgrade reports real cost.
         self.pricing = pricing or Pricing(input_per_mtok=0.10, output_per_mtok=0.40)
@@ -111,6 +132,13 @@ class GeminiBackend:
             )
         return key
 
+    @staticmethod
+    def _retry_after_seconds(payload: dict[str, Any]) -> float:
+        """Google suggests a delay in the error body; honour it rather than guessing."""
+        message = str(payload.get("error", {}).get("message", ""))
+        match = re.search(r"retry in ([\d.]+)s", message, re.I)
+        return min(float(match.group(1)) + 1.0, 65.0) if match else 20.0
+
     def complete(self, system: str, user: str) -> tuple[str, int, int]:
         response = self.session.post(
             f"{self.BASE}/{self.model_id}:generateContent",
@@ -124,10 +152,33 @@ class GeminiBackend:
                     # Ask for JSON at the transport level as well as in the prompt; it
                     # reduces formatting failures without loosening the parser.
                     "responseMimeType": "application/json",
+                    # Schema-enforced output. The parser stays strict regardless — this
+                    # just stops the model from emitting prose or a second object, which
+                    # it otherwise does often enough to matter.
+                    "responseSchema": {
+                        "type": "OBJECT",
+                        "properties": {
+                            "direction": {"type": "STRING", "enum": ["up", "down"]},
+                            "probability": {"type": "NUMBER"},
+                            "rationale": {"type": "STRING"},
+                        },
+                        "required": ["direction", "probability", "rationale"],
+                    },
+                    # Gemini 2.5+ spends output tokens on internal reasoning before
+                    # emitting anything. Left on, the budget is consumed thinking and the
+                    # response comes back truncated or empty, which the strict parser
+                    # correctly rejects — producing a wall of schema failures that look
+                    # like model incompetence rather than a transport setting.
+                    "thinkingConfig": {"thinkingBudget": 0},
                 },
             },
             timeout=90,
         )
+        if response.status_code == 429:
+            # Throttling is not a schema failure. Surfacing it as a distinct exception
+            # keeps §7's parse-failure rate meaning "the model produced invalid JSON"
+            # rather than silently absorbing "we called too fast".
+            raise RateLimitedError(self._retry_after_seconds(response.json()))
         response.raise_for_status()
         payload = response.json()
         candidates = payload.get("candidates") or []
@@ -141,6 +192,68 @@ class GeminiBackend:
             int(usage.get("promptTokenCount", 0)),
             int(usage.get("candidatesTokenCount", 0)),
         )
+
+
+class GroqBackend:
+    """Groq via its OpenAI-compatible endpoint.
+
+    Free tier allows ~1,000 requests/day, enough to score the whole pilot in one run —
+    Gemini's free tier caps `gemini-2.5-flash` at 20/day, which would have taken 25 days.
+    """
+
+    URL = "https://api.groq.com/openai/v1/chat/completions"
+
+    # Free tier: 1,000 requests/day, but the binding limit is 12,000 tokens/minute. Filing
+    # prompts average ~3,000 tokens, so throughput is ~4/minute regardless of throttle.
+    # Filings are NOT truncated to fit: shortening the input to buy speed would change
+    # what the model is being asked to read.
+    def __init__(
+        self, model_id: str = "llama-3.3-70b-versatile", pricing: Pricing | None = None
+    ) -> None:
+        self.model_id = model_id
+        # Free tier bills nothing; the table exists so a paid upgrade reports real cost.
+        self.pricing = pricing or Pricing(input_per_mtok=0.59, output_per_mtok=0.79)
+        self.session = requests.Session()
+
+    def _api_key(self) -> str:
+        key = os.getenv("GROQ_API_KEY", "").strip()
+        if not key:
+            raise RuntimeError(
+                "GROQ_API_KEY is not set. Get a free key at https://console.groq.com/keys "
+                "and add it to .env"
+            )
+        return key
+
+    def complete(self, system: str, user: str) -> tuple[str, int, int]:
+        response = self.session.post(
+            self.URL,
+            headers={
+                "Authorization": f"Bearer {self._api_key()}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": self.model_id,
+                "temperature": config.LLM_TEMPERATURE,
+                "max_tokens": MAX_TOKENS,
+                # JSON mode, so the model cannot wrap the object in prose. The parser
+                # stays strict regardless.
+                "response_format": {"type": "json_object"},
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
+            },
+            timeout=90,
+        )
+        if response.status_code == 429:
+            retry_after = response.headers.get("retry-after")
+            seconds = float(retry_after) if retry_after else 20.0
+            raise RateLimitedError(min(seconds + 1.0, 65.0))
+        response.raise_for_status()
+        payload = response.json()
+        text = payload["choices"][0]["message"]["content"] or ""
+        usage = payload.get("usage", {})
+        return text, int(usage.get("prompt_tokens", 0)), int(usage.get("completion_tokens", 0))
 
 
 class AnthropicBackend:
@@ -174,12 +287,14 @@ class AnthropicBackend:
         return text, response.usage.input_tokens, response.usage.output_tokens
 
 
-def make_backend(provider: str = "gemini") -> Backend:
+def make_backend(provider: str = "groq") -> Backend:
+    if provider == "groq":
+        return GroqBackend()
     if provider == "gemini":
         return GeminiBackend()
     if provider == "anthropic":
         return AnthropicBackend()
-    raise ValueError(f"unknown provider {provider!r}; expected 'gemini' or 'anthropic'")
+    raise ValueError(f"unknown provider {provider!r}; expected groq, gemini or anthropic")
 
 
 # --------------------------------------------------------------------------
@@ -199,6 +314,7 @@ class ScoringClient:
         self.input_tokens = 0
         self.output_tokens = 0
         self.calls = 0
+        self.rate_limit_waits = 0
 
     @property
     def estimated_cost_usd(self) -> float:
@@ -213,16 +329,28 @@ class ScoringClient:
         return self.estimated_cost_usd / self.calls if self.calls else 0.0
 
     def score_one(self, text: str, item_codes: str) -> tuple[Prediction | None, str]:
-        """(prediction, raw response). None after MAX_RETRIES schema failures."""
+        """(prediction, raw response). None after MAX_RETRIES *schema* failures.
+
+        Throttling does not consume an attempt: §7's failure rate is a claim about the
+        model's output, so burning attempts on rate limits would report the provider's
+        quota as the model's incompetence.
+        """
         rendered = self.prompt.render(text, item_codes)
         last_raw = ""
-        for attempt in range(MAX_RETRIES + 1):
+        attempt = 0
+        while attempt <= MAX_RETRIES:
             try:
                 raw, tin, tout = self.backend.complete(self.prompt.system, rendered)
+            except RateLimitedError as limited:
+                self.rate_limit_waits += 1
+                log.info("throttled; sleeping %.0fs", limited.retry_after_seconds)
+                time.sleep(limited.retry_after_seconds)
+                continue  # deliberately does not increment `attempt`
             except Exception as exc:  # noqa: BLE001 - transport errors get a backoff
                 log.warning("API error (attempt %d): %s", attempt + 1, exc)
                 last_raw = f"API_ERROR: {exc}"
                 time.sleep(2.0 * (2**attempt))
+                attempt += 1
                 continue
 
             self.calls += 1
@@ -233,6 +361,7 @@ class ScoringClient:
                 return parse_response(raw), raw
             except (ValueError, ValidationError, json.JSONDecodeError) as exc:
                 log.warning("schema violation (attempt %d): %s", attempt + 1, exc)
+                attempt += 1
 
         return None, last_raw
 
@@ -256,7 +385,11 @@ class ScoringClient:
                 manifest.exclude("refused_not_anonymized", f"{row['accession_no']}: {exc}")
                 continue
 
-            prediction, raw = self.score_one(row["anonymized_text"], row["item_codes"] or "")
+            # Capped identically to the lexicon path (§8).
+            text = anon.scoring_text(row["anonymized_text"])
+            if anon.was_truncated(row["anonymized_text"]):
+                manifest.count("truncated_to_cap")
+            prediction, raw = self.score_one(text, row["item_codes"] or "")
             values: tuple[Any, ...]
             if prediction is None:
                 # §7: recorded as null and counted, never silently dropped.
@@ -308,4 +441,6 @@ class ScoringClient:
         manifest.params["parse_failure_rate"] = round(failures / total, 5) if total else 0.0
         manifest.count("input_tokens", self.input_tokens)
         manifest.count("output_tokens", self.output_tokens)
+        # Recorded separately so the failure rate above stays a claim about the model.
+        manifest.count("rate_limit_waits", self.rate_limit_waits)
         return stored

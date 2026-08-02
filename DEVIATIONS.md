@@ -109,6 +109,65 @@ CLAUDE.md fixes the schema at five tables.
 
 ---
 
+## 2026-08-02 — scoring: model choice and a text cap
+
+### D12. Scoring text is capped at 12,000 characters, for both scorers
+
+8-K length is extremely skewed: median ~10k characters, mean ~27k, maximum ~450k. Provider
+request limits reject the long tail outright (Groq returns HTTP 413), and **46% of the
+pilot exceeds 12k characters**.
+
+The alternative to truncating is excluding those filings, which would drop nearly half the
+sample *non-randomly* — long filings are disproportionately earnings releases with full
+financial statements attached, exactly the disclosures most likely to carry signal. That
+would be a worse distortion than truncation.
+
+So `config.MAX_SCORING_CHARS = 12_000`, applied through a single function
+(`anonymize.scoring_text`) used by the lexicon, the LLM, and the contamination audit.
+§8 requires the baseline to run on identical text to the model; truncating only the LLM
+would turn H3 into a comparison between two different *inputs* rather than two different
+*readers*. The cut lands on a whitespace boundary so the final token is a whole word.
+
+The lexicon was re-versioned **lm-v1 → lm-v2** to mark the input change, and the result is
+materially unchanged: 5-day Sharpe after 10bps moved from −1.28 (full text) to −1.42
+(capped), hit rate 48.5% → 50.2%. The null is robust to the cap.
+
+**Reported as a limitation:** 3,056 of 6,720 filings (45.5%) were truncated. Content after
+12,000 characters was never seen by any scorer.
+
+### D13. Model: `llama-3.3-70b-versatile` via Groq (open choice)
+
+The pre-registration fixes the protocol — one pinned model, temperature 0, strict JSON —
+not the vendor. Groq was chosen because its free tier allows ~1,000 requests/day, enough
+to score the pilot in one run.
+
+Rejected alternatives, with reasons, since "we used a free tier" is itself a limitation
+worth disclosing:
+
+- **Anthropic** — no free tier.
+- **Gemini `gemini-2.0-flash`** — free-tier allocation of *zero* for this key.
+- **Gemini `gemini-2.5-flash`** — 20 requests/day. A 500-filing pilot would take 25 days.
+- **Gemini `gemini-3.5-flash`** — workable, but throughput was still the binding constraint.
+
+Backends for Gemini and Anthropic remain implemented and selectable via `--provider`, so
+the study can be re-run against a frontier model without touching the pipeline.
+
+**Limitation to state in the writeup:** a 70B open-weights model is weaker than a frontier
+model at financial reasoning, so a null result for H3 is *weaker evidence* than the same
+null from a frontier model would be. It bounds what the LLM can do here, not what LLMs can
+do in general.
+
+### D14. Prompt re-versioned p1 → p1.1 for a generation-config change
+
+The prompt text is identical. Under p1 the output budget was 300 tokens with no response
+schema, which truncated the model mid-rationale; the strict parser then correctly rejected
+the response, producing null predictions that looked like model failures but were a harness
+bug. Those p1 rows are retained — predictions are immutable — and p1.1 re-scores under the
+corrected configuration so the §7 failure rate describes the model rather than my buffer
+size.
+
+---
+
 ## 2026-07-29 — price coverage: a cache-poisoning bug and a vendor limitation
 
 ### D9. Tiingo reports quota exhaustion as HTTP 200, and it was being cached

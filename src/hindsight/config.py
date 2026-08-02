@@ -51,6 +51,17 @@ ACCEPTANCE_WINDOW_ET = (time(4, 0), time(20, 0))
 MIN_PRIOR_CLOSE_USD = 5.00
 MIN_ANONYMIZED_CHARS = 200
 
+# Upper bound on the text handed to any scorer. 8-K filings are extremely skewed — median
+# ~10k characters, mean ~27k, maximum ~450k — and 46% exceed this cap. Provider request
+# limits reject the long tail outright, so the alternative to truncating is dropping
+# nearly half the sample, non-randomly: long filings are disproportionately earnings
+# releases with full financial statements attached.
+#
+# Applied to the lexicon and the LLM *identically*. §8 requires the baseline to run on the
+# same text as the model, so truncating only the LLM would make H3 a comparison between
+# two different inputs rather than two different readers.
+MAX_SCORING_CHARS = 12_000
+
 # --------------------------------------------------------------------------
 # Timing (PREREGISTRATION §4) — the most important rule in the project
 # --------------------------------------------------------------------------

@@ -13,7 +13,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-PROMPT_VERSION = "p1"
+# p1.1 supersedes p1. The prompt *text* is unchanged; the generation configuration is not.
+# Under p1 the output budget was 300 tokens with no response schema, which truncated the
+# model mid-rationale and produced null predictions that looked like model failures but
+# were a harness bug. Those p1 rows are left in place — predictions are immutable — and
+# p1.1 re-scores under the corrected configuration, so the §7 failure rate describes the
+# model rather than my buffer size.
+PROMPT_VERSION = "p1.1"
 
 
 @dataclass(frozen=True)
@@ -54,7 +60,40 @@ P1 = Prompt(
     ),
 )
 
-PROMPTS: dict[str, Prompt] = {P1.version: P1}
+# Same text, re-versioned to mark the corrected generation configuration.
+P1_1 = Prompt(version="p1.1", system=P1.system, template=P1.template)
+
+# Contamination audit (PREREGISTRATION §6). Asks the model to do the one thing the
+# forecasting prompt forbids: name the issuer.
+#
+# This prompt is deliberately *generous* to the model — it invites a guess and offers an
+# explicit "unknown" escape hatch. An audit that made identification hard would understate
+# contamination, and understating it is the failure mode that would let a memorised result
+# pass as a forecast. Better to overestimate the threat than to flatter the anonymizer.
+AUDIT = Prompt(
+    version="audit-v1",
+    system=(
+        "You are an expert on US public companies and their SEC filings. You will be "
+        "shown an anonymized excerpt from a Form 8-K. Identify the company if you can. "
+        "Respond with JSON only."
+    ),
+    template=(
+        "The following is an anonymized SEC Form 8-K. Identifying details have been "
+        "replaced with placeholders such as [COMPANY], [PERSON], [DATE] and [ADDRESS].\n\n"
+        "Reported 8-K item codes: {items}\n\n"
+        "--- BEGIN FILING ---\n{filing}\n--- END FILING ---\n\n"
+        "Which company filed this? Use any clue: business description, financial scale, "
+        "industry jargon, segment names, products, or writing style. Guess if you are "
+        "unsure.\n\n"
+        "Respond with a single JSON object and nothing else:\n"
+        '{{"company": "your best guess, or \\"unknown\\" if you truly cannot tell", '
+        '"ticker": "ticker symbol, or \\"unknown\\"", '
+        '"confidence": a number from 0.00 to 1.00, '
+        '"reasoning": "one sentence naming the clues you used"}}'
+    ),
+)
+
+PROMPTS: dict[str, Prompt] = {P1.version: P1, P1_1.version: P1_1, AUDIT.version: AUDIT}
 
 
 def get(version: str = PROMPT_VERSION) -> Prompt:
