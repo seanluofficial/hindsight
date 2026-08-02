@@ -181,18 +181,26 @@ def cmd_lexicon(args: argparse.Namespace) -> int:
 
 
 def cmd_llm(args: argparse.Namespace) -> int:
-    # Imported lazily so `anonymize` and `lexicon` work without the anthropic package
-    # installed or an API key present.
+    # Imported lazily so `anonymize` and `lexicon` work without any provider SDK or key.
     import hindsight.score.llm as llm
 
+    backend = llm.make_backend(args.provider)
     with (
-        RunManifest("llm", limit=args.limit, mode=args.mode, model_id=llm.MODEL_ID) as manifest,
+        RunManifest(
+            "llm",
+            limit=args.limit,
+            mode=args.mode,
+            provider=args.provider,
+            model_id=backend.model_id,
+        ) as manifest,
         db.session() as conn,
     ):
         rows = select_filings(conn, args.limit, need_anon=True)
-        client = llm.ScoringClient()
-        print(f"  scoring {len(rows):,} filings with {llm.MODEL_ID} (temperature 0)")
-        client.score_filings(conn, rows, manifest, run_mode=args.mode)
+        client = llm.ScoringClient(backend=backend)
+        print(f"  scoring {len(rows):,} filings with {backend.model_id} (temperature 0)")
+        client.score_filings(
+            conn, rows, manifest, run_mode=args.mode, throttle_seconds=args.throttle
+        )
         print(f"\n  estimated cost: ${client.estimated_cost_usd:.4f}")
         print(f"  cost per filing: ${client.cost_per_filing:.6f}")
         manifest.params["estimated_cost_usd"] = round(client.estimated_cost_usd, 6)
@@ -222,6 +230,13 @@ def main(argv: list[str] | None = None) -> int:
     p_llm = sub.add_parser("llm", help="score with the LLM")
     p_llm.add_argument("--limit", type=int)
     p_llm.add_argument("--mode", choices=["historical", "live"], default="historical")
+    p_llm.add_argument("--provider", choices=["gemini", "anthropic"], default="gemini")
+    p_llm.add_argument(
+        "--throttle",
+        type=float,
+        default=4.0,
+        help="seconds between calls; paces free-tier per-minute limits",
+    )
     p_llm.set_defaults(func=cmd_llm)
 
     args = parser.parse_args(argv)
