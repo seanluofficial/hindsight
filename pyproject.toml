@@ -39,6 +39,11 @@ target-version = "py311"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "N"]
 
+[tool.ruff.lint.per-file-ignores]
+# The dashboard embeds markdown tables in string literals. A markdown table row cannot be
+# wrapped without breaking the table, so the line-length rule does not apply there.
+"src/hindsight/dashboard/app.py" = ["E501"]
+
 [tool.mypy]
 # Deliberately unpinned: numpy's bundled stubs use `type` statements that only parse
 # under 3.12+, so mypy follows the interpreter it runs on rather than the 3.11 floor.

@@ -132,6 +132,109 @@ def filings_overview() -> pd.DataFrame:
 # --------------------------------------------------------------------------
 # Research tab
 # --------------------------------------------------------------------------
+def plain_english_verdict(
+    cal: calibration.CalibrationResult, base: portfolio.PortfolioResult, model_id: str
+) -> None:
+    """The finding, in words, before any jargon.
+
+    Someone reading this should be able to tell what happened without knowing what a
+    Sharpe ratio is. The technical tables stay below for people who do.
+    """
+    hit = cal.observed_frequency
+    beats_coin = hit > 0.5
+    makes_money = base.mean_return > 0
+
+    st.subheader("What this found, in plain English")
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric(
+        "Right this often",
+        f"{hit:.1%}",
+        delta=f"{(hit - 0.5) * 100:+.1f} points vs a coin flip",
+        delta_color="normal" if beats_coin else "inverse",
+    )
+    c2.metric(
+        "After trading costs",
+        "Loses money" if not makes_money else "Makes money",
+        delta=f"{base.mean_return:+.2%} per month",
+        delta_color="normal" if makes_money else "inverse",
+    )
+    c3.metric(
+        "When it says it's sure",
+        f"{cal.bins[-1].observed_frequency:.0%} right" if cal.bins else "n/a",
+        delta="but claims ~97% confidence",
+        delta_color="inverse",
+    )
+
+    verdict = (
+        "**It does not beat a coin flip.**"
+        if not beats_coin
+        else "**It edges past a coin flip** — but see the costs and sample size below."
+    )
+    st.markdown(
+        f"""
+{verdict} Predicting the direction of a stock from an announcement, with the company's
+identity hidden, this method was right **{hit:.1%}** of the time. Guessing at random gets
+you 50%.
+
+It is also **badly overconfident**: on the announcements where it claimed to be most
+certain, it was right less often than on the ones where it admitted to guessing.
+
+Once you subtract what it costs to actually place the trades, the strategy
+**{"loses money" if not makes_money else "still makes money"}**.
+
+*This is the intended kind of answer.* The project was built to measure honestly, including
+measuring that something does not work — see "Why a negative result is the point" below.
+"""
+    )
+
+    with st.expander("What do these terms mean?"):
+        st.markdown(
+            """
+| Term | What it means |
+|---|---|
+| **8-K filing** | An announcement a US public company must file when something material happens — earnings, an executive leaving, a big contract. |
+| **Hit rate** | How often the up/down call was correct. 50% is a coin flip. |
+| **Long/short** | Buy the stocks predicted to rise, bet against the ones predicted to fall. Profits if the *ranking* is right, even in a falling market. |
+| **Market-excess return** | The stock's return *minus* the whole market's return over the same days. Strips out "everything went up that week". |
+| **Basis point (bp)** | One hundredth of a percent. 10 bps = 0.10%. Trading costs are quoted this way. |
+| **Sharpe ratio** | Return per unit of risk, annualized. ~1.0 is a genuinely good strategy, 0 means no skill, negative means it loses. |
+| **t-statistic** | Whether a result could plausibly be luck. Roughly, above +2 or below −2 starts to look real. |
+| **Max drawdown** | The worst peak-to-trough fall along the way. 0.10 means it lost 10% from its high point. |
+| **Brier score** | Scores stated confidence against reality. Lower is better. 0.25 is what you'd score by always saying "50-50". |
+| **Calibration** | Whether "70% confident" actually means right 70% of the time. |
+| **Horizon** | How long the position is held, in trading days. |
+"""
+        )
+
+    with st.expander("Why a negative result is the point"):
+        st.markdown(
+            """
+Most published trading strategies look profitable and then are not, because the analysis
+was quietly bent toward a good answer — testing many variations and reporting the best,
+using information that was not actually available at the time, or dropping the awkward data.
+
+This project fixed every decision **in writing before running anything**
+(`PREREGISTRATION.md`), including the threshold at which the idea counts as a failure. Then
+it reported what came out.
+
+Specific traps that were designed out:
+
+- **Hindsight.** The model is trained on data that already contains what happened next. So
+  the company's name, ticker, dates and address are stripped before it sees anything, and a
+  separate audit asks the model to name the company anyway, to measure how often the
+  disguise fails.
+- **Survivorship.** Companies that were dropped from the index — usually the ones that did
+  badly — stay in the sample for the years they were members. Studying only today's
+  survivors makes any strategy look better than it was.
+- **Timing.** A position is opened at the next market open *after* the announcement was
+  public, never at a price that had already happened.
+- **Costs.** Every result is shown at three cost levels. A strategy that only works at zero
+  cost does not work.
+"""
+        )
+
+
 def render_research() -> None:
     st.header("Research")
     st.caption(
@@ -162,8 +265,16 @@ def render_research() -> None:
         counts = summary.get("table_counts", {})
         anonymized = summary.get("anonymized_filings", 0)
 
+    # Plain-English verdict first. A reader should be able to leave after this section
+    # knowing what happened; everything below is the evidence for it.
+    headline_cal = calibration.evaluate(trades, 5)
+    headline_base = portfolio.build(trades, 5, float(config.BASE_CASE_COST_BPS))
+    if headline_cal.n:
+        plain_english_verdict(headline_cal, headline_base, model_id)
+        st.divider()
+
     # ---- headline integrity numbers, before any performance figure ----
-    st.subheader("Sample and integrity")
+    st.subheader("How much data this rests on")
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Filings ingested", f"{counts.get('filings', 0):,}")
     c2.metric("Predictions", f"{counts.get('predictions', 0):,}")
@@ -180,10 +291,11 @@ def render_research() -> None:
         )
 
     # ---- calibration first: H2 is the hypothesis this project can answer best ----
-    st.subheader("Calibration")
+    st.subheader("Is its confidence honest?")
     st.caption(
-        "H2 predicts overconfidence — that stated 70% confidence is right less than 70% "
-        "of the time, with the gap widening as confidence rises."
+        "When it says it is 70% sure, is it right 70% of the time? A well-calibrated "
+        "forecaster's line sits on the diagonal. Below the diagonal means overconfident — "
+        "it claims more certainty than it earns."
     )
     horizon = st.radio(
         "Horizon (trading days)", config.HORIZONS_TRADING_DAYS, index=1, horizontal=True
@@ -230,11 +342,13 @@ def render_research() -> None:
         st.line_chart(chart)
 
     # ---- returns, always at all horizons and all cost levels ----
-    st.subheader("Quintile long/short")
+    st.subheader("Would trading on it have made money?")
     st.caption(
-        "Top quintile long, bottom short, equal weight, sorted within each calendar month "
-        "(§9). All three horizons and all three cost levels are shown — §5 forbids "
-        "reporting only the best horizon and §10 forbids presenting results cost-free alone."
+        "Each month, buy the announcements it was most confident would rise and bet "
+        "against the ones it thought would fall, in equal amounts. Every holding period "
+        "and every cost level is shown — the pre-registration forbids reporting only the "
+        "flattering horizon, or showing returns as though trading were free. "
+        "**Negative Sharpe means it lost money.**"
     )
     rows = [
         portfolio.build(trades, h, float(c)).as_row()
@@ -268,10 +382,12 @@ def render_research() -> None:
     )
 
     # ---- the exclusion ledger: invariant 5 made visible ----
-    st.subheader("What was excluded")
+    st.subheader("What was thrown away, and why")
     st.caption(
-        "Invariant 5: nothing is silently dropped. Every exclusion carries a reason and "
-        "is counted here and in the run manifests."
+        "Nothing is dropped silently. Discarding inconvenient data is the easiest way to "
+        "manufacture a good backtest, so every excluded filing is counted here with its "
+        "reason — mostly companies that were renamed or acquired and whose old ticker no "
+        "longer returns prices."
     )
     if has_database():
         manifest = RunManifest("dashboard-exclusions", model_id=model_id)
@@ -364,10 +480,20 @@ def render_today() -> None:
 # --------------------------------------------------------------------------
 def main() -> None:
     st.title("hindsight")
+    st.markdown(
+        "**Can an AI predict a stock's move from a company announcement — if it isn't "
+        "allowed to know which company it is?**"
+    )
     st.caption(
-        "Testing whether an LLM can extract predictive signal from SEC 8-K filings when "
-        "it cannot identify the company or the date. The deliverable is an honest "
-        "measurement — including a null result — not a trading system."
+        "US public companies must file an 8-K whenever something material happens: earnings, "
+        "an executive departing, a major contract. This project strips out every clue to the "
+        "company's identity, asks a model which way the stock will move, and checks what "
+        "actually happened.\n\n"
+        "The name is the point. These models were trained on data that already contains the "
+        "outcomes, so a model that recognises the company can *remember* the answer instead "
+        "of predicting it. That is hindsight, not skill — and the whole design exists to "
+        "prevent it. The deliverable is an honest measurement, including a finding that "
+        "nothing works."
     )
     if not has_database() and not bundled_models():
         st.error(
