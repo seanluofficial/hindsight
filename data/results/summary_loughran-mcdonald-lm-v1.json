@@ -1,0 +1,25 @@
+{
+  "model_id": "loughran-mcdonald-lm-v1",
+  "git_sha": "b2133c171889de831097b6664bb553a6411665f7-dirty",
+  "exported_at_utc": "2026-08-02T15:31:44.938497+00:00",
+  "table_counts": {
+    "filings": 6720,
+    "universe": 886,
+    "prices": 156987,
+    "predictions": 6720,
+    "evaluations": 58842
+  },
+  "anonymized_filings": 6720,
+  "filing_span": {
+    "first": "2018-01-02T12:52:14+00:00",
+    "last": "2018-12-31T22:12:16+00:00"
+  },
+  "trades": 19614,
+  "exclusions": {
+    "no_price_coverage_for_ticker": 483,
+    "prior_close_below_5_usd": 12,
+    "security_did_not_trade_on_entry": 6,
+    "no_prior_close": 9,
+    "missing_price_in_window": 36
+  }
+}

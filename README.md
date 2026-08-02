@@ -23,39 +23,70 @@ written but unrun — it needs an `ANTHROPIC_API_KEY`.
 | 2018 8-K filings | 6,720 across 501 tickers, mean 13.4 per company |
 | 2018 prices | 156,987 rows, 512/530 tickers, SPY complete at 251 sessions |
 | Filings joinable to prices | 97.6% |
-| Anonymized | 500, zero detected leaks, ~123 redactions per filing |
-| Scored | 500 by the Loughran-McDonald baseline |
-| Evaluated | 483 trades × 3 horizons × 3 cost levels |
+| Anonymized | 6,720, zero detected leaks, ~124 redactions per filing |
+| Scored | 6,720 by the Loughran-McDonald baseline |
+| Evaluated | 19,614 trades across 3 horizons × 3 cost levels, 13 monthly rebalances |
 
 Exclusion accounting reconciles exactly: 6,835 in-universe filings = 6,720 stored + 107
 accepted outside the 04:00–20:00 ET window (§3) + 8 with no acceptance timestamp.
 
-### First result — the lexicon baseline has no directional skill
+### First result — the lexicon baseline is a null, and a costly one
 
-Directional hit rate is **47.2% at 5 days** (48.5% at 1 day, 50.3% at 20 days) against a
-50% null. Brier ≈ 0.29–0.30, worse than the 0.25 an always-0.50 forecaster would score.
+Full-year 2018: 6,720 filings scored, **19,614 evaluable trades**, 13 monthly rebalances.
 
-More interesting, the baseline is **overconfident, and the gap widens with confidence** —
-the pattern H2 predicts for the LLM:
+**The dictionary has no directional skill and loses money after costs.** Every horizon and
+every cost level is negative:
+
+| horizon | 0 bps | 10 bps (base) | 25 bps |
+|---|---|---|---|
+| 1 day | −1.49 | **−3.86** | −7.42 |
+| 5 days | −1.02 | **−1.28** | −1.68 |
+| 20 days | −1.07 | **−1.25** | −1.53 |
+
+*Annualized Sharpe, quintile long/short, market-excess.*
+
+Against the pre-registered §14 threshold — 5-day Sharpe below 0.3 after 10 bps — the
+verdict is **H1 not supported**. Directional hit rate is 48.5% at 1 day and 49.6% at
+20 days, against a 50% null.
+
+Note the 1-day row: costs dominate at short horizons, which is exactly why §10 forbids
+presenting results cost-free alone.
+
+**Overconfident, with the gap widening as confidence rises** — the pattern H2 predicts for
+the LLM, here in the baseline (20-day horizon):
 
 | stated confidence | n | realised | gap |
 |---|---|---|---|
-| 0.50–0.60 | 216 | 0.481 | +0.066 |
-| 0.60–0.70 | 126 | 0.452 | +0.188 |
-| 0.70–0.80 | 70 | 0.529 | +0.211 |
-| 0.80–0.90 | 37 | 0.297 | +0.549 |
-| 0.90–1.00 | 34 | 0.559 | +0.419 |
+| 0.50–0.60 | 2,959 | 0.493 | +0.055 |
+| 0.60–0.70 | 1,713 | 0.508 | +0.136 |
+| 0.70–0.80 | 925 | 0.498 | +0.245 |
+| 0.80–0.90 | 494 | 0.496 | +0.347 |
+| 0.90–1.00 | 430 | 0.467 | **+0.504** |
 
-Read that as a property of the score→probability mapping, not a claim about the
-dictionary: §7 requires a confidence, and mapping a sentiment magnitude onto one is
-arbitrary. It is monotonic, so it cannot affect H1 or H3.
+At its most confident the dictionary is right 46.7% of the time. Read the *calibration* as
+a property of the arbitrary score→probability mapping rather than a claim about the
+dictionary; the mapping is monotonic, so it cannot affect H1 or H3. The *hit rate* is not
+arbitrary — it depends only on the sign.
 
-**Portfolio statistics are not yet interpretable.** The 500-filing pilot is the earliest
-500 filings by acceptance time, so it spans two calendar months — two monthly rebalances.
-Sharpe ratios and t-statistics over two observations are arithmetic, not evidence; the
-report flags them `[!]` and the §14 null-result test refuses to fire.
+Brier ≈ 0.292, worse than the 0.25 an always-say-0.50 forecaster scores.
 
-Phases 3, 5–8 not started; see the build order in `CLAUDE.md`.
+This is the comparator H3 measures the LLM against. Phases 3, 5, 6, 8 not started; see the
+build order in `CLAUDE.md`.
+
+## Dashboard
+
+```bash
+uv run streamlit run src/hindsight/dashboard/app.py
+```
+
+Research, Track record and Today. Research leads with sample size, anonymization counts and
+sample-size warnings *before* any performance figure, then calibration, then returns at
+every horizon and cost level, then the full exclusion ledger.
+
+The working database is ~95MB and the raw filing cache ~2.8GB, so neither is deployable.
+`scripts/export_results.py` writes a ~700KB bundle of evaluated trades plus a summary
+stamped with its git SHA, and the dashboard reads that when no database is present — both
+paths build identical `Trade` objects, so figures are computed by the same code either way.
 
 ## Setup
 
