@@ -157,6 +157,38 @@ model at financial reasoning, so a null result for H3 is *weaker evidence* than 
 null from a frontier model would be. It bounds what the LLM can do here, not what LLMs can
 do in general.
 
+### D15. The pilot is smaller than 500, and the audit model differs from the scoring model
+
+Groq's free tier enforces a **tokens-per-day** cap that turned out to be the binding
+constraint, discovered only by reading a 429 body:
+
+| model | daily token budget | filings it buys |
+|---|---|---|
+| `llama-3.3-70b-versatile` | 100,000 | ~43 |
+| `openai/gpt-oss-120b` | 200,000 | ~85 |
+| `llama-3.1-8b-instant` | 500,000 | ~250 |
+
+Consequences, all of which must be stated wherever these results appear:
+
+**Scoring ran on 84 filings, not the 500 in the build plan.** The run halted cleanly when
+the budget was spent and recorded 416 filings as *unattempted* — deliberately not as parse
+failures, which would have reported the provider's quota as the model's failure rate. The
+run is resumable and adds ~85 filings per day.
+
+**84 filings span roughly one calendar month.** That is one rebalance, so no portfolio
+statistic is interpretable, and the §14 null-result test correctly refuses to fire. The
+LLM's hit rate and calibration rest on per-prediction sample size and are readable, with
+wide error bars; its Sharpe ratio is not.
+
+**The contamination audit uses `llama-3.1-8b-instant`, not the model that did the
+scoring**, because it was the only model with budget remaining. This is a real weakness and
+the direction of the error matters: an 8B model is *worse* at recognising companies than
+the 120B model that produced the predictions, so the measured identification rate is a
+**lower bound**. The true contamination of the scored predictions is higher than reported.
+
+**Revisit:** re-run both on one model, ideally a frontier model, before any result is
+presented as final. The pipeline needs no changes — only budget.
+
 ### D14. Prompt re-versioned p1 → p1.1 for a generation-config change
 
 The prompt text is identical. Under p1 the output budget was 300 tokens with no response

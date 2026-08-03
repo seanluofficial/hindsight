@@ -114,6 +114,10 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--limit", type=int, default=config.CONTAMINATION_SAMPLE_SIZE)
     parser.add_argument("--provider", choices=["groq", "gemini", "anthropic"], default="groq")
+    parser.add_argument(
+        "--model",
+        help="override the provider's default model; recorded in the results file",
+    )
     parser.add_argument("--throttle", type=float, default=14.0)
     args = parser.parse_args(argv)
 
@@ -128,6 +132,8 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     backend = llm.make_backend(args.provider)
+    if args.model:
+        backend.model_id = args.model
     audit_prompt = prompt.get("audit-v1")
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -171,6 +177,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             raw = ""
             guess: dict[str, object] = {}
+            quota_spent = False
             while True:
                 try:
                     raw, tin, tout = backend.complete(audit_prompt.system, rendered)
@@ -179,11 +186,23 @@ def main(argv: list[str] | None = None) -> int:
                     client.calls += 1
                     break
                 except llm.RateLimitedError as limited:
-                    time.sleep(limited.retry_after_seconds)
+                    if limited.is_daily_quota:
+                        # Waiting cannot clear a daily budget. Stop and report the rate
+                        # over what was actually audited, rather than spinning.
+                        quota_spent = True
+                        break
+                    time.sleep(min(limited.retry_after_seconds, 65.0))
                 except Exception as exc:  # noqa: BLE001
                     manifest.exclude("audit_call_failed", f"{row['accession_no']}: {exc}")
                     raw = ""
                     break
+
+            if quota_spent:
+                remaining = len(rows) - i + 1
+                manifest.count("halted_daily_quota")
+                manifest.count("filings_unattempted", remaining)
+                log.warning("daily quota spent; %d filings unaudited", remaining)
+                break
             if not raw:
                 continue
 

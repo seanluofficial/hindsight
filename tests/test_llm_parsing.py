@@ -107,6 +107,24 @@ class TestRateLimitIsNotASchemaFailure:
         assert llm.RateLimitedError(30.0).retry_after_seconds == 30.0
 
 
+class TestDailyQuotaIsNotAMinuteLimit:
+    """A 680s retry-after means 'come back tomorrow', not 'wait a minute'.
+
+    Clamping it to 65s and looping turned a spent daily budget into an infinite poll that
+    scored nothing for 60 consecutive attempts.
+    """
+
+    def test_short_delay_is_a_minute_limit(self) -> None:
+        assert not llm.RateLimitedError(45.0).is_daily_quota
+
+    def test_long_delay_is_a_daily_quota(self) -> None:
+        assert llm.RateLimitedError(680.0).is_daily_quota
+
+    def test_threshold_boundary(self) -> None:
+        assert not llm.RateLimitedError(299.0).is_daily_quota
+        assert llm.RateLimitedError(300.0).is_daily_quota
+
+
 class TestPinnedModel:
     def test_default_model_is_pinned_not_an_alias(self) -> None:
         """A `-latest` alias would silently change models between runs (invariant 4)."""

@@ -132,6 +132,128 @@ def filings_overview() -> pd.DataFrame:
 # --------------------------------------------------------------------------
 # Research tab
 # --------------------------------------------------------------------------
+@st.cache_data(ttl=300)
+def contamination_results() -> list[dict[str, Any]]:
+    """Every contamination audit found in the results directory."""
+    out: list[dict[str, Any]] = []
+    for path in sorted(RESULTS_DIR.glob("contamination_*.json")):
+        out.append(json.loads(path.read_text(encoding="utf-8")))
+    return out
+
+
+def render_contamination() -> None:
+    """The number that decides what the whole study measures."""
+    audits = contamination_results()
+    st.subheader("Can the AI still tell who filed it?")
+    st.caption(
+        "The central threat. These models were trained on data that already contains what "
+        "happened next, so a model that recognises the company can recall the outcome "
+        "instead of forecasting it. We ask it to name the issuer and count how often it "
+        "gets there anyway."
+    )
+    if not audits:
+        st.info(
+            "Contamination audit not run yet — `python scripts/audit_contamination.py`. "
+            "This is the headline limitation of the whole project, so results are "
+            "provisional until it exists."
+        )
+        return
+
+    for audit in audits:
+        rate = audit["identification_rate"]
+        threshold = audit["threshold"]
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Identified the company", f"{rate:.1%}")
+        c2.metric("Pre-set limit", f"{threshold:.0%}")
+        c3.metric("Filings tested", f"{audit['attempted']:,}")
+
+        if audit["exceeds_threshold"]:
+            st.error(
+                f"**Above the {threshold:.0%} limit.** The rule written before the study "
+                "began requires the main analysis to be re-run on only the filings the "
+                "model failed to identify, and both versions reported. That rule was "
+                "fixed in advance precisely so it could not be waived once inconvenient."
+            )
+        else:
+            st.success(
+                f"**Below the {threshold:.0%} limit**, so the main analysis stands on the "
+                "full sample. The rate is still reported as a headline limitation — "
+                "'mostly disguised' is not 'disguised'."
+            )
+
+        hits = [r for r in audit["results"] if r["correct"]]
+        if hits:
+            with st.expander(f"See {len(hits)} filings it identified, and how"):
+                st.dataframe(
+                    pd.DataFrame(
+                        [
+                            {
+                                "actual": h["true_ticker"],
+                                "its guess": h["guess_company"],
+                                "confidence": h["confidence"],
+                                "clues it used": h["reasoning"],
+                            }
+                            for h in hits[:60]
+                        ]
+                    ),
+                    hide_index=True,
+                    use_container_width=True,
+                )
+
+
+def render_head_to_head(models: list[str]) -> None:
+    """H3: does the LLM beat a dictionary that does no reading comprehension?"""
+    if len(models) < 2:
+        return
+    st.subheader("AI versus a word-counting dictionary")
+    st.caption(
+        "The pre-registration predicts the AI will *not* meaningfully beat a method that "
+        "just counts positive and negative words with no comprehension at all. Both read "
+        "identical text, so this compares readers rather than inputs."
+    )
+
+    rows = []
+    for model_id in models:
+        trades = load_trades(model_id)
+        if not trades:
+            continue
+        cal = calibration.evaluate(trades, 5)
+        base = portfolio.build(trades, 5, float(config.BASE_CASE_COST_BPS))
+        if not cal.n:
+            continue
+        rows.append(
+            {
+                "method": model_id,
+                "predictions": cal.n,
+                "hit rate": cal.observed_frequency,
+                "beats coin flip": "yes" if cal.observed_frequency > 0.5 else "no",
+                "Brier (lower better)": cal.brier_score,
+                "overconfidence": cal.overconfidence,
+                "Sharpe after costs": base.sharpe_annualized,
+                "profitable": "yes" if base.mean_return > 0 else "no",
+            }
+        )
+    if not rows:
+        return
+    st.dataframe(
+        pd.DataFrame(rows).style.format(
+            {
+                "hit rate": "{:.1%}",
+                "Brier (lower better)": "{:.4f}",
+                "overconfidence": "{:+.3f}",
+                "Sharpe after costs": "{:+.2f}",
+            }
+        ),
+        hide_index=True,
+        use_container_width=True,
+    )
+    st.caption(
+        "All figures at the 5-day horizon after 10 bps round-trip costs. Sample sizes "
+        "differ: the dictionary is free to run so it scored every filing, while the AI "
+        "was capped by free-tier API limits."
+    )
+
+
 def plain_english_verdict(
     cal: calibration.CalibrationResult, base: portfolio.PortfolioResult, model_id: str
 ) -> None:
@@ -272,6 +394,14 @@ def render_research() -> None:
     if headline_cal.n:
         plain_english_verdict(headline_cal, headline_base, model_id)
         st.divider()
+
+    # Contamination before performance: if the model can name the issuer, every number
+    # below is suspect, and the reader should learn that first.
+    render_contamination()
+    st.divider()
+
+    render_head_to_head(models)
+    st.divider()
 
     # ---- headline integrity numbers, before any performance figure ----
     st.subheader("How much data this rests on")

@@ -23,14 +23,45 @@ written but unrun — it needs an `ANTHROPIC_API_KEY`.
 | 2018 8-K filings | 6,720 across 501 tickers, mean 13.4 per company |
 | 2018 prices | 156,987 rows, 512/530 tickers, SPY complete at 251 sessions |
 | Filings joinable to prices | 97.6% |
-| Anonymized | 6,720, zero detected leaks, ~124 redactions per filing |
-| Scored | 6,720 by the Loughran-McDonald baseline |
+| Anonymized | 6,720, zero lexical leaks, ~124 redactions per filing |
+| Scored (dictionary) | 6,720 by the Loughran-McDonald baseline |
+| Scored (LLM) | 84 by `openai/gpt-oss-120b` — halted by a free-tier daily token cap |
+| Contamination audit | 150 filings, **38.7% identified** |
 | Evaluated | 19,614 trades across 3 horizons × 3 cost levels, 13 monthly rebalances |
 
 Exclusion accounting reconciles exactly: 6,835 in-universe filings = 6,720 stored + 107
 accepted outside the 04:00–20:00 ET window (§3) + 8 with no acceptance timestamp.
 
-### First result — the lexicon baseline is a null, and a costly one
+### Headline result — the disguise fails 38.7% of the time
+
+The contamination audit is the number that decides what everything else means. Asked to
+name the issuer of an anonymized filing, the model got it right on **58 of 150 (38.7%)** —
+nearly double the 20% threshold fixed in §6 before any code was written.
+
+It succeeds because **filings describe themselves**, and no amount of name-redaction
+touches that:
+
+| Actual | Guessed | The clue it used |
+|---|---|---|
+| AWK | American Water Works | "largest publicly traded U.S. water and wastewater utility, over 6,800 employees" |
+| DAL | Delta Air Lines | "Atlanta airport power outage", "Trainer refinery", "profit sharing for pilots" |
+| MOS | Mosaic | "phosphate and potash operations", "Vale S.A.", "TIPLAM port" |
+| ORLY | O'Reilly Automotive | "leading retailer in the automotive aftermarket, 5,000+ stores" |
+| AGN | Allergan | named subsidiary "Forest Laboratories, LLC" |
+
+The anonymizer removes names, tickers, dates, addresses, executives and cities, and it does
+that well — zero lexical leaks across 6,720 filings. But it cannot remove *self-description*
+without destroying the content being analysed. **Redaction defeats string matching, not
+comprehension.**
+
+§6 fixed the consequence in advance: above 20%, the primary analysis must be restricted to
+filings the model failed to identify, and both versions reported. That rule now binds.
+
+**This measured rate is a lower bound.** Free-tier quotas forced the audit onto an 8B model
+while scoring used a 120B one, and a smaller model recognises fewer companies. The real
+contamination of the scored predictions is worse than 38.7%.
+
+### The lexicon baseline is a null, and a costly one
 
 Full-year 2018: 6,720 filings scored, **19,614 evaluable trades**, 13 monthly rebalances.
 

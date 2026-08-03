@@ -46,12 +46,26 @@ MAX_TOKENS = 800
 _RE_JSON = re.compile(r"\{.*\}", re.S)
 
 
+# A per-minute limit clears in about a minute. A retry-after beyond this means a *daily*
+# budget is spent, and no amount of waiting inside this run will clear it.
+DAILY_QUOTA_RETRY_THRESHOLD_S = 300.0
+
+
 class RateLimitedError(RuntimeError):
     """Provider throttling. Distinct from a schema failure, and waited out, not counted."""
 
     def __init__(self, retry_after_seconds: float) -> None:
         super().__init__(f"rate limited; retry after {retry_after_seconds:.0f}s")
         self.retry_after_seconds = retry_after_seconds
+
+    @property
+    def is_daily_quota(self) -> bool:
+        """Whether waiting is futile within this run."""
+        return self.retry_after_seconds >= DAILY_QUOTA_RETRY_THRESHOLD_S
+
+
+class DailyQuotaExhaustedError(RuntimeError):
+    """The provider's per-day token budget is spent. Stop; resume tomorrow."""
 
 
 @dataclass(frozen=True)
@@ -208,7 +222,7 @@ class GroqBackend:
     # Filings are NOT truncated to fit: shortening the input to buy speed would change
     # what the model is being asked to read.
     def __init__(
-        self, model_id: str = "llama-3.3-70b-versatile", pricing: Pricing | None = None
+        self, model_id: str = "openai/gpt-oss-120b", pricing: Pricing | None = None
     ) -> None:
         self.model_id = model_id
         # Free tier bills nothing; the table exists so a paid upgrade reports real cost.
@@ -248,7 +262,10 @@ class GroqBackend:
         if response.status_code == 429:
             retry_after = response.headers.get("retry-after")
             seconds = float(retry_after) if retry_after else 20.0
-            raise RateLimitedError(min(seconds + 1.0, 65.0))
+            # Do NOT clamp before classifying: a 680-second retry-after means the daily
+            # token budget is spent, and clamping it to 65s turns a "come back tomorrow"
+            # into an infinite polling loop that never scores anything.
+            raise RateLimitedError(seconds)
         response.raise_for_status()
         payload = response.json()
         text = payload["choices"][0]["message"]["content"] or ""
@@ -342,9 +359,14 @@ class ScoringClient:
             try:
                 raw, tin, tout = self.backend.complete(self.prompt.system, rendered)
             except RateLimitedError as limited:
+                if limited.is_daily_quota:
+                    raise DailyQuotaExhaustedError(
+                        f"daily token budget spent; provider asks for "
+                        f"{limited.retry_after_seconds:.0f}s"
+                    ) from limited
                 self.rate_limit_waits += 1
                 log.info("throttled; sleeping %.0fs", limited.retry_after_seconds)
-                time.sleep(limited.retry_after_seconds)
+                time.sleep(min(limited.retry_after_seconds, 65.0))
                 continue  # deliberately does not increment `attempt`
             except Exception as exc:  # noqa: BLE001 - transport errors get a backoff
                 log.warning("API error (attempt %d): %s", attempt + 1, exc)
@@ -389,7 +411,21 @@ class ScoringClient:
             text = anon.scoring_text(row["anonymized_text"])
             if anon.was_truncated(row["anonymized_text"]):
                 manifest.count("truncated_to_cap")
-            prediction, raw = self.score_one(text, row["item_codes"] or "")
+            try:
+                prediction, raw = self.score_one(text, row["item_codes"] or "")
+            except DailyQuotaExhaustedError as exhausted:
+                # Stop cleanly. Filings never attempted are NOT parse failures, and
+                # counting them as such would report the provider's budget as the model's
+                # failure rate. Everything scored so far is already committed.
+                remaining = len(rows) - i + 1
+                manifest.count("halted_daily_quota")
+                manifest.count("filings_unattempted", remaining)
+                manifest.error(
+                    f"{exhausted} — stopped with {remaining} filings unattempted; "
+                    "re-run to resume, nothing is lost."
+                )
+                log.warning("daily quota spent; %d filings unattempted", remaining)
+                break
             values: tuple[Any, ...]
             if prediction is None:
                 # §7: recorded as null and counted, never silently dropped.

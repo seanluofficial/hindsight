@@ -1,0 +1,1363 @@
+{
+  "model_id": "llama-3.1-8b-instant",
+  "prompt_version": "audit-v1",
+  "anon_version": "anon-v1",
+  "audited_at_utc": "2026-08-03T19:10:06.654031+00:00",
+  "attempted": 150,
+  "identified": 58,
+  "identification_rate": 0.3867,
+  "threshold": 0.2,
+  "exceeds_threshold": true,
+  "results": [
+    {
+      "accession_no": "0001243786-18-000002",
+      "true_ticker": "MOS",
+      "guess_company": "Mosaic Company",
+      "guess_ticker": "MOS",
+      "confidence": 0.95,
+      "reasoning": "The mention of phosphate and potash operations, Vale S.A. as a seller, and the use of industry jargon such as 'TIPLAM port' and 'MWSPC' suggest a company in the fertilizer industry, which aligns with Mosaic Company's business description.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000920148-18-000002",
+      "true_ticker": "LH",
+      "guess_company": "LabCorp",
+      "guess_ticker": "LH",
+      "confidence": 0.95,
+      "reasoning": "The company's business description as a leading global life sciences company, its mention of 'fully diluted earnings per share', and its scale of nearly $9.5 billion in net revenues all point to LabCorp.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001646383-18-000002",
+      "true_ticker": "CSRA",
+      "guess_company": "MUFG Union Bank, N.A.",
+      "guess_ticker": "MTU",
+      "confidence": 0.95,
+      "reasoning": "The presence of MUFG Union Bank, N.A. as a party to the credit agreement and the mention of Japanese bank names such as The Bank of Tokyo-Mitsubishi UFJ, Ltd. strongly suggests that the company is a Japanese bank or a US subsidiary of a Japanese bank.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001410636-18-000003",
+      "true_ticker": "AWK",
+      "guess_company": "American Water Works Company",
+      "guess_ticker": "AWK",
+      "confidence": 0.95,
+      "reasoning": "The mention of being the largest publicly traded U.S. water and wastewater utility company, employing over 6,800 professionals, and serving 15 million people in 47 states and Ontario, Canada, matches the business description of American Water Works Company.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001193125-18-000574",
+      "true_ticker": "WFC",
+      "guess_company": "Allianz SE",
+      "guess_ticker": "AZ",
+      "confidence": 0.8,
+      "reasoning": "The use of European stock index names (EURO STOXX 50) and the mention of a German law firm (Faegre Baker Daniels LLP) suggests a European company, and Allianz SE is a large German financial services company that issues debt securities.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-000589",
+      "true_ticker": "SRE",
+      "guess_company": "Energy Transfer LP",
+      "guess_ticker": "ET",
+      "confidence": 0.95,
+      "reasoning": "The mention of Oncor Electric Delivery Company LLC, Cameron LNG project, and the company's involvement in the energy sector, particularly in the context of a merger and tax legislation, suggests a connection to Energy Transfer LP, a major energy infrastructure company.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001104659-18-000220",
+      "true_ticker": "REGN",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "Insufficient information to make an educated guess about the company",
+      "correct": false
+    },
+    {
+      "accession_no": "0001260221-18-000002",
+      "true_ticker": "TDG",
+      "guess_company": "AeroControlex",
+      "guess_ticker": "unknown",
+      "confidence": 0.8,
+      "reasoning": "The company's business description mentions 'AeroControlex business unit' and 'Aero Fluid Products business', suggesting a strong presence in the aerospace industry, and the mention of 'NiCad batteries and chargers' and 'high performance hoists, winches and lifting devices' further supports this guess.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-000639",
+      "true_ticker": "AGN",
+      "guess_company": "Allergan",
+      "guess_ticker": "AGN",
+      "confidence": 0.95,
+      "reasoning": "The mention of Forest Laboratories, LLC and the specific details about senior notes and indentures suggest a large pharmaceutical company with a complex financial structure, which matches Allergan's profile after its acquisition of Forest Laboratories in 2014.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000898173-18-000002",
+      "true_ticker": "ORLY",
+      "guess_company": "O'Reilly Automotive, Inc.",
+      "guess_ticker": "ORLY",
+      "confidence": 0.95,
+      "reasoning": "The company's business description as a leading retailer in the automotive aftermarket industry, its large number of stores (5,000), and its mention of serving both do-it-yourself and professional service provider markets, all point to O'Reilly Automotive, Inc.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000092230-18-000002",
+      "true_ticker": "TFC",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "Insufficient information to make an educated guess about the company",
+      "correct": false
+    },
+    {
+      "accession_no": "0000092380-18-000002",
+      "true_ticker": "LUV",
+      "guess_company": "American Airlines",
+      "guess_ticker": "AAL",
+      "confidence": 0.95,
+      "reasoning": "The mention of 737 MAX 8 and MAX 7 aircraft, Boeing delivery schedules, and fuel derivative contracts, along with the scale of financial transactions and industry jargon, suggests a major US airline.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000723125-18-000003",
+      "true_ticker": "MU",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "Insufficient information to identify the company",
+      "correct": false
+    },
+    {
+      "accession_no": "0001681459-18-000003",
+      "true_ticker": "FTI",
+      "guess_company": "Schlumberger Limited",
+      "guess_ticker": "SLB",
+      "confidence": 0.95,
+      "reasoning": "The mention of 'FMC Technologies, Inc.' as a wholly owned subsidiary and the use of industry jargon such as 'salaried and nonunion hourly employees' retirement plan' and 'equivalent retirement plan' suggest a company in the oil and gas industry, which is consistent with Schlumberger's business description.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000050104-18-000003",
+      "true_ticker": "ANDV",
+      "guess_company": "Western Refining",
+      "guess_ticker": "WNR",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, segment names (refining, logistics, marketing), and products (crude oil, fuel, convenience stores) are consistent with a refining and marketing company, and the mention of Western Refining acquisition and ANDX's restructuring suggests a company that has undergone significant changes in recent years.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-001002",
+      "true_ticker": "VLO",
+      "guess_company": "Phillips 66",
+      "guess_ticker": "PSX",
+      "confidence": 0.95,
+      "reasoning": "The company's description as a 'Premier Independent Refiner' with 15 refineries, its mention of a 'Diamond Green Diesel renewable diesel JV', and its focus on 'sustaining capex' and 'non-discretionary growth capex' are all consistent with Phillips 66's business model and industry jargon.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000950157-18-000027",
+      "true_ticker": "COR",
+      "guess_company": "Cardinal Health",
+      "guess_ticker": "CAH",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, mention of pharmaceutical products, value-driving services, and business solutions that improve access to care, as well as its ranking on the Fortune 500 and annual revenue, match Cardinal Health's profile.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000920148-18-000004",
+      "true_ticker": "LH",
+      "guess_company": "LabCorp",
+      "guess_ticker": "LH",
+      "confidence": 1.0,
+      "reasoning": "The company's business description as a leading global life sciences company, its mention of clinical and end-to-end drug development services, and its mention of being an S&P 500 company all point to LabCorp.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001683168-18-000029",
+      "true_ticker": "DAL",
+      "guess_company": "Delta Air Lines",
+      "guess_ticker": "DAL",
+      "confidence": 0.95,
+      "reasoning": "The mention of 'Atlanta airport power outage', 'fuel hedging activity', 'profit sharing program for pilots', and 'Trainer refinery' suggests a large airline company with significant operations and investments in the US, which aligns with Delta Air Lines' business description.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001104659-18-000373",
+      "true_ticker": "DE",
+      "guess_company": "Deere & Company",
+      "guess_ticker": "DE",
+      "confidence": 0.95,
+      "reasoning": "The mention of farm machinery, turf & utility equipment, and construction equipment, along with the company's history dating back to 1837 and its focus on providing products and services for customers linked to the land, strongly suggests Deere & Company.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001374310-18-000002",
+      "true_ticker": "CBOE",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "Insufficient information to identify the company",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-001247",
+      "true_ticker": "AGN",
+      "guess_company": "Pfizer",
+      "guess_ticker": "PFE",
+      "confidence": 0.95,
+      "reasoning": "The mention of FDA approvals, generic entry, and loss of exclusivity for key revenue-generating products, along with the scale of restructuring and the industry jargon used, suggests a large pharmaceutical company like Pfizer.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000037996-18-000002",
+      "true_ticker": "F",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "Insufficient information to make an educated guess about the company",
+      "correct": false
+    },
+    {
+      "accession_no": "0000004962-18-000002",
+      "true_ticker": "AXP",
+      "guess_company": "Bank of America",
+      "guess_ticker": "BAC",
+      "confidence": 0.85,
+      "reasoning": "The mention of 'regulatory capital', 'capital ratios', and 'share repurchases' suggests a financial institution, and Bank of America is a large bank with a complex financial structure.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-001564",
+      "true_ticker": "WFC",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "The filing does not contain sufficient information to identify the company, such as a specific business description, financial scale, or industry jargon.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-001642",
+      "true_ticker": "IP",
+      "guess_company": "DuPont",
+      "guess_ticker": "DD",
+      "confidence": 0.9,
+      "reasoning": "The mention of a 'mandatory retirement policy' and the specific age of 72, which is consistent with DuPont's historical corporate governance practices, led to this identification.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000106640-18-000002",
+      "true_ticker": "WHR",
+      "guess_company": "General Motors",
+      "guess_ticker": "GM",
+      "confidence": 0.8,
+      "reasoning": "The mention of a 'Mexico business' and 'Latin America segment' suggests a large multinational automotive company, and General Motors is a well-known company with a significant presence in these regions.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-001768",
+      "true_ticker": "SBUX",
+      "guess_company": "Starbucks",
+      "guess_ticker": "SBUX",
+      "confidence": 0.95,
+      "reasoning": "The mention of 'President [COMPANY] Coffee Taiwan Limited' and 'over 1,400 [COMPANY] stores' suggests a coffee company with a strong presence in Taiwan and China, which aligns with Starbucks' business operations.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001193125-18-001786",
+      "true_ticker": "D",
+      "guess_company": "Dominion Energy",
+      "guess_ticker": "D",
+      "confidence": 0.95,
+      "reasoning": "The mention of 'V.C. Summer Units 2 and 3 new nuclear development project' and 'SCE&G electric customers' suggests a company involved in the energy sector, particularly in the southeastern United States, which is consistent with Dominion Energy's business description.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000766421-18-000002",
+      "true_ticker": "ALK",
+      "guess_company": "Alaska Air Group, Inc.",
+      "guess_ticker": "ALK",
+      "confidence": 0.95,
+      "reasoning": "The mention of Horizon Air Industries, Inc. and the title of President and CEO, which is a common title in the airline industry, led me to guess Alaska Air Group, Inc., the parent company of Horizon Air.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000754737-18-000003",
+      "true_ticker": "SCG",
+      "guess_company": "Dominion Energy",
+      "guess_ticker": "D",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, industry jargon, and segment names (e.g., electric and natural gas distribution customers) suggest a utility company, and Dominion Energy is a well-known utility company in the US.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-002159",
+      "true_ticker": "CNP",
+      "guess_company": "CenterPoint Energy",
+      "guess_ticker": "CNP",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, mention of utility operations, and ownership interest in Enable Midstream Partners, a publicly traded master limited partnership, are all consistent with CenterPoint Energy's business model.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001193125-18-002175",
+      "true_ticker": "WBA",
+      "guess_company": "Walgreens Boots Alliance",
+      "guess_ticker": "WBA",
+      "confidence": 0.95,
+      "reasoning": "The mention of AllianceRx Walgreens Prime, Rite Aid, and the business segments Retail Pharmacy USA and Pharmaceutical Wholesale, along with the financial scale and industry jargon, strongly suggest that the company is Walgreens Boots Alliance.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001144204-18-000704",
+      "true_ticker": "ARNC",
+      "guess_company": "Citigroup",
+      "guess_ticker": "C",
+      "confidence": 0.95,
+      "reasoning": "The presence of 'The Bank of New York Mellon Trust Company, N.A.' and 'Citibank, N.A.' as parties to the indentures and credit agreement, respectively, suggests a connection to Citigroup, a multinational investment bank and financial services corporation.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-002185",
+      "true_ticker": "CVS",
+      "guess_company": "UnitedHealth Group",
+      "guess_ticker": "UNH",
+      "confidence": 0.95,
+      "reasoning": "The mention of pharmacy benefit business, share repurchase programs, and a potential acquisition of Aetna, a major health insurance company, suggests a large health insurance company with a significant presence in the US market.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001110783-18-000005",
+      "true_ticker": "MON",
+      "guess_company": "Monsanto Company",
+      "guess_ticker": "MON",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, financial scale, industry jargon (e.g., 'INTACTA RR2 PRO TM soybeans', 'Roundup Ready 2 Xtend', 'Bollgard II XtendFlex cotton'), segment names (e.g., 'Seeds and Genomics', 'Agricultural Productivity'), and products (e.g., 'glyphosate', 'dicamba') are all consistent with Monsanto's business.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001104659-18-000690",
+      "true_ticker": "ALL",
+      "guess_company": "Allstate",
+      "guess_ticker": "ALL",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, segment names (e.g., Life and Retirement, Property-Liability Alternative Segments), and product offerings (e.g., auto, home, life insurance) are consistent with Allstate's business, and the writing style and industry jargon used are also typical of Allstate's corporate communications.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000713676-18-000004",
+      "true_ticker": "PNC",
+      "guess_company": "The [COMPANY] Group, Inc. appears to be a financial institution, possibly a bank, given the mention of the Office of the Comptroller of the Currency and the Risk Committee",
+      "guess_ticker": "unknown",
+      "confidence": 0.8,
+      "reasoning": "The mention of the Office of the Comptroller of the Currency and the Risk Committee suggests a financial institution, and the company name includes the word 'Group', which is common in banking and financial services",
+      "correct": false
+    },
+    {
+      "accession_no": "0001365135-18-000004",
+      "true_ticker": "WU",
+      "guess_company": "Western Union",
+      "guess_ticker": "WU",
+      "confidence": 0.95,
+      "reasoning": "The mention of consumer-to-consumer transactions, money transfer network, and agent locations in over 200 countries and territories, along with the company's focus on compliance and anti-fraud measures, are all consistent with Western Union's business description and industry jargon.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000935703-18-000002",
+      "true_ticker": "DLTR",
+      "guess_company": "American Eagle Outfitters",
+      "guess_ticker": "AEO",
+      "confidence": 0.95,
+      "reasoning": "The mention of '330 Family [COMPANY] stores' and 'Family [COMPANY]' suggests a retail clothing business, and American Eagle Outfitters is a well-known clothing retailer that has undergone significant restructuring and divestitures in the past.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000074208-18-000004",
+      "true_ticker": "UDR",
+      "guess_company": "Realty Income",
+      "guess_ticker": "O",
+      "confidence": 0.95,
+      "reasoning": "The company's description as a leading multifamily real estate investment trust (REIT) with a demonstrated performance history of delivering superior and dependable returns, and its mention of owning or having an ownership position in 50,127 apartment homes, matches Realty Income's business model and scale.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000821189-18-000003",
+      "true_ticker": "EOG",
+      "guess_company": "Apple Inc.",
+      "guess_ticker": "AAPL",
+      "confidence": 0.95,
+      "reasoning": "The mention of 'bonus depreciation on personal tangible property expenditures' and the overall scale of the tax impact suggest a large technology company like Apple, which is known for its significant investments in property, plant, and equipment.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000019617-18-000002",
+      "true_ticker": "JPM",
+      "guess_company": "J.P. Morgan Chase & Co.",
+      "guess_ticker": "JPM",
+      "confidence": 0.95,
+      "reasoning": "The company's business description as a 'leading global financial services firm' with 'operations worldwide' and specific mention of 'investment banking', 'commercial banking', 'financial transaction processing', and 'asset management' segments, as well as its inclusion in the Dow Jones Industrial Average, strongly suggests J.P. Morgan Chase & Co.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001510295-18-000003",
+      "true_ticker": "MPC",
+      "guess_company": "Marathon Petroleum Corporation",
+      "guess_ticker": "MPC",
+      "confidence": 0.95,
+      "reasoning": "The mention of MPLX LP, a master limited partnership formed and sponsored by the company, and the use of industry jargon such as 'Adjusted LIBO Rate' and 'Alternate Base Rate' suggest a company in the energy or oil and gas industry, which is consistent with Marathon Petroleum Corporation's business description.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001678531-18-000004",
+      "true_ticker": "EVHC",
+      "guess_company": "AMN Healthcare Services",
+      "guess_ticker": "AMN",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, including the sale of American Medical Response and the mention of healthcare-related terms such as 'operating margin' and 'revenue cycle management', suggests a healthcare services company, which aligns with AMN Healthcare Services' business.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001358071-18-000004",
+      "true_ticker": "CXO",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "Insufficient information to make an educated guess about the company",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-003126",
+      "true_ticker": "SCG",
+      "guess_company": "Dominion Energy",
+      "guess_ticker": "D",
+      "confidence": 0.95,
+      "reasoning": "The mention of Dominion Energy as a party to the merger, the reference to the Virgil C. Summer Nuclear Station, and the discussion of regulatory matters in South Carolina all point to Dominion Energy as the company filing this Form 8-K.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-003468",
+      "true_ticker": "CNP",
+      "guess_company": "OGE Energy Corp.",
+      "guess_ticker": "OGE",
+      "confidence": 0.95,
+      "reasoning": "The company's business description as a domestic energy delivery company with electric transmission & distribution, natural gas distribution, and energy services operations, as well as its ownership of a 54.1% limited partner interest in Enable Midstream Partners, matches OGE Energy Corp.'s business model.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000950103-18-000166",
+      "true_ticker": "MS",
+      "guess_company": "Goldman Sachs",
+      "guess_ticker": "GS",
+      "confidence": 0.95,
+      "reasoning": "The mention of a 'Deputy Chief Financial Officer' and a 'modified territorial tax system' suggests a large financial institution, and the company's business description and industry jargon are consistent with Goldman Sachs.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001144204-18-000924",
+      "true_ticker": "IDXX",
+      "guess_company": "IDEXX Laboratories",
+      "guess_ticker": "IDXX",
+      "confidence": 0.95,
+      "reasoning": "The company's business description as a global leader in veterinary diagnostics, veterinary practice software, and water microbiology testing, along with its mention in the S&P 500 Index, matches IDEXX Laboratories' profile.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001628280-18-000148",
+      "true_ticker": "DOC",
+      "guess_company": "Consulate Health Care",
+      "guess_ticker": "unknown",
+      "confidence": 0.8,
+      "reasoning": "The mention of post-acute/skilled nursing facilities, leasehold interests, and a master lease suggests a healthcare services company, and Consulate Health Care is a well-known provider of these services.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001628280-18-000149",
+      "true_ticker": "EXC",
+      "guess_company": "Exelon Corporation",
+      "guess_ticker": "EXC",
+      "confidence": 0.95,
+      "reasoning": "The mention of ComEd, PECO, and other utility companies, as well as the reference to the Smart Grid law and the Tax Cuts and Jobs Act, suggests a large energy company with multiple subsidiaries, which is consistent with Exelon's business description.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001193125-18-003632",
+      "true_ticker": "SHW",
+      "guess_company": "Moody's Corporation",
+      "guess_ticker": "MCO",
+      "confidence": 0.95,
+      "reasoning": "The use of industry-specific jargon such as 'COBRA Continuation Period' and 'Benefit Plans' suggests a company in the financial services sector, and Moody's Corporation is a well-known provider of credit ratings and risk analysis services.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001605297-18-000002",
+      "true_ticker": "HRB",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "The anonymized filing does not provide sufficient information to identify the company.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000016918-18-000007",
+      "true_ticker": "STZ",
+      "guess_company": "Constellation Brands",
+      "guess_ticker": "STZ",
+      "confidence": 0.95,
+      "reasoning": "The mention of Modelo, Corona, and Pacifico beer brands, as well as the wine and spirits segment, and the financial scale and industry jargon used in the filing, are all consistent with Constellation Brands' business description.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001193125-18-004459",
+      "true_ticker": "MAT",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "Insufficient information to make an educated guess about the company",
+      "correct": false
+    },
+    {
+      "accession_no": "0001136893-18-000003",
+      "true_ticker": "FIS",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "Insufficient information to make an educated guess about the company",
+      "correct": false
+    },
+    {
+      "accession_no": "0001104659-18-000985",
+      "true_ticker": "TXT",
+      "guess_company": "Siemens AG",
+      "guess_ticker": "SI",
+      "confidence": 0.8,
+      "reasoning": "The mention of 'Bell' and 'Industrial segments' suggests a company with a diverse portfolio, and Siemens AG is a multinational conglomerate with a broad range of businesses, including industrial automation and power generation.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001013871-18-000003",
+      "true_ticker": "NRG",
+      "guess_company": "Public Service Enterprise Group",
+      "guess_ticker": "PEG",
+      "confidence": 0.8,
+      "reasoning": "The mention of wholesale generation fleet and optimization of the company's wholesale generation fleet suggests a utility company, and Public Service Enterprise Group is a large utility company with a significant presence in the US.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000018230-18-000021",
+      "true_ticker": "CAT",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "Insufficient information to make an educated guess about the company",
+      "correct": false
+    },
+    {
+      "accession_no": "0000743988-18-000005",
+      "true_ticker": "XLNX",
+      "guess_company": "Xilinx",
+      "guess_ticker": "XLNX",
+      "confidence": 0.95,
+      "reasoning": "The mention of programmable semiconductor products, the Programmable Platforms Group, and the reference to a global market leader in this field, along with the mention of a CEO succession plan, suggest a company in the field of programmable logic devices, which is a key area of focus for Xilinx.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001140361-18-001074",
+      "true_ticker": "BMY",
+      "guess_company": "Johnson & Johnson",
+      "guess_ticker": "JNJ",
+      "confidence": 0.95,
+      "reasoning": "The mention of 'pharmaceutical rebates and reimbursement, market factors, competitive product development and approvals' and 'pipeline products' suggests a large pharmaceutical company, and the writing style and industry jargon are consistent with Johnson & Johnson's SEC filings.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000701985-18-000003",
+      "true_ticker": "BBWI",
+      "guess_company": "L Brands",
+      "guess_ticker": "LB",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, segment names (Victoria's Secret, Bath & Body Works, PINK, La Senza, Henri Bendel), and products (swim and apparel categories) are all consistent with L Brands, a multinational specialty retailer.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000079879-18-000002",
+      "true_ticker": "PPG",
+      "guess_company": "Exelon Corporation",
+      "guess_ticker": "EXC",
+      "confidence": 0.8,
+      "reasoning": "The mention of 'Executive Vice President' and 'Chairman and Chief Executive Officer' titles, as well as the large separation payment and stock option vesting, suggest a large, established company in the energy sector, which is consistent with Exelon's profile.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001104659-18-001100",
+      "true_ticker": "REGN",
+      "guess_company": "Regeneron Pharmaceuticals",
+      "guess_ticker": "REGN",
+      "confidence": 0.95,
+      "reasoning": "The mention of cemiplimab (REGN2810), a product candidate targeting PD-1, and the involvement of Sanofi, a large pharmaceutical company, suggests a biotechnology or pharmaceutical company with a focus on oncology and immunology, which aligns with Regeneron's business description and product pipeline.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000885639-18-000002",
+      "true_ticker": "KSS",
+      "guess_company": "Kohl's Corporation",
+      "guess_ticker": "KSS",
+      "confidence": 1.0,
+      "reasoning": "The company's business description as an omnichannel retailer with over 1,100 stores, its mention of national and exclusive brands, and its focus on driving traffic and operational excellence are all consistent with the characteristics of Kohl's Corporation.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001144204-18-001183",
+      "true_ticker": "HOLX",
+      "guess_company": "Hologic",
+      "guess_ticker": "HOLX",
+      "confidence": 0.95,
+      "reasoning": "The company's focus on women's health, breast health, and molecular diagnostics, along with its product names such as Cynosure and GYN Surgical, match Hologic's business description and product portfolio.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000940944-18-000006",
+      "true_ticker": "DRI",
+      "guess_company": "Darden Restaurants",
+      "guess_ticker": "DRI",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, including the mention of Olive Garden, LongHorn Steakhouse, and other restaurant brands, as well as the scale of operations with over 1,700 restaurants and 175,000 employees, strongly suggests Darden Restaurants.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001193125-18-005082",
+      "true_ticker": "WBA",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "The anonymized filing does not provide sufficient information to identify the company.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001144204-18-001197",
+      "true_ticker": "ARNC",
+      "guess_company": "Alcoa Corporation",
+      "guess_ticker": "AA",
+      "confidence": 0.95,
+      "reasoning": "The mention of 'London Metal Exchange-based [COMPANY] prices' and the presence of a defined benefit pension plan suggest a metals or mining company, and Alcoa Corporation is a well-known aluminum producer.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-005083",
+      "true_ticker": "HUM",
+      "guess_company": "UnitedHealth Group",
+      "guess_ticker": "UNH",
+      "confidence": 0.95,
+      "reasoning": "The mention of Medicare Advantage, Stand-alone Prescription Drug Plans, and the impact of the Tax Reform Legislation on deferred tax assets, along with the scale of the company's operations and the use of industry-specific jargon, suggest a large health insurance company like UnitedHealth Group.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001555280-18-000002",
+      "true_ticker": "ZTS",
+      "guess_company": "Microsoft",
+      "guess_ticker": "MSFT",
+      "confidence": 0.95,
+      "reasoning": "The mention of 'repatriation tax' and 'GAAP net income' suggests a large multinational corporation, and Microsoft's business description and financial scale match this profile.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000062996-18-000003",
+      "true_ticker": "MAS",
+      "guess_company": "Sherwin-Williams Company",
+      "guess_ticker": "SHW",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, product portfolio, and segment names (Decorative Architectural Products and Plumbing Products) match Sherwin-Williams' business, and the mention of Behr paint, a well-known Sherwin-Williams brand, further supports this identification.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000310764-18-000002",
+      "true_ticker": "SYK",
+      "guess_company": "Medtronic",
+      "guess_ticker": "MDT",
+      "confidence": 0.95,
+      "reasoning": "The company's business description as a 'world's leading medical technology company' and its product segments (Orthopaedics, Medical and Surgical, and Neurotechnology and Spine) match Medtronic's business and product portfolio.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000920148-18-000006",
+      "true_ticker": "LH",
+      "guess_company": "LabCorp",
+      "guess_ticker": "LH",
+      "confidence": 0.95,
+      "reasoning": "The company's business description as a leading global life sciences company, its mention of Covance Drug Development and Chiltern, and its financial scale with net revenues of nearly $9.5 billion all point to LabCorp.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001071739-18-000008",
+      "true_ticker": "CNC",
+      "guess_company": "Biotech or Pharmaceutical company",
+      "guess_ticker": "unknown",
+      "confidence": 0.8,
+      "reasoning": "The mention of a J.P. Morgan Annual Healthcare conference and the discussion of tax reform's impact on guidance suggests a company in the healthcare or biotech industry, likely a large-cap company given the mention of quarterly and yearly earnings disclosure.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001521332-18-000004",
+      "true_ticker": "APTV",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "Insufficient information to make an educated guess about the company's identity",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-005221",
+      "true_ticker": "BAX",
+      "guess_company": "3M",
+      "guess_ticker": "MMM",
+      "confidence": 0.8,
+      "reasoning": "The use of industry jargon such as 'U.S. 401(k)' and 'Deferred Compensation Plan' suggests a large, established company with a complex compensation structure, which is consistent with 3M's business description.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000922224-18-000003",
+      "true_ticker": "PPL",
+      "guess_company": "LG&E and KU Energy LLC",
+      "guess_ticker": "LNT",
+      "confidence": 0.95,
+      "reasoning": "The company's business description as a regulated utility serving nearly 1.3 million customers, its mention of serving natural gas and electric customers, and its consistent ranking among the best companies for customer service in the United States, all point to a company in the energy sector, likely a utility company like LG&E and KU Energy LLC, which is a subsidiary of Louisville Gas and Electric Company (LNT).",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-005264",
+      "true_ticker": "PRGO",
+      "guess_company": "Catalent, Inc.",
+      "guess_ticker": "CTLT",
+      "confidence": 0.8,
+      "reasoning": "The filing mentions Catalent, Inc. as a company where the new CEO has served on the board of directors, and the writing style and industry jargon used are consistent with a large pharmaceutical company.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000896878-18-000002",
+      "true_ticker": "INTU",
+      "guess_company": "Intuit",
+      "guess_ticker": "INTU",
+      "confidence": 0.95,
+      "reasoning": "The mention of TurboTax, QuickBooks, and Mint, as well as the company's mission to 'Power Prosperity Around the World', strongly suggests Intuit, a well-known provider of financial management solutions.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000723125-18-000007",
+      "true_ticker": "MU",
+      "guess_company": "Micron Technology",
+      "guess_ticker": "MU",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, products (3D XPoint, NAND, DRAM, NOR Flash), and segment names (cloud, data center, networking, mobile) match Micron Technology's profile, and the writing style and industry jargon used are consistent with a large-cap memory and storage solutions company.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001104659-18-001245",
+      "true_ticker": "COP",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "The provided excerpt does not contain sufficient information to identify the company.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001137789-18-000004",
+      "true_ticker": "STX",
+      "guess_company": "Western Digital",
+      "guess_ticker": "WDC",
+      "confidence": 0.95,
+      "reasoning": "The mention of HDDs, SSDs, and NAND supply agreement with Toshiba Memory Corporation, along with the company's focus on digital storage solutions and cloud-based environments, suggests a company in the hard drive manufacturing industry, which is consistent with Western Digital's business description.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000078239-18-000002",
+      "true_ticker": "PVH",
+      "guess_company": "PVH Corp.",
+      "guess_ticker": "PVH",
+      "confidence": 0.95,
+      "reasoning": "The mention of iconic brands such as CALVIN KLEIN, TOMMY HILFIGER, and Speedo, along with the description of the company's history and financial scale, matches the profile of PVH Corp.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001047862-18-000021",
+      "true_ticker": "ED",
+      "guess_company": "Con Edison",
+      "guess_ticker": "ED",
+      "confidence": 0.95,
+      "reasoning": "The mention of Con Edison, Orange and Rockland Utilities, and a $2.25 billion Credit Agreement suggests a large utility company with a presence in New York, consistent with Con Edison's business description.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001104659-18-001257",
+      "true_ticker": "ARE",
+      "guess_company": "Boston Properties",
+      "guess_ticker": "BXP",
+      "confidence": 0.95,
+      "reasoning": "The company's business description as an urban office REIT with a focus on collaborative life science and technology campuses in AAA innovation cluster locations, and its mention of being an S&P 500 company, suggests a large and established real estate investment trust like Boston Properties.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001510295-18-000008",
+      "true_ticker": "MPC",
+      "guess_company": "Marathon Petroleum Corporation",
+      "guess_ticker": "MPC",
+      "confidence": 0.95,
+      "reasoning": "The mention of MPLX LP, a midstream business, and the reference to a 'Global Energy Conference' hosted by Goldman Sachs, along with the financial scale and industry jargon used, suggest Marathon Petroleum Corporation as the filer.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000874766-18-000003",
+      "true_ticker": "HIG",
+      "guess_company": "The Hartford",
+      "guess_ticker": "HIG",
+      "confidence": 0.95,
+      "reasoning": "The mention of property and casualty insurance, group benefits, and mutual funds, as well as the segment name 'Personal Lines', suggests a company that operates in the insurance industry, which aligns with The Hartford's business description.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000016918-18-000010",
+      "true_ticker": "STZ",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "Insufficient information to make an educated guess about the company",
+      "correct": false
+    },
+    {
+      "accession_no": "0001613103-18-000002",
+      "true_ticker": "MDT",
+      "guess_company": "Microsoft",
+      "guess_ticker": "MSFT",
+      "confidence": 0.85,
+      "reasoning": "The mention of a 'Program Management Office', 'Enterprise Excellence Program', and 'operating margin improvement' suggests a large, complex technology company with a focus on process optimization, similar to Microsoft's efforts to streamline its operations and improve efficiency.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000101778-18-000019",
+      "true_ticker": "MRO",
+      "guess_company": "ExxonMobil",
+      "guess_ticker": "XOM",
+      "confidence": 0.95,
+      "reasoning": "The mention of 'intangible drilling costs' and 'bonus depreciation on tangible property expenditures' suggests a company in the oil and gas industry, and ExxonMobil is one of the largest and most well-known companies in this sector.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-006041",
+      "true_ticker": "AGN",
+      "guess_company": "Allergan",
+      "guess_ticker": "AGN",
+      "confidence": 0.95,
+      "reasoning": "The mention of pharmaceutical products such as RESTASIS, ESTRACE, NAMENDA XR, DELZICOL, and ACZONE, as well as the reference to the 'Base Erosion Anti-Abuse Tax', suggests a company in the pharmaceutical industry with a global presence, which matches Allergan's business description.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000707549-18-000006",
+      "true_ticker": "LRCX",
+      "guess_company": "Applied Materials",
+      "guess_ticker": "AMAT",
+      "confidence": 0.95,
+      "reasoning": "The presence of specific job titles such as Chief Financial Officer and the mention of stock options and RSUs suggest a technology company, and Applied Materials is a well-known semiconductor equipment manufacturer.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-006150",
+      "true_ticker": "BBWI",
+      "guess_company": "L Brands",
+      "guess_ticker": "LB",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, product lines (Victoria's Secret, PINK, Bath & Body Works, La Senza, and Henri Bendel), and industry jargon (mall traffic, store remodels, and direct channel businesses) are all consistent with L Brands, a leading American multinational specialty retailer.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001243786-18-000005",
+      "true_ticker": "MOS",
+      "guess_company": "Mosaic Company",
+      "guess_ticker": "MOS",
+      "confidence": 0.95,
+      "reasoning": "The mention of phosphate and potash operations, as well as the specific locations of facilities and projects in Brazil and Canada, suggests a company in the fertilizer industry, which aligns with Mosaic Company's business description.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001137789-18-000009",
+      "true_ticker": "STX",
+      "guess_company": "Western Digital",
+      "guess_ticker": "WDC",
+      "confidence": 0.95,
+      "reasoning": "The mention of HDDs, SSDs, and NAND supply agreement with Toshiba Memory Corporation, along with the company's focus on digital storage solutions and cloud-based environments, suggests a company in the hard drive manufacturing industry, which is consistent with Western Digital's business description.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000950159-18-000018",
+      "true_ticker": "CI",
+      "guess_company": "UnitedHealth Group",
+      "guess_ticker": "UNH",
+      "confidence": 0.95,
+      "reasoning": "The mention of 'disability business', 'guaranty fund assessment', and 'Medicare' suggests a healthcare company, and the scale of financial projections ($2.115 billion to $2.165 billion) and the mention of 'J.P. Morgan Healthcare Conference' further supports this identification.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001104659-18-001347",
+      "true_ticker": "HP",
+      "guess_company": "Hess Corporation",
+      "guess_ticker": "HES",
+      "confidence": 0.95,
+      "reasoning": "The company's focus on land drilling, its emphasis on 'super-spec' rigs, and its mention of 'FlexRig' and 'Family of Solutions' products, as well as its mention of 'Seventy Seven Energy' (SVNT), a company that was acquired by Hess in 2017, all point to Hess Corporation as the likely filer.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-006486",
+      "true_ticker": "SRE",
+      "guess_company": "Energy Transfer LP",
+      "guess_ticker": "ET",
+      "confidence": 0.95,
+      "reasoning": "The mention of Oncor Electric Delivery Company LLC and the involvement of Energy Future Holdings Corp. in the merger agreement suggests a connection to the energy and utilities sector, which is consistent with Energy Transfer LP's business description.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-006507",
+      "true_ticker": "AIZ",
+      "guess_company": "Travelers Companies",
+      "guess_ticker": "TRV",
+      "confidence": 0.95,
+      "reasoning": "The use of Bermuda and Cayman Islands as jurisdictions for subsidiaries, the mention of a 'bridge loan facility' and 'senior unsecured bridge loan facility', and the scale of the transaction ($860 million) are all consistent with the business practices and financial scale of Travelers Companies.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000885725-18-000003",
+      "true_ticker": "BSX",
+      "guess_company": "Boston Scientific",
+      "guess_ticker": "BSX",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, segment names (e.g., Interventional Cardiology, Cardiac Rhythm Management), and products (e.g., pacemakers, stents) are consistent with Boston Scientific's medical device business, and the financial scale and industry jargon used in the filing are also typical of a large medical device company.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001101215-18-000002",
+      "true_ticker": "ADS",
+      "guess_company": "Epsilon",
+      "guess_ticker": "EPSN",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, mention of card services, loyalty programs, and data-driven marketing solutions, as well as its segment names (Epsilon, Conversant, LoyaltyOne) and products (AIR MILES, BrandLoyalty), suggest a strong connection to Epsilon, a leading global provider of data-driven marketing and loyalty solutions.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-006579",
+      "true_ticker": "PDCO",
+      "guess_company": "Henry Schein",
+      "guess_ticker": "HSIC",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, industry jargon (e.g., 'Practice Management Software', 'CAD/CAM market transition'), and segment names (e.g., 'Animal Health') suggest a dental and animal health products and services company, which aligns with Henry Schein's business.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000310764-18-000006",
+      "true_ticker": "SYK",
+      "guess_company": "Zimmer Biomet",
+      "guess_ticker": "ZBH",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, segment names (Orthopaedics, Medical and Surgical, and Neurotechnology and Spine), and products (Mako robots) are consistent with Zimmer Biomet's profile, and the writing style and industry jargon used are typical of medical technology companies.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000764622-18-000003",
+      "true_ticker": "PNW",
+      "guess_company": "Arizona Public Service Company",
+      "guess_ticker": "AZP",
+      "confidence": 0.95,
+      "reasoning": "The mention of the Arizona Corporation Commission, the state of Arizona, and the company's name in the filing, along with the industry jargon and the fact that it's a public service company, strongly suggest that the company is Arizona Public Service Company, a subsidiary of Pinnacle West Capital Corporation.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000047111-18-000002",
+      "true_ticker": "HSY",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "Insufficient information to make an educated guess about the company",
+      "correct": false
+    },
+    {
+      "accession_no": "0001144215-18-000009",
+      "true_ticker": "AYI",
+      "guess_company": "Acuity Brands",
+      "guess_ticker": "AYI",
+      "confidence": 0.95,
+      "reasoning": "The mention of LED-based products, IoT-enabled business solutions, and Atrius platform, along with the industry jargon and financial scale, suggests a company in the lighting and building management solutions industry, which matches Acuity Brands' business description.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000920148-18-000008",
+      "true_ticker": "LH",
+      "guess_company": "LabCorp",
+      "guess_ticker": "LH",
+      "confidence": 0.95,
+      "reasoning": "The company's business description as a leading global life sciences company, its financial scale, industry jargon such as 'Companion Diagnostics', segment names like 'Diagnostics' and 'Drug Development', and products like 'Xcellerate' and 'LaunchPad' all point to LabCorp.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000092380-18-000006",
+      "true_ticker": "LUV",
+      "guess_company": "American Airlines Group",
+      "guess_ticker": "AAL",
+      "confidence": 0.95,
+      "reasoning": "The use of industry jargon such as 'revenue passenger miles (RPMs)', 'available seat miles (ASMs)', and 'load factor' suggests an airline, and the scale of the traffic statistics and the mention of a 'relevant quarter' operating revenue per ASM (RASM) increase points towards a major US airline like American Airlines Group.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-006983",
+      "true_ticker": "COST",
+      "guess_company": "Costco Wholesale Corporation",
+      "guess_ticker": "COST",
+      "confidence": 0.95,
+      "reasoning": "The mention of 'Western Canada Region' and 'Mexico' as a division, along with the titles of 'Senior Vice President and General Manager' and 'President and Chief Executive Officer', suggests a large retail company with a strong presence in North America, which is consistent with Costco's business model.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001193125-18-007217",
+      "true_ticker": "PNR",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "Insufficient information to make an educated guess about the company's identity",
+      "correct": false
+    },
+    {
+      "accession_no": "0000107815-18-000077",
+      "true_ticker": "WEC",
+      "guess_company": "WEC Energy Group",
+      "guess_ticker": "WEC",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, financial scale, and industry jargon, such as 'regulated utility', 'rate base', and 'ROE', are consistent with WEC Energy Group, a large Midwestern utility company.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001193125-18-007247",
+      "true_ticker": "JWN",
+      "guess_company": "Nordstrom",
+      "guess_ticker": "JWN",
+      "confidence": 0.95,
+      "reasoning": "The mention of 'Nordstromrack.com/HauteLook', 'Trunk Club', and 'Nordstrom' brand names, along with the description of a leading fashion retailer with a large number of stores and e-commerce platforms, strongly suggests Nordstrom as the company.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000927628-18-000008",
+      "true_ticker": "COF",
+      "guess_company": "Capital One",
+      "guess_ticker": "COF",
+      "confidence": 0.95,
+      "reasoning": "The mention of 'U.S. Card business', 'Auto Finance', and 'small business lending line of business' suggests a financial services company, and Capital One is a well-known bank with a significant presence in these areas.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001104659-18-001479",
+      "true_ticker": "ARE",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "Insufficient information to make an educated guess about the company",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-007258",
+      "true_ticker": "UAL",
+      "guess_company": "United Airlines Holdings, Inc.",
+      "guess_ticker": "UAL",
+      "confidence": 0.95,
+      "reasoning": "The filing mentions 'United Airlines, Inc.' as a subsidiary of the holding company, and the business description and financial metrics provided are consistent with a major airline company.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000080424-18-000002",
+      "true_ticker": "PG",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "Insufficient information to identify the company",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-007267",
+      "true_ticker": "WFC",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "The anonymized filing does not provide sufficient information to identify the company.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-007291",
+      "true_ticker": "OKE",
+      "guess_company": "ONEOK",
+      "guess_ticker": "OKE",
+      "confidence": 0.95,
+      "reasoning": "The company's business description as a midstream energy service provider, its mention of natural gas liquids (NGL) systems, and its inclusion in the S&P 500 index all point to ONEOK.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001193125-18-007298",
+      "true_ticker": "WMT",
+      "guess_company": "Wal-Mart Stores, Inc.",
+      "guess_ticker": "WMT",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, industry jargon, and segment names (e.g., 'Dollar Tender Offer' and 'Sterling Tender Offer') are consistent with a large retail corporation, and the writing style and financial scale suggest a well-established company like Wal-Mart.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001039684-18-000002",
+      "true_ticker": "OKE",
+      "guess_company": "ONEOK",
+      "guess_ticker": "OKE",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, industry jargon (e.g., 'natural gas liquids (NGL) systems', 'gathering, processing, storage and transportation of natural gas'), and segment names (e.g., 'Mid-Continent, Williston, Permian and Rocky Mountain regions') are consistent with ONEOK's operations as a midstream energy company.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000100885-18-000026",
+      "true_ticker": "UNP",
+      "guess_company": "Apple Inc.",
+      "guess_ticker": "AAPL",
+      "confidence": 0.8,
+      "reasoning": "The mention of a '21% federal corporate tax rate' and the significant financial impact of the Tax Cuts and Jobs Act suggest a large, multinational technology company like Apple Inc.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000098246-18-000023",
+      "true_ticker": "TIF",
+      "guess_company": "Tiffany & Co.",
+      "guess_ticker": "TIF",
+      "confidence": 0.95,
+      "reasoning": "The mention of jewelry, watches, leather goods, eyewear, and fragrance, as well as the specific position of Senior Vice President - Strategy and Business Development, suggests a luxury goods company with a diversified product portfolio.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000833444-18-000002",
+      "true_ticker": "JCI",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "The anonymized filing does not provide sufficient information to identify the company.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-007385",
+      "true_ticker": "FLS",
+      "guess_company": "unknown",
+      "guess_ticker": "unknown",
+      "confidence": 0.0,
+      "reasoning": "Insufficient information to make an educated guess about the company",
+      "correct": false
+    },
+    {
+      "accession_no": "0001038357-18-000003",
+      "true_ticker": "PXD",
+      "guess_company": "ExxonMobil",
+      "guess_ticker": "XOM",
+      "confidence": 0.95,
+      "reasoning": "The mention of 'intangible drilling costs' and 'bonus depreciation on personal tangible property expenditures' suggests a company in the oil and gas industry, which is consistent with ExxonMobil's business description.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001014473-18-000002",
+      "true_ticker": "VRSN",
+      "guess_company": "VeriSign, Inc.",
+      "guess_ticker": "VRSN",
+      "confidence": 0.95,
+      "reasoning": "The mention of the .web gTLD and the registry operator, along with the involvement of ICANN, suggests a company that operates in the domain name registration industry, which is consistent with VeriSign's business.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000006201-18-000002",
+      "true_ticker": "AAL",
+      "guess_company": "American Airlines Group",
+      "guess_ticker": "AAL",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, financial scale, and industry jargon (e.g., TRASM, CASM, mainline, regional, narrowbody retrofit program) are consistent with a major US airline, and the segment names (e.g., Mainline, Regional, Fleet) and products (e.g., A321, B738, B788) are specific to American Airlines Group.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001157523-18-000053",
+      "true_ticker": "SIG",
+      "guess_company": "Tiffany & Co. was not a good fit, but a similar company is a good guess",
+      "guess_ticker": "TIF",
+      "confidence": 0.8,
+      "reasoning": "The company's description as the world's largest retailer of diamond jewelry, its segment names (Sterling Jewelers, Zale division), and its products (bridal and diamond fashion jewelry) are similar to those of Signet Jewelers, which operates the Sterling Jewelers division and owns brands such as Kay Jewelers and Zales.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001140536-18-000003",
+      "true_ticker": "WLTW",
+      "guess_company": "KPMG's parent company is not mentioned, but the CFO's name and title are similar to those of a large accounting firm, so I'm guessing it might be KPMG's parent company, KPMG Group Limited, but that is not a US public company. However, another large accounting firm, KPMG's competitor, is a US public company.",
+      "guess_ticker": "K",
+      "confidence": 0.8,
+      "reasoning": "The CFO's name and title, Michael J. Burwell, are similar to those of a large accounting firm, and the company's address and phone number are in London, which suggests a multinational company, but the company is registered in Ireland, which is a common location for large multinational companies, and the company's business description and industry jargon are consistent with a large accounting firm.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001140536-18-000004",
+      "true_ticker": "WLTW",
+      "guess_company": "Willis Towers Watson",
+      "guess_ticker": "WLTW",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, segment names (e.g., Benefits Delivery and Administration, Human Capital and Benefits), and industry jargon (e.g., ASC 606, pro-rata Treaty Reinsurance) are all consistent with Willis Towers Watson's profile as a global advisory, broking and solutions company.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001035267-18-000003",
+      "true_ticker": "ISRG",
+      "guess_company": "Intuitive Surgical",
+      "guess_ticker": "ISRG",
+      "confidence": 0.95,
+      "reasoning": "The company's business description as a global technology leader in robotic-assisted, minimally invasive surgery, the mention of the da Vinci Surgical System, and the financial scale of $892 million in revenue for the quarter all point to Intuitive Surgical.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000106640-18-000004",
+      "true_ticker": "WHR",
+      "guess_company": "Trane Technologies plc",
+      "guess_ticker": "TT",
+      "confidence": 0.95,
+      "reasoning": "The mention of Embraco compressor business and the restructuring actions related to streamlining operations in this segment, along with the industry jargon and financial scale, suggest a company in the HVAC industry, which is consistent with Trane Technologies' business description.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001628280-18-000277",
+      "true_ticker": "LEN",
+      "guess_company": "Lennar Corporation",
+      "guess_ticker": "LEN",
+      "confidence": 0.95,
+      "reasoning": "The mention of 'homebuilding operating earnings', 'gross margin on home sales', 'S,G&A expenses', and 'home deliveries' suggests a company in the homebuilding industry, and Lennar Corporation is one of the largest homebuilders in the US.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001104659-18-001664",
+      "true_ticker": "IRM",
+      "guess_company": "Iron Mountain Incorporated",
+      "guess_ticker": "IRM",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, mention of data centers, colocation services, and secure shredding, as well as its large real estate network and global presence, are all consistent with Iron Mountain's business model and industry segment.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000936340-18-000030",
+      "true_ticker": "DTE",
+      "guess_company": "Exelon",
+      "guess_ticker": "EXC",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, segment names (e.g., Power & Industrial Projects, Gas Storage & Pipelines), and industry jargon (e.g., FERC, MPSC, NRC) are consistent with Exelon's operations as a large utility company with a diverse portfolio of energy assets.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000764622-18-000005",
+      "true_ticker": "PNW",
+      "guess_company": "Arizona Public Service Company",
+      "guess_ticker": "AZP",
+      "confidence": 0.95,
+      "reasoning": "The company's business description as a vertically integrated, regulated electric utility in the southwest United States, its mention of the Palo Verde Generating Station, and its discussion of grid modernization and renewable energy initiatives are all consistent with the operations of Arizona Public Service Company.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001633917-18-000013",
+      "true_ticker": "PYPL",
+      "guess_company": "CenturyLink, Inc.",
+      "guess_ticker": "CTL",
+      "confidence": 0.8,
+      "reasoning": "The mention of 'Chief Enterprise Services Officer' and 'separation agreement' suggests a large telecommunications company, and CenturyLink's business description and industry jargon match this description.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-008285",
+      "true_ticker": "CCI",
+      "guess_company": "American Tower Corporation",
+      "guess_ticker": "AMT",
+      "confidence": 0.95,
+      "reasoning": "The company's business description mentions owning, operating, and leasing cell towers and fiber supporting small cells and fiber solutions, which matches American Tower Corporation's business model.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000827052-18-000026",
+      "true_ticker": "EIX",
+      "guess_company": "San Diego Gas & Electric Company",
+      "guess_ticker": "SDG&E",
+      "confidence": 0.95,
+      "reasoning": "The mention of San Onofre, a nuclear power plant, and the involvement of the California Public Utilities Commission (CPUC) in the filing, along with the company's name and location, point to San Diego Gas & Electric Company, a subsidiary of Sempra Energy.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000875159-18-000003",
+      "true_ticker": "XL",
+      "guess_company": "Catlin Group",
+      "guess_ticker": "CRT",
+      "confidence": 0.95,
+      "reasoning": "The mention of 'Catlin' in the business description and press release, along with the segment names 'Insurance and Reinsurance' and the products 'property, casualty and specialty products', strongly suggests that the company is Catlin Group.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-008311",
+      "true_ticker": "BRK-B",
+      "guess_company": "Berkshire Hathaway",
+      "guess_ticker": "BRK.A, BRK.B",
+      "confidence": 0.95,
+      "reasoning": "The mention of Warren E. Buffett, Chairman and CEO, and the company's diverse business activities including insurance and reinsurance, utilities and energy, freight rail transportation, finance, manufacturing, retailing and services, are strong indicators of Berkshire Hathaway's identity.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001110803-18-000003",
+      "true_ticker": "ILMN",
+      "guess_company": "Illumina",
+      "guess_ticker": "ILMN",
+      "confidence": 0.95,
+      "reasoning": "The company's focus on next-generation sequencing, mention of specific products like NovaSeq, NextSeq, and MiSeq, and its presence in the genomics and life sciences industry, particularly in the areas of consumer genomics, clinical markets, and gene editing, are all indicative of Illumina's business.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001683168-18-000110",
+      "true_ticker": "DAL",
+      "guess_company": "Delta Air Lines",
+      "guess_ticker": "DAL",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, financial scale, and industry jargon (e.g., 'CASM-Ex', 'TRASM', 'Branded Fares initiatives') are consistent with a major US airline, and the segment names ('Mainline', 'Regional', 'Atlantic', 'Pacific', 'Latin America') and products ('A321neo', 'C Series') match Delta's operations.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000922224-18-000006",
+      "true_ticker": "PPL",
+      "guess_company": "Evercore ISI Utility Conference participant, likely a utility company",
+      "guess_ticker": "unknown",
+      "confidence": 0.6,
+      "reasoning": "The mention of a utility conference and the discussion of tax reform and its impacts on earnings suggests a company in the utility sector, likely a large one given the mention of a conference and a specific earnings forecast.",
+      "correct": false
+    },
+    {
+      "accession_no": "0001193125-18-008608",
+      "true_ticker": "REG",
+      "guess_company": "Regency Centers Corporation",
+      "guess_ticker": "REG",
+      "confidence": 0.95,
+      "reasoning": "The company's business description as a real estate investment trust (REIT) specializing in shopping centers, the mention of NAREIT FFO and Core FFO, and the specific details about property acquisitions and dispositions all point to Regency Centers Corporation.",
+      "correct": true
+    },
+    {
+      "accession_no": "0001193125-18-008613",
+      "true_ticker": "PEG",
+      "guess_company": "Public Service Enterprise Group Incorporated",
+      "guess_ticker": "PEG",
+      "confidence": 0.95,
+      "reasoning": "The mention of 'PSE&G' and 'Power' as subsidiaries, along with the description of the company's business as a utility company, suggests Public Service Enterprise Group Incorporated.",
+      "correct": true
+    },
+    {
+      "accession_no": "0000720005-18-000007",
+      "true_ticker": "RJF",
+      "guess_company": "Microsoft",
+      "guess_ticker": "MSFT",
+      "confidence": 0.85,
+      "reasoning": "The mention of a 'territorial tax system' and 'deemed repatriated earnings of foreign subsidiaries' suggests a multinational technology company with significant foreign operations, which aligns with Microsoft's business model.",
+      "correct": false
+    },
+    {
+      "accession_no": "0000914208-18-000008",
+      "true_ticker": "IVZ",
+      "guess_company": "Invesco",
+      "guess_ticker": "IVZ",
+      "confidence": 0.95,
+      "reasoning": "The company's business description, mention of PowerShares QQQs, and segment names such as Total Equity, Fixed Income, Balanced, Money Market, and Alternatives are all consistent with Invesco's investment management business.",
+      "correct": true
+    }
+  ]
+}

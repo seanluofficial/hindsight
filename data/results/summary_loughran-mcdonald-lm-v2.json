@@ -1,13 +1,13 @@
 {
-  "model_id": "loughran-mcdonald-lm-v1",
-  "git_sha": "b2133c171889de831097b6664bb553a6411665f7-dirty",
-  "exported_at_utc": "2026-08-02T15:31:44.938497+00:00",
+  "model_id": "loughran-mcdonald-lm-v2",
+  "git_sha": "525b7b88c6c2cc658471726ce2866a64286a4d40-dirty",
+  "exported_at_utc": "2026-08-03T18:23:58.262400+00:00",
   "table_counts": {
     "filings": 6720,
     "universe": 886,
     "prices": 156987,
-    "predictions": 6720,
-    "evaluations": 58842
+    "predictions": 13630,
+    "evaluations": 118413
   },
   "anonymized_filings": 6720,
   "filing_span": {

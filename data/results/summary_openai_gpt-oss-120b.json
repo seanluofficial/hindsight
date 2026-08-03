@@ -1,0 +1,21 @@
+{
+  "model_id": "openai/gpt-oss-120b",
+  "git_sha": "525b7b88c6c2cc658471726ce2866a64286a4d40-dirty",
+  "exported_at_utc": "2026-08-03T18:24:00.587634+00:00",
+  "table_counts": {
+    "filings": 6720,
+    "universe": 886,
+    "prices": 156987,
+    "predictions": 13630,
+    "evaluations": 118413
+  },
+  "anonymized_filings": 6720,
+  "filing_span": {
+    "first": "2018-01-02T12:52:14+00:00",
+    "last": "2018-12-31T22:12:16+00:00"
+  },
+  "trades": 243,
+  "exclusions": {
+    "no_price_coverage_for_ticker": 9
+  }
+}
