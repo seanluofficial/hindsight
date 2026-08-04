@@ -13,7 +13,8 @@ from __future__ import annotations
 import json
 import sqlite3
 import sys
-from collections.abc import Hashable
+from collections.abc import Hashable, Iterator
+from contextlib import contextmanager
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -35,26 +36,50 @@ LEXICON_PREFIX = "loughran-mcdonald"
 # --------------------------------------------------------------------------
 # Data access
 # --------------------------------------------------------------------------
-@st.cache_resource
-def connection() -> sqlite3.Connection:
+@contextmanager
+def connection() -> Iterator[sqlite3.Connection]:
+    """A fresh, short-lived SQLite connection.
+
+    Deliberately NOT cached across reruns. Streamlit serves each interaction on a worker
+    thread, and a SQLite connection may only be used on the thread that created it — a
+    cached connection raises `ProgrammingError` the moment a second thread touches it.
+
+    Opening per call is cheap here because every reader is wrapped in `st.cache_data`, so
+    the queries run once per cache window rather than once per rerun.
+    """
     conn = db.connect()
-    db.migrate(conn)
-    return conn
+    try:
+        db.migrate(conn)
+        yield conn
+    finally:
+        conn.close()
 
 
 @st.cache_data(ttl=300)
 def table_counts() -> dict[str, int]:
-    return db.table_counts(connection())
+    with connection() as conn:
+        return db.table_counts(conn)
 
 
 @st.cache_data(ttl=300)
 def available_models() -> list[str]:
-    return [
-        r[0]
-        for r in connection().execute(
-            "SELECT model_id, COUNT(*) n FROM predictions GROUP BY model_id ORDER BY n DESC"
+    with connection() as conn:
+        return [
+            r[0]
+            for r in conn.execute(
+                "SELECT model_id, COUNT(*) n FROM predictions GROUP BY model_id ORDER BY n DESC"
+            )
+        ]
+
+
+@st.cache_data(ttl=300)
+def anonymized_count() -> int:
+    with connection() as conn:
+        return int(
+            conn.execute("SELECT COUNT(*) FROM filings WHERE anon_version IS NOT NULL").fetchone()[
+                0
+            ]
         )
-    ]
 
 
 RESULTS_DIR = config.DATA_DIR / "results"
@@ -82,7 +107,8 @@ def load_trades(model_id: str) -> list[returns.Trade]:
     """
     if has_database():
         manifest = RunManifest("dashboard", model_id=model_id)
-        return returns.evaluate_all(connection(), model_id, manifest)
+        with connection() as conn:
+            return returns.evaluate_all(conn, model_id, manifest)
 
     safe = model_id.replace("/", "_")
     path = RESULTS_DIR / f"trades_{safe}.csv.gz"
@@ -118,15 +144,37 @@ def bundled_summary(model_id: str) -> dict[str, Any]:
 
 @st.cache_data(ttl=300)
 def filings_overview() -> pd.DataFrame:
-    return pd.read_sql_query(
-        """
-        SELECT substr(accepted_at_utc, 1, 7) AS month,
-               COUNT(*) AS filings,
-               COUNT(DISTINCT ticker) AS tickers
-          FROM filings GROUP BY month ORDER BY month
-        """,
-        connection(),
-    )
+    with connection() as conn:
+        return pd.read_sql_query(
+            """
+            SELECT substr(accepted_at_utc, 1, 7) AS month,
+                   COUNT(*) AS filings,
+                   COUNT(DISTINCT ticker) AS tickers
+              FROM filings GROUP BY month ORDER BY month
+            """,
+            conn,
+        )
+
+
+@st.cache_data(ttl=300)
+def live_predictions() -> pd.DataFrame:
+    with connection() as conn:
+        return pd.read_sql_query(
+            """
+            SELECT p.created_at, f.ticker, p.direction, p.probability, p.rationale
+              FROM predictions p JOIN filings f ON f.accession_no = p.accession_no
+             WHERE p.run_mode = 'live' ORDER BY p.created_at DESC LIMIT 200
+            """,
+            conn,
+        )
+
+
+@st.cache_data(ttl=300)
+def evaluation_exclusions(model_id: str) -> list[tuple[str, int]]:
+    manifest = RunManifest("dashboard-exclusions", model_id=model_id)
+    with connection() as conn:
+        returns.evaluate_all(conn, model_id, manifest)
+    return manifest.exclusions.most_common()
 
 
 # --------------------------------------------------------------------------
@@ -377,11 +425,7 @@ def render_research() -> None:
 
     if has_database():
         counts = table_counts()
-        anonymized = (
-            connection()
-            .execute("SELECT COUNT(*) FROM filings WHERE anon_version IS NOT NULL")
-            .fetchone()[0]
-        )
+        anonymized = anonymized_count()
     else:
         summary = bundled_summary(model_id)
         counts = summary.get("table_counts", {})
@@ -520,9 +564,7 @@ def render_research() -> None:
         "longer returns prices."
     )
     if has_database():
-        manifest = RunManifest("dashboard-exclusions", model_id=model_id)
-        returns.evaluate_all(connection(), model_id, manifest)
-        exclusions = manifest.exclusions.most_common()
+        exclusions = evaluation_exclusions(model_id)
     else:
         exclusions = sorted(
             bundled_summary(model_id).get("exclusions", {}).items(),
@@ -568,26 +610,15 @@ def render_track_record() -> None:
     if not has_database():
         st.info("Live predictions are not part of the exported results bundle.")
         return
-    live = (
-        connection()
-        .execute("SELECT COUNT(*) FROM predictions WHERE run_mode = 'live'")
-        .fetchone()[0]
-    )
-    if live == 0:
+    live_rows = live_predictions()
+    if live_rows.empty:
         st.info(
             "No live predictions yet. Phase 8 polls EDGAR on a schedule and scores new "
             "filings through the identical code path."
         )
         return
     st.dataframe(
-        pd.read_sql_query(
-            """
-            SELECT p.created_at, f.ticker, p.direction, p.probability, p.rationale
-              FROM predictions p JOIN filings f ON f.accession_no = p.accession_no
-             WHERE p.run_mode = 'live' ORDER BY p.created_at DESC LIMIT 200
-            """,
-            connection(),
-        ),
+        live_rows,
         hide_index=True,
         use_container_width=True,
     )

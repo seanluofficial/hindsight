@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import sqlite3
+import threading
+from pathlib import Path
 
 import pytest
 
@@ -161,6 +163,54 @@ class TestConstraints:
                 (pid, cost, 0.02 - cost / 10000),
             )
         assert conn.execute("SELECT COUNT(*) FROM evaluations").fetchone()[0] == 3
+
+
+class TestThreadSafety:
+    """Streamlit serves each interaction on a worker thread.
+
+    SQLite connections are bound to the thread that created them, so a cached connection
+    raises ProgrammingError the moment a second thread touches it — which is exactly how
+    the dashboard broke. The supported pattern is a fresh connection per unit of work.
+    """
+
+    def test_sharing_one_connection_across_threads_fails(self, tmp_path: Path) -> None:
+        conn = db.connect(tmp_path / "shared.db")
+        db.migrate(conn)
+        errors: list[Exception] = []
+
+        def use_it() -> None:
+            try:
+                conn.execute("SELECT COUNT(*) FROM filings").fetchone()
+            except Exception as exc:  # noqa: BLE001
+                errors.append(exc)
+
+        thread = threading.Thread(target=use_it)
+        thread.start()
+        thread.join()
+        conn.close()
+        assert errors and isinstance(errors[0], sqlite3.ProgrammingError)
+
+    def test_fresh_connection_per_thread_works(self, tmp_path: Path) -> None:
+        path = tmp_path / "per_thread.db"
+        db.connect(path).close()
+        results: list[int] = []
+        errors: list[Exception] = []
+
+        def query() -> None:
+            try:
+                with db.session(path) as conn:
+                    results.append(db.table_counts(conn)["filings"])
+            except Exception as exc:  # noqa: BLE001
+                errors.append(exc)
+
+        threads = [threading.Thread(target=query) for _ in range(6)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        assert not errors
+        assert results == [0] * 6
 
 
 class TestPrices:
