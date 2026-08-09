@@ -132,9 +132,12 @@ from a power calculation. Detecting a 2-point edge over a coin flip at 80% power
 across 2010–2024 answers every pre-registered hypothesis with essentially the same power,
 and 180 months of coverage still leaves ~28 filings per monthly rebalance.
 
-So the recommended spend is **~$5 on `deepseek-v4-pro` for a 5,000-filing stratified
-sample**, or ~$15 for 15,000 if a thicker monthly cross-section is wanted. Note DeepSeek's
-docs currently warn of a significant price rise, so this arithmetic has a shelf life.
+Those are list rates; measured against real filings the workload runs ~2,555 input and ~645
+output tokens each, so the per-filing cost is **~$0.00054 on `v4-flash`** and ~$0.00167 on
+`v4-pro`. A 5,000-filing sample is therefore **~$2.70** or ~$8.40 respectively.
+
+`v4-flash` is the default. Note DeepSeek's docs currently warn of a significant price rise,
+so this arithmetic has a shelf life.
 
 Sampling is only legitimate if fixed in advance: the stratification (by year and item type),
 the target size, and the random seed all go into `PREREGISTRATION.md` **before** the run.

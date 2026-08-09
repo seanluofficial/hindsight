@@ -155,6 +155,10 @@ class TestBudgetCeiling:
         unknown = llm.DeepSeekBackend(model_id="deepseek-something-new")
         assert unknown.pricing.input_per_mtok == 0.435
 
+    def test_default_is_the_cheaper_model(self) -> None:
+        assert llm.DeepSeekBackend().model_id == "deepseek-v4-flash"
+        assert llm.DeepSeekBackend().pricing.input_per_mtok == 0.14
+
 
 class TestPinnedModel:
     def test_default_model_is_pinned_not_an_alias(self) -> None:

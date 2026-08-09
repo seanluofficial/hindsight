@@ -293,7 +293,10 @@ class DeepSeekBackend:
 
     URL = "https://api.deepseek.com/chat/completions"
 
-    def __init__(self, model_id: str = "deepseek-v4-pro", pricing: Pricing | None = None) -> None:
+    # v4-flash by default: measured at ~$0.00054/filing against v4-pro's ~$0.00167, so the
+    # 5,000-filing sample costs ~$2.70 rather than ~$8.36. Pass --model deepseek-v4-pro to
+    # trade cost for capability; the model used is recorded on every prediction row.
+    def __init__(self, model_id: str = "deepseek-v4-flash", pricing: Pricing | None = None) -> None:
         self.model_id = model_id
         default = {
             "deepseek-v4-flash": Pricing(input_per_mtok=0.14, output_per_mtok=0.28),
