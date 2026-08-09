@@ -136,11 +136,27 @@ def main(argv: list[str] | None = None) -> int:
         f"prices {before.prices_covered}/{before.prices_needed}"
     )
 
-    # 1. Prices. Hourly batches until the monthly cap; safe to interrupt.
+    # 1. Prices, started in the background and left to run.
+    #
+    # This stage is ~90% sleeping: Tiingo's free tier allows 50 symbols/hour, so covering
+    # the remaining universe means nine hourly batches of which nine minutes is work. Run
+    # sequentially it would block the filings ingest for most of a day for no reason —
+    # the two hit entirely different APIs with independent rate limits, and nothing in the
+    # filings stage depends on prices. Prices are not needed until evaluation.
+    price_job: subprocess.Popen[bytes] | None = None
     if not args.skip_prices and not before.prices_complete:
-        run(["scripts/backfill_prices.py"], "prices (free tier, hourly)")
+        log("--- prices (background, free tier, hourly batches)")
+        price_log = (config.LOG_DIR / "backfill_prices.log").open("wb")
+        price_job = subprocess.Popen(
+            [sys.executable, "scripts/backfill_prices.py"],
+            cwd=REPO,
+            stdout=price_log,
+            stderr=subprocess.STDOUT,
+        )
+        log(f"    running as pid {price_job.pid}; progress in logs/backfill_prices.log")
 
-    # 2. Filings for any missing study year.
+    # 2. Filings for any missing study year. This is the critical path: the sample cannot
+    # be drawn, and therefore nothing can be scored, until the study period is ingested.
     for year in before.years_missing:
         run(["scripts/run_ingest.py", "filings", "--year", year], f"filings {year}")
 
@@ -171,6 +187,14 @@ def main(argv: list[str] | None = None) -> int:
             ],
             f"score (<= ${args.budget:.2f})",
         )
+
+    # Wait for the background price job, which by now has usually been running for as long
+    # as everything else took. Nothing above depended on it; evaluation does.
+    if price_job is not None:
+        if price_job.poll() is None:
+            log("--- waiting for the background price backfill to reach its monthly cap")
+        price_job.wait()
+        log(f"    price backfill finished (exit {price_job.returncode})")
 
     end = state()
     log("")
