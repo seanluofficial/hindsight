@@ -189,6 +189,8 @@ def cmd_llm(args: argparse.Namespace) -> int:
     import hindsight.score.llm as llm
 
     backend = llm.make_backend(args.provider)
+    if args.model:
+        backend.model_id = args.model
     with (
         RunManifest(
             "llm",
@@ -200,7 +202,9 @@ def cmd_llm(args: argparse.Namespace) -> int:
         db.session() as conn,
     ):
         rows = select_filings(conn, args.limit, need_anon=True)
-        client = llm.ScoringClient(backend=backend)
+        client = llm.ScoringClient(backend=backend, budget_usd=args.budget)
+        if args.budget:
+            print(f"  spend ceiling: ${args.budget:.2f} (run halts cleanly at the limit)")
         print(f"  scoring {len(rows):,} filings with {backend.model_id} (temperature 0)")
         client.score_filings(
             conn, rows, manifest, run_mode=args.mode, throttle_seconds=args.throttle
@@ -234,7 +238,15 @@ def main(argv: list[str] | None = None) -> int:
     p_llm = sub.add_parser("llm", help="score with the LLM")
     p_llm.add_argument("--limit", type=int)
     p_llm.add_argument("--mode", choices=["historical", "live"], default="historical")
-    p_llm.add_argument("--provider", choices=["groq", "gemini", "anthropic"], default="groq")
+    p_llm.add_argument(
+        "--provider", choices=["groq", "deepseek", "gemini", "anthropic"], default="groq"
+    )
+    p_llm.add_argument("--model", help="override the provider's default model")
+    p_llm.add_argument(
+        "--budget",
+        type=float,
+        help="halt cleanly once estimated spend reaches this many USD",
+    )
     p_llm.add_argument(
         "--throttle",
         type=float,

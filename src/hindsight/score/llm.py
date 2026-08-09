@@ -68,6 +68,10 @@ class DailyQuotaExhaustedError(RuntimeError):
     """The provider's per-day token budget is spent. Stop; resume tomorrow."""
 
 
+class BudgetExceededError(RuntimeError):
+    """A spend ceiling was reached. Stop before it costs more than intended."""
+
+
 @dataclass(frozen=True)
 class Pricing:
     """USD per million tokens, pinned beside the model so a swap forces a price change."""
@@ -273,6 +277,70 @@ class GroqBackend:
         return text, int(usage.get("prompt_tokens", 0)), int(usage.get("completion_tokens", 0))
 
 
+class DeepSeekBackend:
+    """DeepSeek via its OpenAI-compatible endpoint.
+
+    Cheap enough to make the full pre-registered study affordable: at roughly 1,900 input
+    and 100 output tokens per filing, `deepseek-v4-flash` costs about $0.0003 per filing
+    and `deepseek-v4-pro` about $0.0009. Pricing is per million tokens, cache-miss rate:
+
+        deepseek-v4-flash   $0.14 in / $0.28 out
+        deepseek-v4-pro     $0.435 in / $0.87 out
+
+    Unlike the free tiers, there is no daily token wall, so a run is bounded by wall-clock
+    time and the spend cap rather than by quota.
+    """
+
+    URL = "https://api.deepseek.com/chat/completions"
+
+    def __init__(self, model_id: str = "deepseek-v4-pro", pricing: Pricing | None = None) -> None:
+        self.model_id = model_id
+        default = {
+            "deepseek-v4-flash": Pricing(input_per_mtok=0.14, output_per_mtok=0.28),
+            "deepseek-v4-pro": Pricing(input_per_mtok=0.435, output_per_mtok=0.87),
+        }
+        # Unknown model: fall back to the dearer rate so a cost estimate is never optimistic.
+        self.pricing = pricing or default.get(model_id, default["deepseek-v4-pro"])
+        self.session = requests.Session()
+
+    def _api_key(self) -> str:
+        key = os.getenv("DEEPSEEK_API_KEY", "").strip()
+        if not key:
+            raise RuntimeError(
+                "DEEPSEEK_API_KEY is not set. Create one at https://platform.deepseek.com/api_keys "
+                "and add it to .env"
+            )
+        return key
+
+    def complete(self, system: str, user: str) -> tuple[str, int, int]:
+        response = self.session.post(
+            self.URL,
+            headers={
+                "Authorization": f"Bearer {self._api_key()}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": self.model_id,
+                "temperature": config.LLM_TEMPERATURE,
+                "max_tokens": MAX_TOKENS,
+                "response_format": {"type": "json_object"},
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
+            },
+            timeout=120,
+        )
+        if response.status_code == 429:
+            retry_after = response.headers.get("retry-after")
+            raise RateLimitedError(float(retry_after) if retry_after else 20.0)
+        response.raise_for_status()
+        payload = response.json()
+        text = payload["choices"][0]["message"]["content"] or ""
+        usage = payload.get("usage", {})
+        return text, int(usage.get("prompt_tokens", 0)), int(usage.get("completion_tokens", 0))
+
+
 class AnthropicBackend:
     """Claude via the official SDK. Used when an ANTHROPIC_API_KEY is available."""
 
@@ -307,11 +375,13 @@ class AnthropicBackend:
 def make_backend(provider: str = "groq") -> Backend:
     if provider == "groq":
         return GroqBackend()
+    if provider == "deepseek":
+        return DeepSeekBackend()
     if provider == "gemini":
         return GeminiBackend()
     if provider == "anthropic":
         return AnthropicBackend()
-    raise ValueError(f"unknown provider {provider!r}; expected groq, gemini or anthropic")
+    raise ValueError(f"unknown provider {provider!r}; expected groq, deepseek, gemini or anthropic")
 
 
 # --------------------------------------------------------------------------
@@ -324,6 +394,7 @@ class ScoringClient:
         self,
         backend: Backend | None = None,
         prompt_version: str = prompts.PROMPT_VERSION,
+        budget_usd: float | None = None,
     ) -> None:
         self.backend = backend or make_backend()
         self.model_id = self.backend.model_id
@@ -332,6 +403,15 @@ class ScoringClient:
         self.output_tokens = 0
         self.calls = 0
         self.rate_limit_waits = 0
+        # Hard ceiling on spend. A long unattended run against a paid API should not be
+        # able to cost more than intended because a prompt grew or a retry loop misbehaved.
+        self.budget_usd = budget_usd
+
+    def check_budget(self) -> None:
+        if self.budget_usd is not None and self.estimated_cost_usd >= self.budget_usd:
+            raise BudgetExceededError(
+                f"spent ${self.estimated_cost_usd:.4f} of ${self.budget_usd:.2f} budget"
+            )
 
     @property
     def estimated_cost_usd(self) -> float:
@@ -412,7 +492,15 @@ class ScoringClient:
             if anon.was_truncated(row["anonymized_text"]):
                 manifest.count("truncated_to_cap")
             try:
+                self.check_budget()
                 prediction, raw = self.score_one(text, row["item_codes"] or "")
+            except BudgetExceededError as over:
+                remaining = len(rows) - i + 1
+                manifest.count("halted_budget")
+                manifest.count("filings_unattempted", remaining)
+                manifest.error(f"{over} — stopped with {remaining} filings unattempted.")
+                log.warning("budget ceiling reached; %d filings unattempted", remaining)
+                break
             except DailyQuotaExhaustedError as exhausted:
                 # Stop cleanly. Filings never attempted are NOT parse failures, and
                 # counting them as such would report the provider's budget as the model's

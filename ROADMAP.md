@@ -22,12 +22,12 @@ plainly and then lays out what would move each.
 | Robustness splits (§12) | specified, not run |
 | Live out-of-sample (§15) | not started |
 
-The binding constraint has never been engineering, and it is **not money either** — see C1.
-It is throughput: free API tiers allow ~100 filings/day, and a local model ~1,700/day. The
-fix is to stop trying to score all ~100,000 filings and sample ~5,000 instead, which is
-statistically equivalent for every hypothesis in the pre-registration.
+The binding constraint has never been engineering, and it is barely money — see C1. Free
+tiers allow ~100 filings/day and a local model ~1,700/day, while DeepSeek scores a
+statistically sufficient 5,000-filing sample for about **$5**.
 
-**Budget for everything below: $0.**
+**Budget for everything below: $0–15.** The only item that genuinely needs more is
+volatility prediction (P2), which requires options history, and it is deliberately last.
 
 ---
 
@@ -112,22 +112,36 @@ date ranges — and a single request returns a symbol's entire 2010–2024 histo
 study needs ~886 symbols, so it is two months of free quota, not a subscription. 512 are
 already stored.
 
-**Scoring is free, and the real currency is patience.** Two routes, both measured on this
+**Scoring costs either patience or about the price of a sandwich.** Per filing this
+workload is ~1,900 input and ~100 output tokens. Options, with throughput measured on this
 machine rather than estimated:
 
-| Route | Throughput | 5,000 filings | Notes |
+| Route | Rate | 5,000 filings | 100,000 filings (full census) |
 |---|---|---|---|
-| Groq free tier, `gpt-oss-120b` | ~100/day (200k tokens/day) | ~50 nights | Strongest free model; unattended nightly job |
-| Local Ollama, `qwen2.5:3b` | ~52 s/filing | ~72 hours | Unlimited, offline, no quota at all |
+| Groq free, `gpt-oss-120b` | 100/day | ~50 nights, $0 | not feasible |
+| Local Ollama, `qwen2.5:3b` | 52 s/filing | ~72 h, $0 | ~60 days, $0 |
+| **DeepSeek `v4-flash`** | $0.14/$0.28 per Mtok | **$1.50** | **~$30** |
+| **DeepSeek `v4-pro`** | $0.435/$0.87 per Mtok | **$4.60** | ~$91 |
 
-**And the study does not need 100,000 filings.** That number came from a census instinct,
-not from a power calculation. To detect a 2-point edge over a coin flip at 80% power needs
-**~4,900 observations**; a 3-point edge needs ~2,180. A *stratified random sample* of ~5,000
-filings across 2010–2024 answers every pre-registered hypothesis with essentially the same
-power as scoring all 100,000, at 5% of the effort.
+At these prices the interesting question stops being "can we afford it?" and becomes "do we
+even need a census?" — and the answer is no.
 
-Sampling is only legitimate if it is fixed in advance: the stratification (by year and item
-type), the target size, and the seed all go into `PREREGISTRATION.md` **before** the run.
+**The study does not need 100,000 filings.** That number came from a census instinct, not
+from a power calculation. Detecting a 2-point edge over a coin flip at 80% power needs
+**~4,900 observations**; a 3-point edge needs ~2,180. A stratified random sample of ~5,000
+across 2010–2024 answers every pre-registered hypothesis with essentially the same power,
+and 180 months of coverage still leaves ~28 filings per monthly rebalance.
+
+So the recommended spend is **~$5 on `deepseek-v4-pro` for a 5,000-filing stratified
+sample**, or ~$15 for 15,000 if a thicker monthly cross-section is wanted. Note DeepSeek's
+docs currently warn of a significant price rise, so this arithmetic has a shelf life.
+
+Sampling is only legitimate if fixed in advance: the stratification (by year and item type),
+the target size, and the random seed all go into `PREREGISTRATION.md` **before** the run.
+
+`run_score.py llm` takes `--budget N`, which halts the run cleanly once estimated spend
+reaches N dollars and records the untouched filings as unattempted. An unattended paid run
+should not be able to cost more than intended because a prompt grew or a retry misbehaved.
 
 **Why first:** "I pre-registered a study, ran it across 15 years, and reported that my
 hypothesis failed across every subgroup" is a *better* interview story than a suspicious

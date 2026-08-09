@@ -125,6 +125,37 @@ class TestDailyQuotaIsNotAMinuteLimit:
         assert llm.RateLimitedError(300.0).is_daily_quota
 
 
+class TestBudgetCeiling:
+    """A long unattended run against a paid API must not be able to overspend."""
+
+    @staticmethod
+    def _client(budget: float, spent_input: int) -> llm.ScoringClient:
+        client = llm.ScoringClient(
+            backend=llm.DeepSeekBackend(model_id="deepseek-v4-pro"), budget_usd=budget
+        )
+        client.input_tokens = spent_input
+        return client
+
+    def test_under_budget_passes(self) -> None:
+        # 1M input tokens at $0.435/M is well under a $10 ceiling.
+        self._client(10.0, 1_000_000).check_budget()
+
+    def test_over_budget_raises(self) -> None:
+        # 50M input tokens at $0.435/M is $21.75, over a $10 ceiling.
+        with pytest.raises(llm.BudgetExceededError, match="budget"):
+            self._client(10.0, 50_000_000).check_budget()
+
+    def test_no_budget_never_raises(self) -> None:
+        client = llm.ScoringClient(backend=llm.DeepSeekBackend())
+        client.input_tokens = 10_000_000_000
+        client.check_budget()
+
+    def test_unknown_model_uses_the_dearer_rate(self) -> None:
+        """A cost estimate must never be optimistic about an unrecognised model."""
+        unknown = llm.DeepSeekBackend(model_id="deepseek-something-new")
+        assert unknown.pricing.input_per_mtok == 0.435
+
+
 class TestPinnedModel:
     def test_default_model_is_pinned_not_an_alias(self) -> None:
         """A `-latest` alias would silently change models between runs (invariant 4)."""
