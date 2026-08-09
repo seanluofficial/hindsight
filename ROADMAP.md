@@ -22,8 +22,12 @@ plainly and then lays out what would move each.
 | Robustness splits (§12) | specified, not run |
 | Live out-of-sample (§15) | not started |
 
-The binding constraint has never been engineering. It is that free API tiers cap out at
-~85 filings/day, and the pre-registered study needs ~100,000.
+The binding constraint has never been engineering, and it is **not money either** — see C1.
+It is throughput: free API tiers allow ~100 filings/day, and a local model ~1,700/day. The
+fix is to stop trying to score all ~100,000 filings and sample ~5,000 instead, which is
+statistically equivalent for every hypothesis in the pre-registration.
+
+**Budget for everything below: $0.**
 
 ---
 
@@ -63,8 +67,9 @@ Direction is close to a coin flip for almost everyone. **Magnitude is far more p
 some 8-K types reliably move a stock, regardless of which way. That is tradeable through
 options (straddles), and it is a far easier target.
 
-**Effort:** medium — needs an options data source. **Payoff:** genuinely the most likely
-route to a positive result in this repo.
+**Effort:** medium, and this is the one idea with a real cost attached — free options
+history is scarce. Defer it until the free work is exhausted. **Payoff:** genuinely the
+most likely route to a positive result in this repo.
 
 ### P3. Condition on item type
 
@@ -94,16 +99,45 @@ P1's surprise measure, this is a documented effect rather than a hopeful one.
 
 These do not need a profitable result. Several are *stronger* without one.
 
-### C1. Finish the pre-registered study (Phases 5–6) — **do this first**
+### C1. Finish the pre-registered study (Phases 5–6) — **do this first, and it is free**
 
 Scale to 2010–2024 and run every §12 robustness split: market-cap terciles, three time
 periods, item type, and the contamination-excluded subset.
 
-**Cost:** Tiingo paid tier ~$10/month for ~800 symbols; LLM scoring roughly $50–200 for
-~100k filings depending on model.
+**Cost: $0.** An earlier draft of this file put it at $60–210. That was wrong, and the
+correction matters enough to record:
+
+**Prices are free.** Tiingo's free tier caps *unique symbols per month*, not requests or
+date ranges — and a single request returns a symbol's entire 2010–2024 history. The whole
+study needs ~886 symbols, so it is two months of free quota, not a subscription. 512 are
+already stored.
+
+**Scoring is free, and the real currency is patience.** Two routes, both measured on this
+machine rather than estimated:
+
+| Route | Throughput | 5,000 filings | Notes |
+|---|---|---|---|
+| Groq free tier, `gpt-oss-120b` | ~100/day (200k tokens/day) | ~50 nights | Strongest free model; unattended nightly job |
+| Local Ollama, `qwen2.5:3b` | ~52 s/filing | ~72 hours | Unlimited, offline, no quota at all |
+
+**And the study does not need 100,000 filings.** That number came from a census instinct,
+not from a power calculation. To detect a 2-point edge over a coin flip at 80% power needs
+**~4,900 observations**; a 3-point edge needs ~2,180. A *stratified random sample* of ~5,000
+filings across 2010–2024 answers every pre-registered hypothesis with essentially the same
+power as scoring all 100,000, at 5% of the effort.
+
+Sampling is only legitimate if it is fixed in advance: the stratification (by year and item
+type), the target size, and the seed all go into `PREREGISTRATION.md` **before** the run.
+
 **Why first:** "I pre-registered a study, ran it across 15 years, and reported that my
 hypothesis failed across every subgroup" is a *better* interview story than a suspicious
 positive. It also closes the sample-size caveat currently attached to every LLM number.
+
+**One caution on the local route.** In a 3-filing smoke test, `qwen2.5:3b` returned
+`up @ 0.75` on all three. That may be coincidence at n=3, but a model that answers
+identically regardless of input has no signal to measure and would produce a null for
+trivial reasons. Check output variance on ~50 filings before committing 72 hours to it, and
+prefer a 7–8B model if the machine tolerates the slowdown.
 
 ### C2. Statistical rigour
 
@@ -161,14 +195,15 @@ Cheap signals that a SWE screener reads directly off the repo:
 
 ## Suggested order
 
-| Phase | Work | Why here |
-|---|---|---|
-| 1 | C5 engineering surface, C3 live trading started | Cheap; C3's value accrues with calendar time, so start the clock |
-| 2 | C1 full 2010–2024 run + §12 splits | Closes every sample-size caveat at once |
-| 3 | C2 statistical rigour | Small effort, largest credibility gain |
-| 4 | C4 contamination follow-up | Turns the headline into a defensible result |
-| 5 | P1 surprise measure, pre-registered | The only profit idea likely to change the answer |
-| 6 | P4 drift, then P2 volatility | Build on P1 |
+| Phase | Work | Cost | Why here |
+|---|---|---|---|
+| 1 | C5 engineering surface, C3 live trading started | $0 | Cheap; C3's value accrues with calendar time, so start the clock immediately |
+| 2 | C1 sampled 2010–2024 run + §12 splits | $0, ~50 nights unattended | Closes every sample-size caveat at once |
+| 3 | C2 statistical rigour | $0 | Small effort, largest credibility gain |
+| 4 | C4 contamination follow-up | $0 | Turns the headline into a defensible result |
+| 5 | P1 surprise measure, pre-registered | $0 | The only profit idea likely to change the answer |
+| 6 | P4 drift | $0 | Builds on P1 |
+| 7 | P2 volatility | needs options data | The only item here worth paying for, and only after the rest |
 
 ---
 
