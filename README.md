@@ -11,6 +11,7 @@ including a null result — not a profitable trading system.
 - [`PREREGISTRATION.md`](PREREGISTRATION.md) — the specification. Locked. It wins any disagreement.
 - [`CLAUDE.md`](CLAUDE.md) — build brief, invariants, architecture.
 - [`DEVIATIONS.md`](DEVIATIONS.md) — append-only log of departures and open questions.
+- [`ROADMAP.md`](ROADMAP.md) — what remains, and an honest read on whether this can make money.
 
 ## Status
 
