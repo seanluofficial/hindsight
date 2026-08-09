@@ -109,6 +109,45 @@ CLAUDE.md fixes the schema at five tables.
 
 ---
 
+## 2026-08-09 — sampling, fixed in advance
+
+### D16. The study runs on a frozen stratified sample of ~5,000 filings, not the full census
+
+§3 defines the population as all 8-K filings by in-universe companies, 2010–2024. That is
+~100,000 filings, and scoring them is neither affordable nor necessary.
+
+**Not necessary, and this is the important half.** Detecting a 2-point edge over a coin
+flip at 80% power requires ~4,900 observations; a 3-point edge requires ~2,180. A sample of
+5,000 answers every hypothesis in the pre-registration with essentially the same power as
+the full census, while still leaving ~28 filings per monthly rebalance across 180 months.
+Spending 20× more to score everything would buy almost no additional power.
+
+**Design, fixed here before any filing is scored:**
+
+| | |
+|---|---|
+| Size | 5,000 |
+| Strata | year × item-type group (earnings 2.02, management 5.02, agreement 1.01/1.02, other) |
+| Allocation | proportional to each stratum's share of the population, largest-remainder |
+| Seed | `config.RANDOM_SEED` = 20260727 |
+| Assignment | a filing joins the first group it matches, so strata are disjoint |
+
+Strata match §12's required item-type split, so the sample preserves a reportable
+cross-section rather than over-weighting whichever category is rarest.
+
+**The sample is drawn once and frozen** to `data/study_sample.csv`, which is committed.
+Scoring reads only that file, and `draw_sample.py` refuses to overwrite an existing sample
+without `--force`. This is the part that makes sampling legitimate: a sample redrawn per
+run, or drawn after glancing at results, is indistinguishable afterwards from one chosen to
+flatter them. Freezing it makes the selection auditable and the run reproducible.
+
+**The dictionary baseline continues to run on the full population as well.** It is free, so
+there is no reason not to, and reporting it both ways shows whether the sample is
+representative — if the sampled and full-population baselines disagree, the sample is the
+suspect, and that is worth knowing before drawing any conclusion about the LLM.
+
+---
+
 ## 2026-08-02 — scoring: model choice and a text cap
 
 ### D12. Scoring text is capped at 12,000 characters, for both scorers
