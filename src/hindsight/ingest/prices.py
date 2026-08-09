@@ -24,7 +24,7 @@ from __future__ import annotations
 import json
 import logging
 import sqlite3
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Any
 
 import requests
@@ -179,15 +179,55 @@ def upsert_prices(conn: sqlite3.Connection, ticker: str, bars: list[dict[str, An
     return len(rows)
 
 
+# How far stored data may fall short of a window edge and still count as covering it.
+# Absorbs weekends, holidays and the gap between an index-membership date and the first
+# actual trade, without being loose enough to accept a year of missing history.
+_COVERAGE_TOLERANCE_DAYS = 21
+
+
 def covered_tickers(conn: sqlite3.Connection, start: date, end: date) -> set[str]:
-    """Tickers that already have at least one bar inside the window."""
-    return {
-        r[0]
-        for r in conn.execute(
-            "SELECT DISTINCT ticker FROM prices WHERE date BETWEEN ? AND ?",
-            (start.isoformat(), end.isoformat()),
-        )
-    }
+    """Tickers whose stored history actually *spans* the requested window.
+
+    Emphatically not "has at least one bar in the window", which was the original test and
+    was wrong in the case that matters most: extending a window. Having fetched 2018 for
+    512 tickers, asking for 2010-2024 would report all 512 as covered, skip them, and
+    silently leave fourteen years unfetched — while consuming a month of vendor quota
+    fetching nothing.
+
+    Window edges are clamped to index membership, because a company that joined in 2015 or
+    was acquired in 2019 cannot have prices outside that span and must not be re-fetched
+    forever chasing history that does not exist.
+    """
+    rows = conn.execute(
+        """
+        SELECT p.ticker,
+               MIN(p.date) AS first_bar,
+               MAX(p.date) AS last_bar,
+               MIN(u.start_date) AS member_from,
+               MAX(COALESCE(u.end_date, '9999-12-31')) AS member_to
+          FROM prices p LEFT JOIN universe u ON u.ticker = p.ticker
+         GROUP BY p.ticker
+        """
+    ).fetchall()
+
+    tolerance = timedelta(days=_COVERAGE_TOLERANCE_DAYS)
+    covered: set[str] = set()
+    for row in rows:
+        first = date.fromisoformat(row["first_bar"])
+        last = date.fromisoformat(row["last_bar"])
+        member_from = date.fromisoformat(row["member_from"]) if row["member_from"] else start
+        member_to_raw = row["member_to"] or "9999-12-31"
+        member_to = end if member_to_raw == "9999-12-31" else date.fromisoformat(member_to_raw)
+
+        need_from = max(start, member_from)
+        need_to = min(end, member_to)
+        if need_from > need_to:
+            # Never a member during this window; nothing to fetch.
+            covered.add(row["ticker"])
+            continue
+        if first <= need_from + tolerance and last >= need_to - tolerance:
+            covered.add(row["ticker"])
+    return covered
 
 
 def ingest_prices(

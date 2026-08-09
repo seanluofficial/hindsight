@@ -13,6 +13,10 @@ from hindsight import config
 from hindsight.ingest import http, prices
 from hindsight.manifest import RunManifest
 
+# The shared BARS fixture covers exactly these two days. Coverage now means "spans the
+# window", so tests that assert a ticker is covered must ask about this window.
+BARS_WINDOW = (date(2018, 2, 1), date(2018, 2, 2))
+
 
 class TestCachePaths:
     def test_mirrors_remote_path_so_cache_is_browsable(
@@ -122,9 +126,62 @@ class TestUpsert:
 
     def test_covered_tickers_supports_resume(self, conn: sqlite3.Connection) -> None:
         prices.upsert_prices(conn, "AAPL", self.BARS)
-        covered = prices.covered_tickers(conn, date(2018, 1, 1), date(2018, 12, 31))
-        assert covered == {"AAPL"}
+        # The fixture holds 2018-02-01..02, so it spans that window and no other.
+        assert prices.covered_tickers(conn, BARS_WINDOW[0], BARS_WINDOW[1]) == {"AAPL"}
         assert prices.covered_tickers(conn, date(2019, 1, 1), date(2019, 12, 31)) == set()
+
+
+class TestCoverageSpansTheWindow:
+    """Coverage means the window is *spanned*, not merely touched.
+
+    The original test was "has at least one bar in the window", which broke exactly when
+    it mattered: after fetching 2018 for 512 tickers, asking for 2010-2024 reported all
+    512 covered and would have burned a month of vendor quota fetching nothing.
+    """
+
+    @staticmethod
+    def _bars(first: str, last: str) -> list[dict[str, object]]:
+        return [
+            {
+                "date": f"{d}T00:00:00.000Z",
+                "open": 1,
+                "high": 1,
+                "low": 1,
+                "close": 1,
+                "adjClose": 1,
+                "volume": 1,
+            }
+            for d in (first, last)
+        ]
+
+    def test_partial_history_is_not_covered(self, conn: sqlite3.Connection) -> None:
+        prices.upsert_prices(conn, "AAPL", self._bars("2018-01-02", "2018-12-31"))
+        assert prices.covered_tickers(conn, date(2010, 1, 1), date(2024, 12, 31)) == set()
+
+    def test_full_history_is_covered(self, conn: sqlite3.Connection) -> None:
+        prices.upsert_prices(conn, "AAPL", self._bars("2010-01-04", "2024-12-30"))
+        assert prices.covered_tickers(conn, date(2010, 1, 1), date(2024, 12, 31)) == {"AAPL"}
+
+    def test_missing_the_start_is_not_covered(self, conn: sqlite3.Connection) -> None:
+        prices.upsert_prices(conn, "AAPL", self._bars("2015-01-02", "2024-12-30"))
+        assert prices.covered_tickers(conn, date(2010, 1, 1), date(2024, 12, 31)) == set()
+
+    def test_delisted_ticker_is_covered_to_its_delisting(self, conn: sqlite3.Connection) -> None:
+        """A company acquired in 2016 must not be re-fetched forever chasing 2017-2024."""
+        conn.execute(
+            "INSERT INTO universe (ticker, cik, start_date, end_date) VALUES (?,?,?,?)",
+            ("YHOO", 1011006, "2010-01-01", "2016-06-20"),
+        )
+        prices.upsert_prices(conn, "YHOO", self._bars("2010-01-04", "2016-06-17"))
+        assert "YHOO" in prices.covered_tickers(conn, date(2010, 1, 1), date(2024, 12, 31))
+
+    def test_late_joiner_is_covered_from_its_admission(self, conn: sqlite3.Connection) -> None:
+        conn.execute(
+            "INSERT INTO universe (ticker, cik, start_date, end_date) VALUES (?,?,?,?)",
+            ("TSLA", 1318605, "2020-12-21", None),
+        )
+        prices.upsert_prices(conn, "TSLA", self._bars("2020-12-21", "2024-12-30"))
+        assert "TSLA" in prices.covered_tickers(conn, date(2010, 1, 1), date(2024, 12, 31))
 
 
 class TestCoverageReport:
@@ -268,7 +325,7 @@ class TestRateLimitIsNotMistakenForMissingData:
             manifest,
             fetcher=self.QuotaFetcher(allow=1),  # only one request succeeds
         )
-        covered = prices.covered_tickers(conn, date(2018, 1, 1), date(2018, 12, 31))
+        covered = prices.covered_tickers(conn, *BARS_WINDOW)
         assert covered == {config.BENCHMARK_TICKER}
 
     def test_run_halts_instead_of_marking_the_rest_unavailable(
@@ -313,7 +370,7 @@ class TestRateLimitIsNotMistakenForMissingData:
             manifest,
             fetcher=self.QuotaFetcher(allow=2),  # type: ignore[arg-type]
         )
-        assert len(prices.covered_tickers(conn, date(2018, 1, 1), date(2018, 12, 31))) == 2
+        assert len(prices.covered_tickers(conn, *BARS_WINDOW)) == 2
 
     def test_resume_skips_what_already_landed(self, conn: sqlite3.Connection) -> None:
         for attempt in range(2):
@@ -321,15 +378,14 @@ class TestRateLimitIsNotMistakenForMissingData:
             prices.ingest_prices(
                 conn,
                 ["AAA", "BBB", "CCC", "DDD"],
-                date(2018, 1, 1),
-                date(2018, 12, 31),
+                *BARS_WINDOW,
                 manifest,
                 fetcher=self.QuotaFetcher(allow=2),  # type: ignore[arg-type]
             )
             if attempt == 1:
                 assert manifest.counts["tickers_already_covered"] == 2
         # Two runs of two tickers each covers all four plus the benchmark.
-        assert len(prices.covered_tickers(conn, date(2018, 1, 1), date(2018, 12, 31))) == 4
+        assert len(prices.covered_tickers(conn, *BARS_WINDOW)) == 4
 
 
 class TestNoCoverageIsRecorded:
