@@ -45,6 +45,55 @@ _WANTED_DOC_TYPES = re.compile(r"^(8-K|EX-99(\.\d+)?)$", re.IGNORECASE)
 _ACCEPTANCE_RE = re.compile(r"<ACCEPTANCE-DATETIME>[ \t]*(\d{14})")
 _PERIOD_RE = re.compile(r"<PERIOD>\s*(\d{8})")
 _ITEMS_RE = re.compile(r"<ITEMS>\s*([^\r\n<]+)")
+
+# Older submissions spell items out instead of numbering them: the complete submission text
+# carries `ITEM INFORMATION: Other Events` where recent filings carry `<ITEMS>8.01`. Without
+# this mapping every pre-2014 filing collapses into the "other" bucket, which would corrupt
+# both the §12 item-type robustness split and the sampling strata built on it.
+_ITEM_INFORMATION_RE = re.compile(r"ITEM INFORMATION:\s*([^\r\n]+)")
+_ITEM_DESCRIPTIONS: tuple[tuple[str, str], ...] = (
+    ("results of operations", "2.02"),
+    ("departure of directors", "5.02"),
+    ("election of directors", "5.02"),
+    ("appointment of certain officers", "5.02"),
+    ("entry into a material definitive agreement", "1.01"),
+    ("termination of a material definitive agreement", "1.02"),
+    ("bankruptcy or receivership", "1.03"),
+    ("completion of acquisition", "2.01"),
+    ("creation of a direct financial obligation", "2.03"),
+    ("triggering events", "2.04"),
+    ("costs associated with exit", "2.05"),
+    ("material impairments", "2.06"),
+    ("notice of delisting", "3.01"),
+    ("unregistered sales", "3.02"),
+    ("material modification to rights", "3.03"),
+    ("changes in registrant", "4.01"),
+    ("non-reliance", "4.02"),
+    ("changes in control", "5.01"),
+    ("amendments to articles", "5.03"),
+    ("temporary suspension of trading", "5.04"),
+    ("amendment to registrant", "5.05"),
+    ("submission of matters to a vote", "5.07"),
+    ("shareholder director nominations", "5.08"),
+    ("regulation fd", "7.01"),
+    ("financial statements and exhibits", "9.01"),
+    # Last: "other events" would otherwise shadow more specific phrases.
+    ("other events", "8.01"),
+)
+
+
+def item_codes_from_descriptions(header: str) -> list[str]:
+    """Map spelled-out `ITEM INFORMATION:` lines back to their numeric 8-K codes."""
+    codes: set[str] = set()
+    for description in _ITEM_INFORMATION_RE.findall(header):
+        lowered = description.strip().lower()
+        for phrase, code in _ITEM_DESCRIPTIONS:
+            if phrase in lowered:
+                codes.add(code)
+                break
+    return sorted(codes)
+
+
 _DOCUMENT_RE = re.compile(r"<DOCUMENT>(.*?)(?=<DOCUMENT>|</SEC-DOCUMENT>|\Z)", re.S)
 _FIELD_RE = re.compile(r"<(TYPE|SEQUENCE|FILENAME|DESCRIPTION)>([^\r\n<]*)")
 
@@ -255,6 +304,9 @@ def parse_filing_headers(html: str, accession_no: str, cik: int) -> FilingMetada
             period = None
 
     items = sorted({i.strip() for i in _ITEMS_RE.findall(text) if i.strip()})
+    if not items:
+        # Older filings spell the items out rather than numbering them.
+        items = item_codes_from_descriptions(text)
 
     documents: list[FilingDocument] = []
     for block in _DOCUMENT_RE.finditer(text):
@@ -301,8 +353,56 @@ def parse_company_names(html: str) -> tuple[str, list[str]]:
 def fetch_company_names(
     cik: int, accession_no: str, fetcher: CachedFetcher
 ) -> tuple[str, list[str]]:
-    """Names for one filing. Reads the cached header, so this costs no requests."""
-    return parse_company_names(fetcher.get_text(headers_url(cik, accession_no)))
+    """Names for one filing, from whichever metadata source exists.
+
+    Prefers the complete submission, which exists for every filing. `-index-headers.html`
+    is only generated for recent ones and 404s across 2010-2013, so relying on it alone
+    left older filings with no company name and therefore nothing to redact.
+    """
+    try:
+        return parse_company_names(fetcher.get_text(submission_url(cik, accession_no)))
+    except Exception:  # noqa: BLE001
+        return parse_company_names(fetcher.get_text(headers_url(cik, accession_no)))
+
+
+def submission_url(cik: int, accession_no: str) -> str:
+    """The complete submission text file: SGML header plus every document, inline."""
+    return f"{filing_dir_url(cik, accession_no)}/{accession_no}.txt"
+
+
+# Inside the full submission each document is delimited and carries its text inline.
+_SUBMISSION_DOC_RE = re.compile(r"<DOCUMENT>(.*?)</DOCUMENT>", re.S)
+_DOC_TEXT_RE = re.compile(r"<TEXT>(.*?)</TEXT>", re.S)
+
+
+def parse_submission(
+    raw: str, accession_no: str, cik: int
+) -> tuple[FilingMetadata, dict[str, str]]:
+    """Parse a complete submission into (metadata, {filename: document text}).
+
+    Preferred over `-index-headers.html`, which EDGAR only generates for recent filings —
+    it 404s across 2010-2013 even though the directory listing claims it exists, which
+    silently cost every filing in those years. The full submission has existed for every
+    filing since EDGAR began, and carries the header and the documents together, so one
+    request replaces the header fetch plus one fetch per exhibit.
+    """
+    meta = parse_filing_headers(raw, accession_no, cik)
+
+    bodies: dict[str, str] = {}
+    for block in _SUBMISSION_DOC_RE.finditer(raw):
+        chunk = block.group(1)
+        fields = dict(_FIELD_RE.findall(chunk))
+        filename = fields.get("FILENAME", "").strip()
+        text_match = _DOC_TEXT_RE.search(chunk)
+        if filename and text_match:
+            bodies[filename] = text_match.group(1)
+    return meta, bodies
+
+
+def fetch_submission(
+    cik: int, accession_no: str, fetcher: CachedFetcher
+) -> tuple[FilingMetadata, dict[str, str]]:
+    return parse_submission(fetcher.get_text(submission_url(cik, accession_no)), accession_no, cik)
 
 
 def fetch_filing_metadata(cik: int, accession_no: str, fetcher: CachedFetcher) -> FilingMetadata:
@@ -327,6 +427,26 @@ def html_to_text(raw: str) -> str:
     text = _WS_RE.sub(" ", text)
     text = "\n".join(line.strip() for line in text.splitlines())
     return _BLANKLINE_RE.sub("\n\n", text).strip()
+
+
+def extract_from_submission(meta: FilingMetadata, bodies: dict[str, str]) -> str:
+    """Concatenate the 8-K body and its EX-99 exhibits from an already-parsed submission.
+
+    Same selection rules as the per-document fetch path, but the text is already in hand,
+    so this costs no requests.
+    """
+    parts: list[str] = []
+    for doc in sorted(meta.documents, key=lambda d: d.sequence or "999"):
+        if not _WANTED_DOC_TYPES.match(doc.doc_type):
+            continue
+        raw = bodies.get(doc.filename)
+        if not raw:
+            continue
+        looks_like_markup = "<" in raw[:2000] and doc.filename.lower().endswith((".htm", ".html"))
+        body = html_to_text(raw) if looks_like_markup else raw
+        if body.strip():
+            parts.append(f"[{doc.doc_type}]\n{body.strip()}")
+    return "\n\n".join(parts)
 
 
 def extract_filing_text(
@@ -411,9 +531,9 @@ def ingest_quarter(
             continue
 
         try:
-            meta = fetch_filing_metadata(row.cik, row.accession_no, fetcher)
+            meta, bodies = fetch_submission(row.cik, row.accession_no, fetcher)
         except Exception as exc:  # noqa: BLE001 - record and continue; never silently drop
-            manifest.exclude("header_fetch_or_parse_failed", f"{row.accession_no}: {exc}")
+            manifest.exclude("submission_fetch_or_parse_failed", f"{row.accession_no}: {exc}")
             continue
 
         if not in_acceptance_window(meta.accepted_at_et):
@@ -423,7 +543,7 @@ def ingest_quarter(
             )
             continue
 
-        text = extract_filing_text(meta, fetcher, manifest)
+        text = extract_from_submission(meta, bodies)
         if not text.strip():
             manifest.exclude("no_extractable_text", row.accession_no)
             continue

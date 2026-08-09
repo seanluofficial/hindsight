@@ -92,6 +92,130 @@ class TestAcceptanceTimestamp:
             edgar.parse_filing_headers(broken, "0000033185-18-000035", 33185)
 
 
+class TestFullSubmission:
+    """The complete submission is the only metadata source that exists for every filing.
+
+    `-index-headers.html` 404s across 2010-2013 even though EDGAR's own directory listing
+    claims it exists. Relying on it silently cost every filing in those years: 6,811 of
+    6,811 matched filings in 2010 failed, and the run reported 0 written without erroring.
+    """
+
+    SUBMISSION = """<SEC-DOCUMENT>0001193125-10-005109.txt : 20100112
+<ACCEPTANCE-DATETIME>20100112163000
+CONFORMED SUBMISSION TYPE:\t8-K
+<PERIOD>20100112
+<ITEMS>2.02
+<ITEMS>9.01
+COMPANY CONFORMED NAME:\t\t\tNICHOLAS FINANCIAL INC
+<DOCUMENT>
+<TYPE>8-K
+<SEQUENCE>1
+<FILENAME>d8k.htm
+<TEXT>
+<html><body><p>Results of operations were reported.</p></body></html>
+</TEXT>
+</DOCUMENT>
+<DOCUMENT>
+<TYPE>EX-99.1
+<SEQUENCE>2
+<FILENAME>dex991.htm
+<TEXT>
+<html><body><p>Revenue rose 12% to $340 million.</p></body></html>
+</TEXT>
+</DOCUMENT>
+<DOCUMENT>
+<TYPE>GRAPHIC
+<SEQUENCE>3
+<FILENAME>logo.jpg
+<TEXT>
+binary-noise
+</TEXT>
+</DOCUMENT>
+</SEC-DOCUMENT>"""
+
+    def test_metadata_parses(self) -> None:
+        meta, _ = edgar.parse_submission(self.SUBMISSION, "0001193125-10-005109", 1000045)
+        assert meta.accepted_at_utc.isoformat() == "2010-01-12T21:30:00+00:00"
+        assert meta.item_codes == "2.02,9.01"
+        assert meta.period_of_report == "2010-01-12"
+
+    def test_document_bodies_come_back_inline(self) -> None:
+        _, bodies = edgar.parse_submission(self.SUBMISSION, "x", 1)
+        assert set(bodies) == {"d8k.htm", "dex991.htm", "logo.jpg"}
+        assert "Revenue rose 12%" in bodies["dex991.htm"]
+
+    def test_extraction_keeps_body_and_ex99_only(self) -> None:
+        meta, bodies = edgar.parse_submission(self.SUBMISSION, "x", 1)
+        text = edgar.extract_from_submission(meta, bodies)
+        assert "Results of operations" in text
+        assert "Revenue rose 12%" in text
+        assert "binary-noise" not in text
+
+    def test_html_is_flattened(self) -> None:
+        meta, bodies = edgar.parse_submission(self.SUBMISSION, "x", 1)
+        text = edgar.extract_from_submission(meta, bodies)
+        assert "<html>" not in text and "<p>" not in text
+
+    def test_company_name_available_for_anonymization(self) -> None:
+        name, _ = edgar.parse_company_names(self.SUBMISSION)
+        assert name == "NICHOLAS FINANCIAL INC"
+
+    def test_submission_url_shape(self) -> None:
+        url = edgar.submission_url(1000045, "0001193125-10-005109")
+        assert url.endswith("/000119312510005109/0001193125-10-005109.txt")
+
+
+class TestSpelledOutItemCodes:
+    """Older filings name their items instead of numbering them.
+
+    A real 2010 submission carries `ITEM INFORMATION: Other Events` where a 2018 one
+    carries `<ITEMS>8.01`. Left unmapped, every pre-2014 filing falls into the "other"
+    bucket, quietly corrupting the §12 item-type split and the sampling strata built on it.
+    """
+
+    @pytest.mark.parametrize(
+        "description,code",
+        [
+            ("Results of Operations and Financial Condition", "2.02"),
+            ("Departure of Directors or Certain Officers", "5.02"),
+            ("Entry into a Material Definitive Agreement", "1.01"),
+            ("Regulation FD Disclosure", "7.01"),
+            ("Financial Statements and Exhibits", "9.01"),
+            ("Other Events", "8.01"),
+        ],
+    )
+    def test_descriptions_map_to_codes(self, description: str, code: str) -> None:
+        header = f"ITEM INFORMATION:\t\t{description}\n"
+        assert edgar.item_codes_from_descriptions(header) == [code]
+
+    def test_multiple_items(self) -> None:
+        header = (
+            "ITEM INFORMATION:\t\tOther Events\n"
+            "ITEM INFORMATION:\t\tFinancial Statements and Exhibits\n"
+        )
+        assert edgar.item_codes_from_descriptions(header) == ["8.01", "9.01"]
+
+    def test_other_events_does_not_shadow_specific_phrases(self) -> None:
+        """'Other Events' is matched last so it cannot swallow a more specific item."""
+        header = "ITEM INFORMATION:\t\tResults of Operations and Financial Condition\n"
+        assert edgar.item_codes_from_descriptions(header) == ["2.02"]
+
+    def test_numeric_tags_take_precedence(self) -> None:
+        raw = (
+            "<ACCEPTANCE-DATETIME>20180201163017\n<ITEMS>2.02\nITEM INFORMATION:\t\tOther Events\n"
+        )
+        meta = edgar.parse_filing_headers(raw, "x", 1)
+        assert meta.item_codes == "2.02"
+
+    def test_fallback_used_when_no_numeric_tags(self) -> None:
+        raw = "<ACCEPTANCE-DATETIME>20100112152947\nITEM INFORMATION:\t\tOther Events\n"
+        meta = edgar.parse_filing_headers(raw, "x", 1)
+        assert meta.item_codes == "8.01"
+
+    def test_unrecognised_description_is_dropped_not_guessed(self) -> None:
+        assert edgar.item_codes_from_descriptions("ITEM INFORMATION:\t\tSomething Novel\n") == []
+
+
 class TestHeaderFields:
     def test_period_and_items(self) -> None:
         meta = edgar.parse_filing_headers(APPLE_HEADERS, "0000320193-18-000005", 320193)
