@@ -725,6 +725,23 @@ EXPERIMENTS: list[dict[str, str]] = [
         "discovery that pre-registration and a reserved holdout exist to catch.",
     },
     {
+        "id": "006",
+        "title": "Do insiders buying their own stock predict returns?",
+        "status": "dev_reserved",
+        "bundle": "experiment_006.json",
+        "question": "When several company insiders buy their own stock on the open market at "
+        "once, does the stock go on to outperform?",
+        "how": "Ingest 15 years of SEC Form 4 filings, flag 'cluster buys' (≥2 insiders buying "
+        "within 30 days), enter the next open after the filing, and measure the market-excess "
+        "return over 5 / 20 / 60 days.",
+        "why": "The candidate most likely to actually work — insider buying is a documented "
+        "signal. The honest question is whether it survives in large-cap S&P 500 names, costed.",
+        "result": "Development null. Cluster buys did NOT precede gains here (20-day mean "
+        "−37 bps, not significant; long-only Sharpe −0.18). Single-insider buys are flat — a "
+        "clean sanity check. This matches the literature: the insider-buying edge lives in "
+        "small caps, which this S&P 500 universe doesn't contain. The holdout was left unspent.",
+    },
+    {
         "id": "RG",
         "title": "Reaction Gap — did the market move *enough*? (future branch)",
         "status": "gated",
@@ -744,6 +761,7 @@ EXPERIMENTS: list[dict[str, str]] = [
 _STATUS_STYLE: dict[str, tuple[str, str]] = {
     "running": ("🟢", "running"),
     "exploratory": ("🟡", "development read (in-sample)"),
+    "dev_reserved": ("🟡", "development null — holdout reserved"),
     "draft": ("⚪", "pre-registered, holdout reserved"),
     "gated": ("🔒", "gated — not started"),
     "done": ("✅", "complete"),
@@ -796,6 +814,13 @@ FINDINGS: dict[str, tuple[str, str]] = {
         "and the single 2020–24 confirmatory shot was negative. Not a signal — but the single "
         "clearest proof the platform does its job: it caught a would-be false discovery.",
     ),
+    "006": (
+        "warning",
+        "The most promising candidate — and still a null in large caps. Insiders buying their "
+        "own S&P 500 stock in clusters didn't predict gains (20-day −37 bps, not significant). "
+        "The classic insider-buying edge lives in small caps, which this universe doesn't have. "
+        "The holdout was preserved, not spent.",
+    ),
     "RG": (
         "info",
         "Not built. The cheap check (004) said the premise is only half-true, so this stays "
@@ -820,6 +845,7 @@ _RESULT_BADGE: dict[str, str] = {
     "003": "❌ Rejected — wrong sign",
     "004": "◑ Diagnostic — ~47% stale",
     "005": "❌ 0.53 on dev → −0.38 on holdout",
+    "006": "❌ Dev null (−37 bps, 20d)",
     "RG": "🔒 Not built (gated)",
 }
 _KEY_FINDING: dict[str, str] = {
@@ -830,6 +856,8 @@ _KEY_FINDING: dict[str, str] = {
     "earnings 8-Ks are stalest at 57%.",
     "005": "Long-only PEAD looked like a win on development (Sharpe 0.53) but the single "
     "out-of-sample shot came back −0.38 — a decayed effect caught by the reserved holdout.",
+    "006": "Insider cluster-buys in S&P 500 names didn't precede gains (20d mean −37 bps); "
+    "the classic insider edge is a small-cap effect this universe can't capture.",
     "RG": "004 showed no cleanly-fresh event class, so this expensive branch was not built.",
 }
 
@@ -1076,11 +1104,42 @@ def render_004_results(bundle: dict[str, Any]) -> None:
         )
 
 
+def render_006_results(bundle: dict[str, Any]) -> None:
+    """Insider cluster-buy event study (development)."""
+    rows = [
+        {
+            "data": "2010–19 (dev)" if r["partition"] == "explore" else "2020–24",
+            "horizon (days)": r["horizon"],
+            "events": r["n_events"],
+            "mean excess (bps)": round(r["mean_excess_bps"], 1),
+            "t-stat": round(r["t_statistic"], 2),
+            "hit rate": f"{r['hit_rate']:.0%}",
+        }
+        for r in bundle.get("cluster", [])
+        if r["partition"] == "explore" and r["n_events"]
+    ]
+    st.markdown(
+        "**What happened after a cluster buy** (≥2 insiders buying within 30 days), entered the "
+        "next open. A working signal would show a clearly positive mean and a large t-stat. It "
+        "doesn't — the point estimates are slightly negative and never significant."
+    )
+    st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+    mat = bundle.get("materiality_long_only", {}).get("explore", {})
+    if mat:
+        st.caption(
+            f"Long-only book (development): Sharpe {mat.get('sharpe', 0):.2f}, well below the "
+            "0.30 materiality bar. Single-insider buys are flat (≈0 bps), confirming there's no "
+            "timing or sign bug — the signal simply isn't there in large caps. The 2020–24 "
+            "holdout was **not** spent, since the construction failed on development."
+        )
+
+
 _RESULT_RENDERERS = {
     "002": render_002_results,
     "003": render_003_results,
     "004": render_004_results,
     "005": render_005_results,
+    "006": render_006_results,
 }
 
 
@@ -1089,7 +1148,7 @@ def render_overview() -> None:
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("8-K filings", "100K+")
     c2.metric("price observations", "1.58M")
-    c3.metric("pre-registered experiments", "5")
+    c3.metric("pre-registered experiments", "6")
     c4.metric("signals that survived", "0", help="Nothing cleared the pass/fail bar. 005 came "
               "closest — a 0.53-Sharpe long-only signal on development — but the reserved holdout "
               "returned −0.38, exactly the false discovery the discipline exists to catch.")
@@ -1197,6 +1256,7 @@ _TAB_LABELS: dict[str, str] = {
     "003": "003 · Novelty",
     "004": "004 · Staleness",
     "005": "005 · PEAD",
+    "006": "006 · Insiders",
     "RG": "Reaction Gap",
 }
 

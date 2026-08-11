@@ -37,15 +37,16 @@ experiments stay in the table — every test counts.
 | 003 | Filing novelty / linguistic change vs. prior filings ("Lazy Prices") | 20-day, 10bps quintile L/S Sharpe on change-score (HOLDOUT) | `exploratory` | null, wrong sign (Sharpe −0.87) | — |
 | 004 | Information staleness / first-disclosure (**diagnostic**) | Median staleness fraction > 0.5 on HOLDOUT (not a trading endpoint) | `exploratory` | ~47% (H1 not supported) | — |
 | 005 | Post-earnings-announcement drift (PEAD) | 20-day, 10bps quintile L/S Sharpe on the surprise signal (HOLDOUT) | `null` (holdout spent) | long-only 0.53 on dev → **−0.38 on holdout**; H1 not supported (decayed effect, caught out-of-sample) | −0.86 (t) |
+| 006 | Insider cluster-buying (Form 4) | 20-day, 10bps mean market-excess of cluster-buy events (HOLDOUT) | `null` (dev; **holdout reserved**) | dev −37 bps / Sharpe −0.18; H1 not supported (small-cap effect, absent in large caps) | −1.41 (t) |
 
-**Read the narrative:** [`../FINDINGS.md`](../FINDINGS.md). All results are in-sample (see
-`../DEVIATIONS.md` D-EXP1); nothing survived, so no family-wise correction was needed.
+**Read the narrative:** [`../FINDINGS.md`](../FINDINGS.md). 001–005 are in-sample (see
+`../DEVIATIONS.md` D-EXP1); 006 failed on development so its holdout was left unspent. Nothing
+survived, so no family-wise correction was needed.
 
 Planned but not yet drafted (kept here so the family is declared up front, not discovered —
-see `PROTOCOL.md` §3): model-disagreement-as-uncertainty (005); event-severity × market
-expectation (006); structured LLM features vs. raw sentiment (008). Subgroup conditioning
-(size/sector/regime) is a **robustness dimension**, not a standalone experiment — see
-`PROTOCOL.md` §4.
+see `PROTOCOL.md` §3): "bury bad news" filing-timing (007, cheap, reuses 004 staleness);
+peer/lead-lag information diffusion (008). Subgroup conditioning (size/sector/regime) is a
+**robustness dimension**, not a standalone experiment — see `PROTOCOL.md` §4.
 
 ### Major branch — gated, not yet started
 

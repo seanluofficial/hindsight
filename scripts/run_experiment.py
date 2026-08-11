@@ -16,7 +16,7 @@ import json
 from typing import Any
 
 from hindsight import config, db
-from hindsight.experiments import event_type, novelty, pead, staleness
+from hindsight.experiments import event_type, insider, novelty, pead, staleness
 from hindsight.manifest import RunManifest
 
 RESULTS_DIR = config.DATA_DIR / "results"
@@ -95,9 +95,25 @@ def run_005(partitions: tuple[str, ...]) -> dict[str, Any]:
         return bundle
 
 
+def run_006(partitions: tuple[str, ...]) -> dict[str, Any]:
+    with RunManifest("experiment_006_insider", partitions=list(partitions)) as manifest:
+        with db.session() as conn:
+            payload = insider.run(conn, manifest, partitions=partitions)
+        return {
+            "experiment": "006",
+            "title": "Insider cluster-buying (Form 4)",
+            "primary": "20-day, 10bps mean market-excess of cluster-buy events (HOLDOUT)",
+            "horizons": list(insider.INSIDER_HORIZONS),
+            **payload,
+            "manifest": manifest.to_dict(),
+        }
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--experiment", required=True, choices=["002", "003", "004", "005"])
+    ap.add_argument(
+        "--experiment", required=True, choices=["002", "003", "004", "005", "006"]
+    )
     ap.add_argument(
         "--partition",
         choices=["both", "explore", "holdout"],
@@ -107,7 +123,13 @@ def main() -> None:
     args = ap.parse_args()
 
     partitions = ("explore", "holdout") if args.partition == "both" else (args.partition,)
-    runners = {"002": run_002, "003": run_003, "004": run_004, "005": run_005}
+    runners = {
+        "002": run_002,
+        "003": run_003,
+        "004": run_004,
+        "005": run_005,
+        "006": run_006,
+    }
     bundle = runners[args.experiment](partitions)
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)

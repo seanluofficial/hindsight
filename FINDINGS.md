@@ -1,14 +1,15 @@
 # Findings
 
-**One sentence:** across five pre-registered experiments — four testing for a tradeable
-signal, one diagnostic — the market appears to price the information in an 8-K *before the
-filing is even public*, so there is little left for a model — AI or otherwise — to predict
-from the filing itself. No signal survived. Four experiments are nulls that explain each other;
-the fifth (005, post-earnings drift) *looked* like a genuine win on development — a 0.53-Sharpe
-long-only signal that survived costs — and was then killed by the reserved holdout (−0.38),
-which is the single clearest demonstration of why this platform is built the way it is. (A
-separate branch, Reaction Gap, was deliberately gated and never built — a branch you choose not
-to build is a decision, not a result.)
+**One sentence:** across six pre-registered experiments — five testing for a tradeable signal,
+one diagnostic — no signal survived out-of-sample, and the failures explain each other: the
+market prices public information (8-K filings, earnings, even insider purchases) faster than a
+late reader can exploit it. The most instructive result is 005 (post-earnings drift), which
+*looked* like a genuine win on development — a 0.53-Sharpe long-only signal that survived costs
+— and was then killed by the reserved holdout (−0.38): the single clearest demonstration of why
+this platform is built the way it is. Experiment 006 (insider cluster-buying) — the candidate
+with the best prior — was a development null, confirming the insider-buying edge is a small-cap
+effect this S&P 500 universe cannot capture. (A separate branch, Reaction Gap, was deliberately
+gated and never built — a branch you choose not to build is a decision, not a result.)
 
 This is an honest measurement, not a trading system. A clean, well-explained null is the
 intended deliverable.
@@ -65,7 +66,7 @@ single-shot test; see `DEVIATIONS.md`). The effect does not transfer — most li
 because an 8-K's "prior comparable filing" is a far weaker analog than last year's 10-K is to
 this year's.
 
-### 005 — the informed follow-up: ride the drift instead of the reaction (in progress)
+### 005 — the informed follow-up: ride the drift instead of the reaction
 The first four experiments share a diagnosis: they all try to predict the announcement
 reaction from the filing's own text, entered at the next open, over 1–20 days — the part the
 market prices fastest. So 005 changes the target. Post-earnings-announcement drift (PEAD) is a
@@ -87,6 +88,21 @@ machinery — a pre-registered construction, a materiality floor fixed in advanc
 reserved for one shot — did exactly what it is for: it caught a signal that would have looked
 real in any ordinary backtest and proved it was a false discovery *before* anyone could act on
 it. That is the difference between a research platform and a story.
+
+### 006 — leave the filings entirely: do insiders' own purchases predict returns?
+The first five experiments live inside the disclosure itself. 006 changes data sources: it
+ingests 15 years of SEC **Form 4** insider transactions and tests the best-known "smart money"
+signal — **cluster buying**, when ≥2 insiders buy their own stock on the open market within a
+month. Entry is the next open after the Form 4 filing date (no lookahead); the point-in-time
+S&P 500 universe and all costs carry over from the rest of the platform.
+
+**Finding — a development null.** Across 1,349 cluster-buy events, the 20-day mean market-excess
+return was **−37 bps (t −1.41, not significant)**, the long-only book scored **−0.18 Sharpe**,
+and single-insider buys were flat (a clean check that the timing and sign are right). It failed
+on development, so — following the discipline — **the 2020–24 holdout was left unspent.** This is
+exactly the pre-registered headwind: the insider-purchase anomaly is documented mainly in
+*small caps*, and in large-cap S&P 500 names — where many open-market buys are insiders catching
+a falling knife — it is absent. The candidate with the best prior still didn't survive, honestly.
 
 ### Reaction Gap — the ambitious follow-up, deliberately not built
 The idea: reconstruct when news *first* went public, estimate the reaction historically
@@ -113,6 +129,12 @@ costed). That is exactly the moment a less careful project declares victory. Ins
 reserved holdout said −0.38, and the year-by-year decay explained why: the effect was real once
 and has faded. The takeaway is not "PEAD is fake" — it is that **a signal is only what survives
 out-of-sample**, and the value of the platform is that it can tell the difference.
+
+The sixth (006) reinforces both lessons from a different angle: even the strongest textbook
+signal — insiders buying their own stock — is a null once you demand it work *in this universe,
+after costs, out-of-the-box*. The edge exists in the literature for small caps; the platform's
+job was to check honestly whether it survives here, and it doesn't. Six experiments, zero
+surviving signals — and each null pins down *why*, which is the actual contribution.
 
 ## Limitations (stated plainly)
 

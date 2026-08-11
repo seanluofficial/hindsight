@@ -1,0 +1,116 @@
+{
+  "experiment": "006",
+  "title": "Insider cluster-buying (Form 4)",
+  "primary": "20-day, 10bps mean market-excess of cluster-buy events (HOLDOUT)",
+  "horizons": [
+    5,
+    20,
+    60
+  ],
+  "cluster": [
+    {
+      "partition": "explore",
+      "horizon": 5,
+      "n_events": 675,
+      "mean_excess_bps": -0.8082983964548429,
+      "median_excess_bps": 9.972659429691166,
+      "t_statistic": -0.05975470019155886,
+      "hit_rate": 0.5185185185185185
+    },
+    {
+      "partition": "explore",
+      "horizon": 20,
+      "n_events": 674,
+      "mean_excess_bps": -36.84603390601772,
+      "median_excess_bps": -17.14386098253584,
+      "t_statistic": -1.4098540769937442,
+      "hit_rate": 0.4896142433234421
+    },
+    {
+      "partition": "explore",
+      "horizon": 60,
+      "n_events": 671,
+      "mean_excess_bps": -80.76436017278077,
+      "median_excess_bps": 8.203843043198544,
+      "t_statistic": -1.630858565041997,
+      "hit_rate": 0.5081967213114754
+    }
+  ],
+  "baseline_any_buy": [
+    {
+      "partition": "explore",
+      "horizon": 20,
+      "n_events": 2299,
+      "mean_excess_bps": -1.177407689228716,
+      "median_excess_bps": -4.166657236923665,
+      "t_statistic": -0.09024723096345053,
+      "hit_rate": 0.4936929099608525
+    }
+  ],
+  "materiality_long_only": {
+    "explore": {
+      "n_months": 120,
+      "mean_monthly": -0.0018542885143820196,
+      "sharpe": -0.17530013199873792,
+      "max_drawdown": 0.5134323543289563
+    }
+  },
+  "n_cluster_events": 1349,
+  "manifest": {
+    "stage": "experiment_006_insider",
+    "git_sha": "fb36ca6e9a0e965eab564d6da3078666e65b41b1-dirty",
+    "started_at_utc": "2026-08-11T18:34:35.870988+00:00",
+    "finished_at_utc": "2026-08-11T18:34:40.281377+00:00",
+    "duration_seconds": 4.4,
+    "python": "3.12.10",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "params": {
+      "partitions": [
+        "explore"
+      ]
+    },
+    "counts": {
+      "any_buy_events": 5021,
+      "cluster_events": 1349,
+      "purchases_loaded": 14619
+    },
+    "exclusions": {
+      "missing_price_in_window": 12,
+      "no_price_coverage_for_ticker": 540,
+      "no_prior_close": 1572,
+      "prior_close_below_5_usd": 18
+    },
+    "exclusion_examples": {
+      "no_price_coverage_for_ticker": [
+        "insider:OI:2010-01-06:h5",
+        "insider:OI:2010-04-09:h5",
+        "insider:OI:2010-07-09:h5",
+        "insider:OI:2010-10-12:h5",
+        "insider:OI:2011-04-13:h5"
+      ],
+      "no_prior_close": [
+        "insider:PNC:2010-02-26:h5",
+        "insider:PNC:2011-07-26:h5",
+        "insider:PNC:2016-01-22:h5",
+        "insider:EP:2010-01-19:h5",
+        "insider:EP:2010-07-09:h5"
+      ],
+      "prior_close_below_5_usd": [
+        "insider:HBAN:2010-01-26:h5",
+        "insider:C:2010-11-22:h5",
+        "insider:CHK:2017-06-01:h5",
+        "insider:HBAN:2010-01-26:h20",
+        "insider:C:2010-11-22:h20"
+      ],
+      "missing_price_in_window": [
+        "insider:TDG:2019-03-12:h20",
+        "insider:COV:2014-11-17:h60",
+        "insider:T:2019-02-07:h60",
+        "insider:ZBH:2019-02-06:h60",
+        "insider:TDG:2019-03-12:h60"
+      ]
+    },
+    "total_excluded": 2142,
+    "errors": []
+  }
+}
