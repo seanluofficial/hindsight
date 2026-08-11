@@ -639,6 +639,113 @@ def render_today() -> None:
 
 
 # --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# Experiments overview — one plain-language card per pre-registered experiment
+# --------------------------------------------------------------------------
+# Kept as a static, self-contained list so the page renders from the committed
+# results bundle without a database. Mirrors experiments/*/HYPOTHESIS.md; update
+# both together. Status drives the badge colour.
+EXPERIMENTS: list[dict[str, str]] = [
+    {
+        "id": "001",
+        "title": "Can an AI predict the move from the filing text?",
+        "status": "running",
+        "question": "Show a model an 8-K with the company name and date stripped out. "
+        "Can it call which way the stock goes?",
+        "how": "Score ~5,000 anonymized filings at temperature 0, then check the actual "
+        "market-excess move at 1 / 5 / 20 days, after trading costs.",
+        "why": "It's the original question — and the honest baseline. A coin-flip result "
+        "here is expected, and it's what motivates every experiment below.",
+        "result": "Preliminary: about a coin flip (~52% direction at 5 days), no "
+        "statistically significant edge. Final number pending the full run.",
+    },
+    {
+        "id": "002",
+        "title": "Does the *type* of event matter — no AI needed?",
+        "status": "draft",
+        "question": "Forget reading the text. Does a high-impact filing (a financial "
+        "restatement, a big write-down) move the stock more than a routine notice?",
+        "how": "Group filings by their SEC item code and compare the average move of the "
+        "high-impact group against the routine group on held-out years.",
+        "why": "It's almost certainly true — which is the point. It proves the measuring "
+        "machine works before we trust it on harder questions. Costs ~$0.",
+        "result": "Not yet run. Locked before looking at the answer.",
+    },
+    {
+        "id": "003",
+        "title": "Does *new* language beat boilerplate? ('Lazy Prices')",
+        "status": "draft",
+        "question": "When a company suddenly rewrites its usual filing language instead of "
+        "copy-pasting, is that a warning sign the stock will underperform?",
+        "how": "Measure how much each filing's text changed from the company's own prior "
+        "comparable filing, rank filings by that change, and test a long/short portfolio.",
+        "why": "A published effect for annual reports — the open question is whether it "
+        "carries over to short, messy 8-Ks. The one real signal-discovery experiment here.",
+        "result": "Not yet run. Locked before looking at the answer.",
+    },
+    {
+        "id": "004",
+        "title": "Was the news already old by the time it was filed?",
+        "status": "draft",
+        "question": "How much of the stock's reaction already happened *before* the 8-K "
+        "reached EDGAR?",
+        "how": "For each filing, split the abnormal move into 'before the filing' and "
+        "'after the filing' using the prices we already have — no new data.",
+        "why": "The most likely reason 001 fails: if the market already moved, there's "
+        "nothing left to predict. This diagnostic tells us where the *fresh* information is.",
+        "result": "Not yet run. Diagnostic — it explains the null rather than trading on it.",
+    },
+    {
+        "id": "RG",
+        "title": "Reaction Gap — did the market move *enough*? (future branch)",
+        "status": "gated",
+        "question": "When real news breaks, did the stock move as much as similar news "
+        "historically moved comparable companies — or is there unprocessed news left?",
+        "how": "Reconstruct when the news first went public, estimate the reaction "
+        "historically-similar events produced, and test whether the gap predicts later drift.",
+        "why": "The ambitious payoff — and the best story. But it needs data we don't have "
+        "yet (intraday prices, news timestamps), so it's gated on what Experiment 004 finds.",
+        "result": "Not started. Only built if 004 confirms filings are genuinely late.",
+    },
+]
+
+_STATUS_STYLE: dict[str, tuple[str, str]] = {
+    "running": ("🟢", "running"),
+    "draft": ("⚪", "pre-registered, not yet run"),
+    "gated": ("🔒", "gated — not started"),
+    "done": ("✅", "complete"),
+}
+
+
+def render_experiments() -> None:
+    st.header("Experiments")
+    st.markdown(
+        "Hindsight is not one strategy — it is a small family of **pre-registered "
+        "experiments**. Each one is written down, with its success test fixed, *before* the "
+        "answer is looked at. The discipline is the point: it's what stops 'we tried a bunch "
+        "of things and one worked' from masquerading as a discovery."
+    )
+    st.caption(
+        "How to read a card: the **question** in plain English, **how** we test it, **why** "
+        "it's worth doing, and where it stands. Full method lives in each "
+        "`experiments/NNN/HYPOTHESIS.md`."
+    )
+    for exp in EXPERIMENTS:
+        icon, label = _STATUS_STYLE.get(exp["status"], ("•", exp["status"]))
+        with st.container(border=True):
+            st.markdown(f"#### {exp['id']} — {exp['title']}")
+            st.markdown(f"{icon} *{label}*")
+            st.markdown(f"**The question.** {exp['question']}")
+            st.markdown(f"**How we test it.** {exp['how']}")
+            st.markdown(f"**Why it matters.** {exp['why']}")
+            st.markdown(f"**Where it stands.** {exp['result']}")
+    st.info(
+        "Because we run several experiments, any single 'significant' result could be luck. "
+        "The final read applies a multiple-comparisons correction across all of them, and "
+        "reports what survives — including, and especially, when nothing does."
+    )
+
+
 def main() -> None:
     st.title("hindsight")
     st.markdown(
@@ -669,7 +776,11 @@ def main() -> None:
             "from exported trades by the same code path."
         )
 
-    research, track, today = st.tabs(["Research", "Track record", "Today"])
+    experiments, research, track, today = st.tabs(
+        ["Experiments", "Research", "Track record", "Today"]
+    )
+    with experiments:
+        render_experiments()
     with research:
         render_research()
     with track:
