@@ -1,9 +1,11 @@
 # Findings
 
-**One sentence:** across five pre-registered experiments, the market appears to price the
-information in an 8-K *before the filing is even public*, so there is little left for a
-model — AI or otherwise — to predict from the filing itself. Every experiment is a null,
-and the nulls explain each other.
+**One sentence:** across four pre-registered experiments — three testing for a tradeable
+signal, one diagnostic — the market appears to price the information in an 8-K *before the
+filing is even public*, so there is little left for a model — AI or otherwise — to predict
+from the filing itself. No signal survived, and the nulls explain each other. (A fifth
+branch, Reaction Gap, was deliberately gated and never built — see below; a branch you
+choose not to build is a decision, not a result.)
 
 This is an honest measurement, not a trading system. A clean, well-explained null is the
 intended deliverable.
@@ -55,7 +57,8 @@ filing changed from the company's own prior comparable filing (TF-IDF, vocabular
 development years only), then run a long-low-change / short-high-change portfolio.
 
 **Finding:** null, and the sign is backwards. The portfolio loses money at every horizon
-(held-out 20-day Sharpe −0.87, not significant). The effect does not transfer — most likely
+(20-day Sharpe −0.87 on the 2020–2024 partition — computed there, but not a clean
+single-shot test; see `DEVIATIONS.md`). The effect does not transfer — most likely
 because an 8-K's "prior comparable filing" is a far weaker analog than last year's 10-K is to
 this year's.
 
@@ -71,12 +74,12 @@ The cheap experiment saved months of building on a shaky premise.
 
 ## What it all means
 
-The five results converge on one explanation: **8-K filings are, on average, confirmation of
+The four results converge on one explanation: **8-K filings are, on average, confirmation of
 news the market already has.** Roughly half the reaction predates the filing; the stalest and
 largest category (earnings) predates it most; no event type beats the market to its own news;
 and neither an AI reading the text nor a measure of how the text changed adds tradeable
 signal on top. This is what an informationally efficient reaction to public disclosures looks
-like — and measuring it honestly, five ways, is the result.
+like — and measuring it honestly, four ways, is the result.
 
 ## Limitations (stated plainly)
 

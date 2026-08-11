@@ -687,7 +687,7 @@ EXPERIMENTS: list[dict[str, str]] = [
         "why": "A published effect for annual reports — the open question is whether it "
         "carries over to short, messy 8-Ks. The one real signal-discovery experiment here.",
         "result": "Null — and the sign is backwards. The long/short loses money at every "
-        "horizon (held-out 20-day Sharpe −0.87, not significant). 'Lazy Prices' does not "
+        "horizon (20-day Sharpe −0.87 on the 2020–24 partition, not significant). 'Lazy Prices' does not "
         "transfer from annual reports to 8-Ks, most likely because an 8-K's 'prior comparable "
         "filing' is a far weaker analog than last year's 10-K is to this year's.",
     },
@@ -795,7 +795,7 @@ def render_002_results(bundle: dict[str, Any]) -> None:
         g = r["groups"]
         rows.append(
             {
-                "data": "development" if r["partition"] == "explore" else "held-out",
+                "data": "2010–19 (dev)" if r["partition"] == "explore" else "2020–24",
                 "horizon (days)": r["horizon"],
                 "high-impact (bps)": round(g["high-impact"]["mean"] * 1e4, 1),
                 "routine (bps)": round(g["routine"]["mean"] * 1e4, 1),
@@ -817,7 +817,7 @@ def render_003_results(bundle: dict[str, Any]) -> None:
     for r in bundle.get("results", []):
         rows.append(
             {
-                "data": "development" if r["partition"] == "explore" else "held-out",
+                "data": "2010–19 (dev)" if r["partition"] == "explore" else "2020–24",
                 "horizon (days)": r["horizon"],
                 "months": r["n_months"],
                 "return / month": f"{r['mean_monthly'] * 100:.3f}%",
@@ -842,7 +842,7 @@ def render_004_results(bundle: dict[str, Any]) -> None:
             continue
         rows.append(
             {
-                "data": "development" if r["partition"] == "explore" else "held-out",
+                "data": "2010–19 (dev)" if r["partition"] == "explore" else "2020–24",
                 "filings measured": f"{r['n']:,}",
                 "median staleness": f"{r['median_fraction']:.0%}",
                 "share mostly-stale (>50%)": f"{r['share_mostly_stale']:.0%}",
@@ -888,6 +888,17 @@ _RESULT_RENDERERS = {
 
 def render_overview() -> None:
     st.subheader("What this project is")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("8-K filings", "100K+")
+    c2.metric("price observations", "1.58M")
+    c3.metric("pre-registered experiments", "4")
+    c4.metric("signals that survived", "0", help="Nothing cleared the pass/fail bar. That is "
+              "the honest headline, not a footnote.")
+    st.caption(
+        "A contamination-resistant research platform for testing whether SEC filings carry "
+        "tradeable information. Four experiments, none surviving — the strongest explanation "
+        "is that ~half the price reaction happens before the filing is even public."
+    )
     st.markdown(
         "**Hindsight asks a simple question honestly: can public company filings tell you "
         "where a stock is headed?** Instead of one flashy strategy, it runs a small family of "

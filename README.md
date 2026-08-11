@@ -8,8 +8,9 @@ events it is being asked to predict, so contamination by hindsight is the centra
 and every design decision defends against it. The deliverable is an honest measurement —
 including a null result — not a profitable trading system.
 
-- **[`FINDINGS.md`](FINDINGS.md) — the written narrative: five pre-registered experiments, five
-  honest nulls, and why they explain each other. Start here.**
+- **[`FINDINGS.md`](FINDINGS.md) — the written narrative: four pre-registered experiments, no
+  surviving signal, and why the nulls explain each other (plus a fifth branch deliberately not
+  built). Start here.**
 - [`experiments/`](experiments/README.md) — the research platform: pre-registered hypotheses,
   the holdout architecture, and the multiple-testing alpha budget ([`PROTOCOL.md`](experiments/PROTOCOL.md)).
 - [`PREREGISTRATION.md`](PREREGISTRATION.md) — the specification. Locked. It wins any disagreement.
