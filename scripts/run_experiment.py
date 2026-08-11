@@ -54,12 +54,14 @@ def run_004(partitions: tuple[str, ...]) -> dict[str, Any]:
     with RunManifest("experiment_004_staleness", partitions=list(partitions)) as manifest:
         with db.session() as conn:
             results = staleness.run(conn, manifest, partitions=partitions)
+            by_event = staleness.by_event_type(conn, manifest)
         return {
             "experiment": "004",
             "title": "Information staleness / first-disclosure",
             "primary": "Median staleness fraction > 0.5 on HOLDOUT (diagnostic)",
             "horizon": staleness.STALENESS_HORIZON,
             "results": [r.as_dict() for r in results],
+            "by_event_type": by_event,
             "manifest": manifest.to_dict(),
         }
 

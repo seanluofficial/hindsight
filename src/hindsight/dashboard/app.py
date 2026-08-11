@@ -767,8 +767,9 @@ FINDINGS: dict[str, tuple[str, str]] = {
     ),
     "004": (
         "info",
-        "About 47% of a filing's stock move is already over before you could trade it — "
-        "a big reason the AI has so little left to predict.",
+        "About 47% of a filing's stock move is already over before you could trade it — and "
+        "earnings filings are the stalest (57%). No event type is cleanly 'fresh', so the "
+        "filing rarely beats the market to its own news.",
     ),
     "RG": (
         "info",
@@ -856,6 +857,26 @@ def render_004_results(bundle: dict[str, Any]) -> None:
         "heard of it). The median filing sits near 47%."
     )
     st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+
+    by_event = bundle.get("by_event_type", [])
+    if by_event:
+        st.markdown("**By event type — is any kind of news still fresh when it's filed?**")
+        et_rows = [
+            {
+                "event type": f"{r['code']} · {r['label']}",
+                "filings": f"{r['n']:,}",
+                "median staleness": f"{r['median_fraction']:.0%}",
+                "mostly-stale (>50%)": f"{r['share_mostly_stale']:.0%}",
+            }
+            for r in by_event
+        ]
+        st.dataframe(pd.DataFrame(et_rows), hide_index=True, use_container_width=True)
+        st.caption(
+            "Earnings 8-Ks (2.02) are the stalest by far — the market reacts to the earnings "
+            "release, and the filing just formalizes it. No category is cleanly 'fresh' "
+            "(all sit above ~38%), so there's no event type where the filing beats the market "
+            "to the news — which is why the Reaction Gap branch stays on the shelf."
+        )
 
 
 _RESULT_RENDERERS = {

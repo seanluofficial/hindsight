@@ -19,15 +19,92 @@
       "share_mostly_stale": 0.465051582241799
     }
   ],
+  "by_event_type": [
+    {
+      "code": "9.01",
+      "label": "Financial exhibits",
+      "n": 747,
+      "median_fraction": 0.380785554933107,
+      "share_mostly_stale": 0.3708165997322624
+    },
+    {
+      "code": "2.01",
+      "label": "Acquisition / disposition",
+      "n": 396,
+      "median_fraction": 0.38832851431341653,
+      "share_mostly_stale": 0.3712121212121212
+    },
+    {
+      "code": "8.01",
+      "label": "Other events",
+      "n": 8593,
+      "median_fraction": 0.39953883904616133,
+      "share_mostly_stale": 0.3856627487489817
+    },
+    {
+      "code": "7.01",
+      "label": "Reg FD disclosure",
+      "n": 7109,
+      "median_fraction": 0.40257775919842886,
+      "share_mostly_stale": 0.3968209312139541
+    },
+    {
+      "code": "5.03",
+      "label": "Bylaw / charter change",
+      "n": 1445,
+      "median_fraction": 0.4123889490178839,
+      "share_mostly_stale": 0.40484429065743943
+    },
+    {
+      "code": "5.07",
+      "label": "Shareholder vote",
+      "n": 2703,
+      "median_fraction": 0.42737585179957044,
+      "share_mostly_stale": 0.4088050314465409
+    },
+    {
+      "code": "2.03",
+      "label": "New debt obligation",
+      "n": 346,
+      "median_fraction": 0.42990743221237626,
+      "share_mostly_stale": 0.41329479768786126
+    },
+    {
+      "code": "5.02",
+      "label": "Exec / board change",
+      "n": 9645,
+      "median_fraction": 0.43624027623012124,
+      "share_mostly_stale": 0.4207361327112494
+    },
+    {
+      "code": "1.01",
+      "label": "Material agreement",
+      "n": 5491,
+      "median_fraction": 0.4434029566898136,
+      "share_mostly_stale": 0.43543981059916226
+    },
+    {
+      "code": "2.02",
+      "label": "Results / earnings",
+      "n": 16631,
+      "median_fraction": 0.5737010782287818,
+      "share_mostly_stale": 0.5840298238229812
+    }
+  ],
   "manifest": {
     "stage": "experiment_004_staleness",
-    "git_sha": "d46791acb96a1593f46dd4a848c1d4bb0624e9bd",
-    "started_at_utc": "2026-08-11T00:48:25.749788+00:00",
-    "finished_at_utc": "2026-08-11T00:48:35.128536+00:00",
-    "duration_seconds": 9.4,
+    "git_sha": "c6555b7df44d8983eb42fc4797a27e1a11c4e3d8-dirty",
+    "started_at_utc": "2026-08-11T01:55:26.029506+00:00",
+    "finished_at_utc": "2026-08-11T01:56:06.083139+00:00",
+    "duration_seconds": 40.1,
     "python": "3.12.10",
     "platform": "Windows-11-10.0.26200-SP0",
-    "params": {},
+    "params": {
+      "partitions": [
+        "explore",
+        "holdout"
+      ]
+    },
     "counts": {
       "explore_evaluated": 36645,
       "filings_considered": 100559,

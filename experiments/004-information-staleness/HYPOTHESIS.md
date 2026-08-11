@@ -91,6 +91,23 @@ typical filing's abnormal move is already over before it can be traded.** That i
 staleness — enough to help explain why 001 and 002 find little tradeable post-filing signal —
 but it does not cross a clean majority, so the 8-K is not pure old news.
 
+**Robustness — staleness by event type (freshest first):**
+
+| item code | event type | filings | median staleness |
+|---|---|---|---|
+| 9.01 | Financial exhibits | 747 | 38% |
+| 8.01 | Other events | 8,593 | 40% |
+| 7.01 | Reg FD disclosure | 7,109 | 40% |
+| 5.02 | Exec / board change | 9,645 | 44% |
+| 1.01 | Material agreement | 5,491 | 44% |
+| 2.02 | Results / earnings | 16,631 | **57%** |
+
+**Earnings 8-Ks are the stalest by far (57%)** — the market reacts to the earnings release and
+the 8-K merely formalizes it — and, being the largest category, they pull the aggregate up. No
+category is cleanly "fresh": every event type has ~38%+ of its move already gone by filing
+time, so there is no class where the filing beats the market to its own news. This *confirms*
+the Reaction Gap gate stays closed — there is no fresh event pocket to target.
+
 ## 9. Failure analysis
 Coarseness caveats (pre-registered): daily bars can't see the intraday reaction, and the
 pre-window length is variable (event date → filing) while the post-window is a fixed 5 days,

@@ -20,6 +20,7 @@ import sqlite3
 import statistics
 from dataclasses import dataclass
 from datetime import date, datetime
+from typing import cast
 
 from hindsight import config, trading_calendar
 from hindsight.evaluate.returns import PriceLookup, window_return
@@ -189,3 +190,75 @@ def run(
             )
         )
     return results
+
+
+# Human labels for the 8-K item codes that show up most in this corpus.
+_ITEM_LABELS: dict[str, str] = {
+    "2.02": "Results / earnings",
+    "5.02": "Exec / board change",
+    "8.01": "Other events",
+    "7.01": "Reg FD disclosure",
+    "5.07": "Shareholder vote",
+    "1.01": "Material agreement",
+    "2.03": "New debt obligation",
+    "9.01": "Financial exhibits",
+    "1.03": "Bankruptcy",
+    "2.06": "Material impairment",
+    "4.02": "Non-reliance / restatement",
+    "5.03": "Bylaw / charter change",
+    "2.01": "Acquisition / disposition",
+}
+
+
+def _primary_code(item_codes: str | None) -> str:
+    codes = [c.strip() for c in (item_codes or "").split(",") if c.strip()]
+    return codes[0] if codes else "NA"
+
+
+def by_event_type(
+    conn: sqlite3.Connection,
+    manifest: RunManifest,
+    min_count: int = 150,
+) -> list[dict[str, object]]:
+    """Median staleness per primary item code, pooled across all evaluable filings.
+
+    A robustness cut of the headline number (PROTOCOL §4: subgroup = robustness, not a new
+    experiment). Answers the lead 004 raised: is *some* event class fresh at filing time while
+    others arrive stale? Pooled across partitions for statistical power; descriptive only.
+    """
+    rows = list(
+        conn.execute(
+            "SELECT accession_no, ticker, accepted_at_utc, period_of_report, item_codes "
+            "FROM filings ORDER BY accepted_at_utc, accession_no"
+        )
+    )
+    prices = PriceLookup(conn)
+    by_code: dict[str, list[float]] = {}
+    for row in rows:
+        s = staleness_for(
+            row["accession_no"],
+            row["ticker"],
+            row["accepted_at_utc"],
+            row["period_of_report"],
+            prices,
+            manifest=None,  # already counted by run(); avoid double-counting exclusions
+        )
+        if s is None:
+            continue
+        by_code.setdefault(_primary_code(row["item_codes"]), []).append(s.fraction)
+
+    out: list[dict[str, object]] = []
+    for code, vals in by_code.items():
+        if len(vals) < min_count:
+            continue
+        out.append(
+            {
+                "code": code,
+                "label": _ITEM_LABELS.get(code, "other"),
+                "n": len(vals),
+                "median_fraction": statistics.median(vals),
+                "share_mostly_stale": sum(1 for v in vals if v > 0.5) / len(vals),
+            }
+        )
+    out.sort(key=lambda d: cast(float, d["median_fraction"]))  # freshest first
+    return out
