@@ -1,15 +1,19 @@
 # Findings
 
-**One sentence:** across six pre-registered experiments — five testing for a tradeable signal,
-one diagnostic — no signal survived out-of-sample, and the failures explain each other: the
-market prices public information (8-K filings, earnings, even insider purchases) faster than a
-late reader can exploit it. The most instructive result is 005 (post-earnings drift), which
-*looked* like a genuine win on development — a 0.53-Sharpe long-only signal that survived costs
-— and was then killed by the reserved holdout (−0.38): the single clearest demonstration of why
-this platform is built the way it is. Experiment 006 (insider cluster-buying) — the candidate
-with the best prior — was a development null, confirming the insider-buying edge is a small-cap
-effect this S&P 500 universe cannot capture. (A separate branch, Reaction Gap, was deliberately
-gated and never built — a branch you choose not to build is a decision, not a result.)
+**One sentence:** across seven pre-registered experiments — six testing for a tradeable signal,
+one diagnostic — no signal cleared both the significance and the materiality gate, and the
+failures explain each other: the market prices public information (8-K filings, earnings, even
+insider purchases and the timing of disclosure) faster than a late reader can trade it. The most
+instructive result is 005 (post-earnings drift), which *looked* like a genuine win on development
+— a 0.53-Sharpe long-only signal that survived costs — and was then killed by the reserved
+holdout (−0.38): the single clearest demonstration of why this platform is built the way it is.
+Experiment 006 (insider cluster-buying) was a development null, confirming the insider-buying
+edge is a small-cap effect this S&P 500 universe cannot capture. Experiment 007 ("bury bad news"
+timing) is the subtlest: buried filings *do* underperform, and detectably so (−24 bps vs control
+over 20 days, p ≈ 0.04 on development) — but the tradeable short book scores only 0.22 Sharpe,
+below the materiality floor, a textbook statistically-significant-but-not-economic result. (A
+separate branch, Reaction Gap, was deliberately gated and never built — a branch you choose not
+to build is a decision, not a result.)
 
 This is an honest measurement, not a trading system. A clean, well-explained null is the
 intended deliverable.
@@ -104,6 +108,26 @@ exactly the pre-registered headwind: the insider-purchase anomaly is documented 
 *small caps*, and in large-cap S&P 500 names — where many open-market buys are insiders catching
 a falling knife — it is absent. The candidate with the best prior still didn't survive, honestly.
 
+### 007 — do managers who file when nobody's watching get away with it?
+006 left the filings for a different data source; 007 comes back to the filings but asks a new
+question of them — not *what* was disclosed but *when*. Issuers choose their filing time, and the
+disclosure-timing literature says bad news is disproportionately dumped into low-attention windows
+(Friday afternoons, weekends, holiday eves). 007 flags every 8-K accepted in such a window as
+**buried** and tests whether buried filings drift down relative to filings released in full view.
+Entry is the next open for both groups, so the test isolates *attention*, not the entry mechanic.
+
+**Finding — significant on development, but not economically material.** Buried 8-Ks underperform
+at 20 days (**−17 bps** on their own; **−24 bps versus the control group, Welch t −2.06,
+p ≈ 0.039**), the direction the hypothesis predicted, and the bucket cut is coherent (weekend
+−17 bps, pre-holiday −29 bps, control +6 bps, after-hours-matched control flat). This is the
+first construction to *clear the statistical gate on development.* But the tradeable object — a
+monthly short-buried book — scores only **0.22 Sharpe after 10 bps**, below the 0.30 floor, on a
+thin, lumpy book (buried filings are ~9% of the sample and cluster on Fridays; 16.6% drawdown).
+So it fails the **economic** gate, and — per the two-gate rule — **the holdout was left unspent.**
+The lesson is precise: an effect can be real and detectable and still not worth trading once you
+demand it survive costs at daily-bar, next-open resolution. "Statistically significant" and
+"tradeable" are different bars; 007 clears the first and not the second.
+
 ### Reaction Gap — the ambitious follow-up, deliberately not built
 The idea: reconstruct when news *first* went public, estimate the reaction historically
 comparable events produced, and test whether the *gap* between expected and observed reaction
@@ -133,8 +157,16 @@ out-of-sample**, and the value of the platform is that it can tell the differenc
 The sixth (006) reinforces both lessons from a different angle: even the strongest textbook
 signal — insiders buying their own stock — is a null once you demand it work *in this universe,
 after costs, out-of-the-box*. The edge exists in the literature for small caps; the platform's
-job was to check honestly whether it survives here, and it doesn't. Six experiments, zero
-surviving signals — and each null pins down *why*, which is the actual contribution.
+job was to check honestly whether it survives here, and it doesn't.
+
+The seventh (007) adds the final distinction the project needed: the difference between
+*statistical* and *economic* significance. Buried filings genuinely underperform — the effect is
+there, in the right direction, at p ≈ 0.04 — and a project with a single significance test would
+have called it a discovery. The materiality floor is what stops that: a 0.22-Sharpe short book is
+not a signal you can trade, however real the underlying drift. Requiring a construction to clear
+*both* gates — significance and materiality — before it may even touch the holdout is exactly
+what keeps a true-but-tiny effect from being oversold. Seven experiments, zero signals clearing
+both gates — and each null pins down *why*, which is the actual contribution.
 
 ## Limitations (stated plainly)
 

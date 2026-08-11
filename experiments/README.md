@@ -38,15 +38,18 @@ experiments stay in the table — every test counts.
 | 004 | Information staleness / first-disclosure (**diagnostic**) | Median staleness fraction > 0.5 on HOLDOUT (not a trading endpoint) | `exploratory` | ~47% (H1 not supported) | — |
 | 005 | Post-earnings-announcement drift (PEAD) | 20-day, 10bps quintile L/S Sharpe on the surprise signal (HOLDOUT) | `null` (holdout spent) | long-only 0.53 on dev → **−0.38 on holdout**; H1 not supported (decayed effect, caught out-of-sample) | −0.86 (t) |
 | 006 | Insider cluster-buying (Form 4) | 20-day, 10bps mean market-excess of cluster-buy events (HOLDOUT) | `null` (dev; **holdout reserved**) | dev −37 bps / Sharpe −0.18; H1 not supported (small-cap effect, absent in large caps) | −1.41 (t) |
+| 007 | "Bury bad news" filing timing | 20-day, 10bps mean market-excess of buried 8-Ks; H1 negative (HOLDOUT) | `null` (dev; **holdout reserved**) | dev buried −17 bps, buried−control −24 bps (p 0.039) but short-book Sharpe **0.22 < 0.30**; significant, not material | 0.039 (diff) |
 
 **Read the narrative:** [`../FINDINGS.md`](../FINDINGS.md). 001–005 are in-sample (see
-`../DEVIATIONS.md` D-EXP1); 006 failed on development so its holdout was left unspent. Nothing
-survived, so no family-wise correction was needed.
+`../DEVIATIONS.md` D-EXP1); 006 and 007 failed the development gate so their holdouts were left
+unspent. Nothing cleared both gates (significance **and** materiality), so no family-wise
+correction was needed — though 007 is the first to clear the *statistical* gate on development
+(buried − control p 0.039) while failing the economic one (short-book Sharpe 0.22 < 0.30).
 
 Planned but not yet drafted (kept here so the family is declared up front, not discovered —
-see `PROTOCOL.md` §3): "bury bad news" filing-timing (007, cheap, reuses 004 staleness);
-peer/lead-lag information diffusion (008). Subgroup conditioning (size/sector/regime) is a
-**robustness dimension**, not a standalone experiment — see `PROTOCOL.md` §4.
+see `PROTOCOL.md` §3): peer/lead-lag information diffusion (008). Subgroup conditioning
+(size/sector/regime) is a **robustness dimension**, not a standalone experiment — see
+`PROTOCOL.md` §4.
 
 ### Major branch — gated, not yet started
 

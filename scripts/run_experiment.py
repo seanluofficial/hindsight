@@ -16,7 +16,7 @@ import json
 from typing import Any
 
 from hindsight import config, db
-from hindsight.experiments import event_type, insider, novelty, pead, staleness
+from hindsight.experiments import event_type, insider, novelty, pead, staleness, timing
 from hindsight.manifest import RunManifest
 
 RESULTS_DIR = config.DATA_DIR / "results"
@@ -109,10 +109,25 @@ def run_006(partitions: tuple[str, ...]) -> dict[str, Any]:
         }
 
 
+def run_007(partitions: tuple[str, ...]) -> dict[str, Any]:
+    with RunManifest("experiment_007_timing", partitions=list(partitions)) as manifest:
+        with db.session() as conn:
+            payload = timing.run(conn, manifest, partitions=partitions)
+        return {
+            "experiment": "007",
+            "title": "'Bury bad news' filing timing",
+            "primary": "20-day, 10bps mean market-excess of buried 8-Ks (HOLDOUT); H1 negative",
+            "horizons": list(timing.TIMING_HORIZONS),
+            "cost_bps": config.BASE_CASE_COST_BPS,
+            **payload,
+            "manifest": manifest.to_dict(),
+        }
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument(
-        "--experiment", required=True, choices=["002", "003", "004", "005", "006"]
+        "--experiment", required=True, choices=["002", "003", "004", "005", "006", "007"]
     )
     ap.add_argument(
         "--partition",
@@ -129,6 +144,7 @@ def main() -> None:
         "004": run_004,
         "005": run_005,
         "006": run_006,
+        "007": run_007,
     }
     bundle = runners[args.experiment](partitions)
 

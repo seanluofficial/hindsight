@@ -1,0 +1,210 @@
+{
+  "experiment": "007",
+  "title": "'Bury bad news' filing timing",
+  "primary": "20-day, 10bps mean market-excess of buried 8-Ks (HOLDOUT); H1 negative",
+  "horizons": [
+    5,
+    20,
+    60
+  ],
+  "cost_bps": 10,
+  "groups": [
+    {
+      "partition": "explore",
+      "group": "buried",
+      "horizon": 5,
+      "n": 3741,
+      "mean_excess_bps": -4.267069643945943,
+      "median_excess_bps": -1.356750407025542,
+      "t_statistic": -0.7621540825474402,
+      "hit_rate": 0.49612403100775193
+    },
+    {
+      "partition": "explore",
+      "group": "control",
+      "horizon": 5,
+      "n": 38460,
+      "mean_excess_bps": 1.2431385453686545,
+      "median_excess_bps": -3.05797116303852,
+      "t_statistic": 0.7031510928842648,
+      "hit_rate": 0.49495579823192926
+    },
+    {
+      "partition": "explore",
+      "group": "buried",
+      "horizon": 20,
+      "n": 3708,
+      "mean_excess_bps": -17.416608284042887,
+      "median_excess_bps": 3.4357707576326835,
+      "t_statistic": -1.5686172965618228,
+      "hit_rate": 0.5018878101402373
+    },
+    {
+      "partition": "explore",
+      "group": "control",
+      "horizon": 20,
+      "n": 38318,
+      "mean_excess_bps": 6.427258831679618,
+      "median_excess_bps": 1.0060548008206105,
+      "t_statistic": 1.9980886420291257,
+      "hit_rate": 0.5008351166553578
+    },
+    {
+      "partition": "explore",
+      "group": "buried",
+      "horizon": 60,
+      "n": 3673,
+      "mean_excess_bps": -4.715188615132423,
+      "median_excess_bps": 18.73220573988643,
+      "t_statistic": -0.24425390479248882,
+      "hit_rate": 0.5044922406751974
+    },
+    {
+      "partition": "explore",
+      "group": "control",
+      "horizon": 60,
+      "n": 37850,
+      "mean_excess_bps": -6.832543233017899,
+      "median_excess_bps": -0.653729950159665,
+      "t_statistic": -1.2236387784860727,
+      "hit_rate": 0.4996565389696169
+    }
+  ],
+  "diff_buried_vs_control": [
+    {
+      "partition": "explore",
+      "horizon": 5,
+      "n_buried": 3741,
+      "n_control": 38460,
+      "diff_bps": -5.510208189314597,
+      "welch_t": -0.9385137700441645,
+      "p_two_sided": 0.34798044380887694
+    },
+    {
+      "partition": "explore",
+      "horizon": 20,
+      "n_buried": 3708,
+      "n_control": 38318,
+      "diff_bps": -23.843867115722503,
+      "welch_t": -2.062666605544815,
+      "p_two_sided": 0.039144314795036994
+    },
+    {
+      "partition": "explore",
+      "horizon": 60,
+      "n_buried": 3673,
+      "n_control": 37850,
+      "diff_bps": 2.117354617885476,
+      "welch_t": 0.10536310147497854,
+      "p_two_sided": 0.9160876938078264
+    }
+  ],
+  "materiality_short_buried": {
+    "explore": {
+      "n_months": 120,
+      "mean_monthly": 0.0010737724180389493,
+      "sharpe": 0.22144840700616125,
+      "max_drawdown": 0.1663760911934885
+    }
+  },
+  "by_bucket": {
+    "explore": [
+      {
+        "bucket": "control",
+        "n": 38318,
+        "mean_excess_bps": 6.427258831679618,
+        "median_excess_bps": 1.0060548008206105,
+        "t_statistic": 1.9980886420291257
+      },
+      {
+        "bucket": "control_after_hours",
+        "n": 17509,
+        "mean_excess_bps": 1.9366041007154144,
+        "median_excess_bps": -5.210214585853468,
+        "t_statistic": 0.39983347777444744
+      },
+      {
+        "bucket": "preholiday",
+        "n": 159,
+        "mean_excess_bps": -29.031337128832828,
+        "median_excess_bps": -73.6128114186374,
+        "t_statistic": -0.5238407890994676
+      },
+      {
+        "bucket": "weekend",
+        "n": 3549,
+        "mean_excess_bps": -16.89625272294917,
+        "median_excess_bps": 4.325533386509983,
+        "t_statistic": -1.4908371296737393
+      }
+    ]
+  },
+  "n_buried": 9128,
+  "n_filings": 100559,
+  "manifest": {
+    "stage": "experiment_007_timing",
+    "git_sha": "8fee67561c6bd4d8b44131ffa02d84436df6ac90-dirty",
+    "started_at_utc": "2026-08-11T20:49:39.008426+00:00",
+    "finished_at_utc": "2026-08-11T20:50:18.973942+00:00",
+    "duration_seconds": 40.0,
+    "python": "3.12.10",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "params": {
+      "partitions": [
+        "explore"
+      ]
+    },
+    "counts": {
+      "buried": 9128,
+      "filings_loaded": 100559,
+      "preholiday": 374,
+      "weekend": 8754
+    },
+    "exclusions": {
+      "missing_price_in_window": 224,
+      "no_price_coverage_for_ticker": 5340,
+      "no_prior_close": 20524,
+      "prior_close_below_5_usd": 118,
+      "security_did_not_trade_on_entry": 6
+    },
+    "exclusion_examples": {
+      "no_prior_close": [
+        "0000887396-10-000001:h20",
+        "0000950123-10-000178:h20",
+        "0000950123-10-000185:h20",
+        "0000020520-10-000002:h20",
+        "0000092230-10-000003:h20"
+      ],
+      "no_price_coverage_for_ticker": [
+        "0001193125-10-001282:h20",
+        "0001193125-10-001329:h20",
+        "0000007332-10-000001:h20",
+        "0000065011-10-000003:h20",
+        "0001437749-10-000017:h20"
+      ],
+      "prior_close_below_5_usd": [
+        "0001144204-10-000846:h20",
+        "0001299933-10-000097:h20",
+        "0001104659-10-001969:h20",
+        "0000950123-10-004292:h20",
+        "0001299933-10-000247:h20"
+      ],
+      "missing_price_in_window": [
+        "0001157523-11-000675:h20",
+        "0001193125-14-229553:h20",
+        "0001193125-14-235824:h20",
+        "0001193125-14-240186:h20",
+        "0001193125-15-002336:h20"
+      ],
+      "security_did_not_trade_on_entry": [
+        "0001193125-15-094831:h20",
+        "0001193125-16-639518:h20",
+        "0001193125-18-106369:h20",
+        "0000875159-18-000068:h20",
+        "0001193125-19-090633:h20"
+      ]
+    },
+    "total_excluded": 26212,
+    "errors": []
+  }
+}

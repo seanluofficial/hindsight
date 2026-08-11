@@ -742,6 +742,25 @@ EXPERIMENTS: list[dict[str, str]] = [
         "small caps, which this S&P 500 universe doesn't contain. The holdout was left unspent.",
     },
     {
+        "id": "007",
+        "title": "Does bad news filed when nobody's watching keep sinking?",
+        "status": "dev_reserved",
+        "bundle": "experiment_007.json",
+        "question": "Companies choose when to file. When bad news is dumped into a low-attention "
+        "window — Friday after the close, a weekend, a holiday eve — does the stock keep drifting "
+        "down afterward, as if the market under-reacted?",
+        "how": "Flag every 8-K accepted in a low-attention window as 'buried', enter the next "
+        "open (identically for buried and non-buried, so only attention differs), and compare "
+        "market-excess returns over 5 / 20 / 60 days. No new data, no model.",
+        "why": "The cheapest test in the family, and the one that separates two ideas that get "
+        "conflated: an effect being *statistically real* versus being *worth trading*.",
+        "result": "Significant on development, but not economically material. Buried 8-Ks DO "
+        "underperform (20-day −17 bps alone; −24 bps vs the control group, p≈0.039) — the first "
+        "construction to clear the statistical gate on development. But the tradeable short book "
+        "scores only 0.22 Sharpe after costs, below the 0.30 floor, so it fails the economic "
+        "gate — and the holdout was left unspent. 'Real' and 'tradeable' are different bars.",
+    },
+    {
         "id": "RG",
         "title": "Reaction Gap — did the market move *enough*? (future branch)",
         "status": "gated",
@@ -821,6 +840,14 @@ FINDINGS: dict[str, tuple[str, str]] = {
         "The classic insider-buying edge lives in small caps, which this universe doesn't have. "
         "The holdout was preserved, not spent.",
     ),
+    "007": (
+        "warning",
+        "Statistically real, not tradeable. Bad news filed into low-attention windows (Friday "
+        "evenings, weekends, holiday eves) does keep drifting down — buried 8-Ks trail the "
+        "control group by 24 bps over 20 days (p≈0.04). But the short book that would trade it "
+        "scores only 0.22 Sharpe, under the 0.30 bar — so it clears the significance gate and "
+        "fails the materiality one. The holdout was preserved.",
+    ),
     "RG": (
         "info",
         "Not built. The cheap check (004) said the premise is only half-true, so this stays "
@@ -846,6 +873,7 @@ _RESULT_BADGE: dict[str, str] = {
     "004": "◑ Diagnostic — ~47% stale",
     "005": "❌ 0.53 on dev → −0.38 on holdout",
     "006": "❌ Dev null (−37 bps, 20d)",
+    "007": "◑ Significant, not material (Sharpe 0.22)",
     "RG": "🔒 Not built (gated)",
 }
 _KEY_FINDING: dict[str, str] = {
@@ -858,6 +886,8 @@ _KEY_FINDING: dict[str, str] = {
     "out-of-sample shot came back −0.38 — a decayed effect caught by the reserved holdout.",
     "006": "Insider cluster-buys in S&P 500 names didn't precede gains (20d mean −37 bps); "
     "the classic insider edge is a small-cap effect this universe can't capture.",
+    "007": "Buried 8-Ks (Friday/weekend/holiday dumps) trail the control group by 24 bps over "
+    "20 days (p≈0.04) — real, but the short book scores 0.22 Sharpe, below the materiality bar.",
     "RG": "004 showed no cleanly-fresh event class, so this expensive branch was not built.",
 }
 
@@ -1134,12 +1164,54 @@ def render_006_results(bundle: dict[str, Any]) -> None:
         )
 
 
+def render_007_results(bundle: dict[str, Any]) -> None:
+    """'Bury bad news' timing: buried vs control event study (development)."""
+    label = {"buried": "buried (Fri/wknd/holiday)", "control": "control (rest)"}
+    rows = [
+        {
+            "group": label.get(str(r["group"]), str(r["group"])),
+            "horizon (days)": r["horizon"],
+            "filings": f"{r['n']:,}",
+            "mean excess (bps)": round(r["mean_excess_bps"], 1),
+            "t-stat": round(r["t_statistic"], 2),
+        }
+        for r in bundle.get("groups", [])
+        if r["partition"] == "explore" and r["n"]
+    ]
+    st.markdown(
+        "**What happened after a 'buried' filing** — one accepted Friday after the close, over a "
+        "weekend, or a holiday eve — versus everything else, both entered the next open. The "
+        "hypothesis predicts buried filings drift *down*."
+    )
+    st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+
+    diff20 = next(
+        (
+            d
+            for d in bundle.get("diff_buried_vs_control", [])
+            if d["partition"] == "explore" and d["horizon"] == 20
+        ),
+        None,
+    )
+    mat = bundle.get("materiality_short_buried", {}).get("explore", {})
+    if diff20 and mat:
+        st.caption(
+            f"At 20 days buried filings trail the control group by "
+            f"{abs(diff20['diff_bps']):.0f} bps (Welch t {diff20['welch_t']:.2f}, "
+            f"p {_fmt_p(diff20['p_two_sided'])}) — a real, correctly-signed effect, the first to "
+            f"clear the *statistical* gate on development. But the tradeable short book scores "
+            f"only Sharpe {mat.get('sharpe', 0):.2f} after 10 bps, below the 0.30 materiality "
+            f"bar. Significant, not material — so the 2020–24 holdout was **not** spent."
+        )
+
+
 _RESULT_RENDERERS = {
     "002": render_002_results,
     "003": render_003_results,
     "004": render_004_results,
     "005": render_005_results,
     "006": render_006_results,
+    "007": render_007_results,
 }
 
 
@@ -1148,7 +1220,7 @@ def render_overview() -> None:
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("8-K filings", "100K+")
     c2.metric("price observations", "1.58M")
-    c3.metric("pre-registered experiments", "6")
+    c3.metric("pre-registered experiments", "7")
     c4.metric("signals that survived", "0", help="Nothing cleared the pass/fail bar. 005 came "
               "closest — a 0.53-Sharpe long-only signal on development — but the reserved holdout "
               "returned −0.38, exactly the false discovery the discipline exists to catch.")
@@ -1257,6 +1329,7 @@ _TAB_LABELS: dict[str, str] = {
     "004": "004 · Staleness",
     "005": "005 · PEAD",
     "006": "006 · Insiders",
+    "007": "007 · Timing",
     "RG": "Reaction Gap",
 }
 
