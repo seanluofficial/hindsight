@@ -1,0 +1,13 @@
+# Runtime dependencies for the Streamlit Community Cloud deployment.
+# The dashboard imports the `hindsight` package from source (src/ is added to
+# sys.path in app.py), so the package itself is NOT installed — only these libs.
+# Mirrors the runtime deps in pyproject.toml; keep the two in sync.
+streamlit>=1.35
+pandas>=2.2
+numpy>=1.26
+pydantic>=2.7
+pandas-market-calendars>=4.4
+python-dotenv>=1.0
+requests>=2.32
+lxml>=5.2
+beautifulsoup4>=4.12
