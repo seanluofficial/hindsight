@@ -69,7 +69,10 @@ def run_004(partitions: tuple[str, ...]) -> dict[str, Any]:
 def run_005(partitions: tuple[str, ...]) -> dict[str, Any]:
     with RunManifest("experiment_005_pead", partitions=list(partitions)) as manifest:
         with db.session() as conn:
-            results = pead.run(conn, manifest, partitions=partitions)
+            scored = pead.compute_surprises(conn, manifest)
+            results = pead.evaluate(conn, scored, manifest, partitions=partitions)
+            # Robustness is always EXPLORE-only so the single HOLDOUT shot stays reserved.
+            robustness = pead.robustness(conn, scored, partition="explore")
         return {
             "experiment": "005",
             "title": "Post-earnings-announcement drift (PEAD)",
@@ -77,6 +80,7 @@ def run_005(partitions: tuple[str, ...]) -> dict[str, Any]:
             "cost_bps": config.BASE_CASE_COST_BPS,
             "horizons": list(pead.PEAD_HORIZONS),
             "results": [r.as_dict() for r in results],
+            "robustness": robustness,
             "manifest": manifest.to_dict(),
         }
 

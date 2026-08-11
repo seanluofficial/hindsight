@@ -114,17 +114,46 @@ weak**: the primary 20-day Sharpe of 0.14 is well below the 0.30 materiality flo
 horizon is statistically significant (|t| < 1). A promising direction that does not, on its own,
 clear the bar.
 
-_HOLDOUT is deliberately not yet run — see §10._
+**Robustness battery (EXPLORE only; HOLDOUT still untouched).**
+
+Long/short vs the pre-registered **long-only** variant (10 bps):
+
+| H (days) | L/S Sharpe (t) | long-only Sharpe (t) |
+|---|---|---|
+| 20 | 0.14 (0.45) | **0.53 (1.68)** |
+| 40 | 0.22 (0.69) | 0.21 (0.68) |
+| 60 | 0.23 (0.73) | 0.26 (0.81) |
+
+Cost sensitivity at 20 days: long-only Sharpe 0.67 / 0.53 / **0.31** at 0 / 10 / 25 bps (clears
+the 0.30 floor even at 25 bps); L/S 0.34 / 0.14 / −0.16 (fails once costed). **Dropping the short
+leg is decisive** — consistent with the literature that PEAD is a long-side effect and the short
+leg mostly adds borrow cost and noise.
+
+**But the effect has decayed.** Long-only 20-day Sharpe by development year:
+
+| 2010 | 2011 | 2012 | 2013 | 2014 | 2015 | 2016 | 2017 | 2018 | 2019 |
+|---|---|---|---|---|---|---|---|---|---|
+| 1.68 | −0.60 | 1.16 | 2.08 | 0.85 | 1.67 | 1.92 | **−1.37** | **−1.02** | **−0.77** |
+
+The aggregate 0.53 is carried by 2010–2016; the last three development years are all negative.
+The signal that clears the bar on the full development sample appears to have **faded to nothing
+by the late 2010s**.
 
 ## 9. Failure analysis
 
-_Pending the confirmatory read and the EXPLORE robustness battery (long-only leg, per-year
-decay, 25 bps, surprise-window sensitivity)._
+The primary endpoint (20-day L/S) is sub-threshold and costs eat it entirely by 25 bps. The
+long-only variant clears the economic floor on the pooled development sample, but the per-year
+decay is the dominant fact: PEAD here is an early-2010s phenomenon that is gone — even
+reversed — by 2017-2019. A confirmatory holdout on 2020-2024 therefore inherits a *declining*
+signal and should be expected to be weak or null; that is the honest prior going in.
 
 ## 10. Decision
 
-_Open. The pre-registered primary (20-day L/S) is sub-threshold on development, so a single
-HOLDOUT shot would most likely confirm a weak-null at that horizon. Before freezing, the
-EXPLORE-legal secondaries in §5-6 (long-only variant — PEAD is classically stronger on the long
-side — and per-year decay) are worth running to see whether a pre-specified construction is
-materially stronger. Refinement stays on EXPLORE; HOLDOUT is spent once, later._
+**Freeze the pre-registered long-only 20-day construction as the confirmatory endpoint and take
+the single HOLDOUT (2020-2024) shot on it — reported alongside the primary 20-day L/S, with the
+decay caveat foregrounded.** Rationale: long-only is the strongest *pre-specified* construction
+on development (not a post-hoc search — it was named in §4-5 before any run), and the honest way
+to close 005 is one clean out-of-sample test of it. Given §9's decay, the expected outcome is a
+weak or null holdout; if it nonetheless clears 0.30 out-of-sample, that is a genuine,
+costed, single-shot signal. Either way, no further EXPLORE iteration after this — that would be
+fishing.

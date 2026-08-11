@@ -718,10 +718,11 @@ EXPERIMENTS: list[dict[str, str]] = [
         "why": "The first experiment designed after diagnosing why 001–004 failed: stop fighting "
         "the announcement pop, ride the documented drift that follows it. PEAD is real and "
         "widely replicated — the open question is whether it survives *here*, with costs.",
-        "result": "Development read (holdout reserved): the sign is finally *right* and it grows "
-        "with horizon (Sharpe 0.14 → 0.22 → 0.23 at 20 → 40 → 60 days) — real PEAD behaviour — "
-        "but it's economically weak on development and not yet significant. The most promising "
-        "direction so far; the single holdout shot is not yet spent.",
+        "result": "Development read (holdout reserved): the first real signal. The long/short is "
+        "weak (20-day Sharpe 0.14), but the pre-registered *long-only* variant clears the 0.30 "
+        "materiality bar (Sharpe 0.53, and 0.31 even at 25 bps costs) — PEAD is a long-side "
+        "effect. The honest catch: a per-year cut shows it decayed to *negative* by 2017–19, so "
+        "the reserved 2020–24 holdout inherits a fading signal. Promising, with eyes open.",
     },
     {
         "id": "RG",
@@ -790,10 +791,11 @@ FINDINGS: dict[str, tuple[str, str]] = {
     ),
     "005": (
         "warning",
-        "The best sign yet: earnings surprises really do keep drifting the right way, more so "
-        "the longer you hold. But on development data the edge is small (Sharpe 0.14 at the "
-        "20-day primary, below the 0.30 bar) and not yet significant — and the holdout is "
-        "deliberately not spent.",
+        "The best result yet — with an honest asterisk. Long-only post-earnings drift clears the "
+        "0.30 materiality bar on development (Sharpe 0.53, survives 25 bps costs), the first "
+        "signal in the project to do so. But a year-by-year cut shows it faded to *negative* by "
+        "2017–19, so the reserved holdout inherits a decaying edge. A real lead, not yet a "
+        "discovery — and the holdout is deliberately unspent.",
     ),
     "RG": (
         "info",
@@ -818,7 +820,7 @@ _RESULT_BADGE: dict[str, str] = {
     "002": "❌ Near-null",
     "003": "❌ Rejected — wrong sign",
     "004": "◑ Diagnostic — ~47% stale",
-    "005": "◐ Right sign, weak (holdout reserved)",
+    "005": "◐ Long-only clears bar on dev, but decaying",
     "RG": "🔒 Not built (gated)",
 }
 _KEY_FINDING: dict[str, str] = {
@@ -827,8 +829,9 @@ _KEY_FINDING: dict[str, str] = {
     "003": "Buying least-changed / shorting most-changed 8-Ks loses money (20d Sharpe −0.87).",
     "004": "~47% of the average filing's move is already over before you can trade it; "
     "earnings 8-Ks are stalest at 57%.",
-    "005": "Earnings drift continues in the surprise direction and grows with horizon "
-    "(Sharpe 0.14→0.23, 20→60d on development) — but stays below the 0.30 materiality bar.",
+    "005": "Long-only post-earnings drift clears the 0.30 bar on development (Sharpe 0.53, "
+    "survives 25 bps) — the first signal to do so — but a per-year cut shows it decaying to "
+    "negative by 2017–19; holdout reserved.",
     "RG": "004 showed no cleanly-fresh event class, so this expensive branch was not built.",
 }
 
@@ -939,10 +942,56 @@ def render_005_results(bundle: dict[str, Any]) -> None:
         "**A long/short book that buys the biggest positive earnings surprises and shorts the "
         "biggest negatives, held for 20–60 days.** For the first time the numbers are *positive* "
         "and grow with the holding period — the fingerprint of real post-earnings drift. The "
-        "0.30 line is the materiality bar a signal must clear to count; development doesn't reach "
-        "it yet, and the confirmatory 2020–24 read is intentionally still reserved."
+        "0.30 line is the materiality bar a signal must clear to count. The confirmatory 2020–24 "
+        "read is intentionally still reserved."
     )
     st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+
+    rob = bundle.get("robustness")
+    if not rob:
+        return
+    st.markdown(
+        "#### Development robustness (2010–19 only)\n"
+        "**Dropping the short leg is decisive.** PEAD is classically a long-side effect; the "
+        "long-only variant clears the 0.30 bar while the long/short doesn't:"
+    )
+    comp = []
+    for x in rob.get("book_comparison", []):
+        ls, lo = x["long_short"], x["long_only"]
+        comp.append(
+            {
+                "hold (days)": x["horizon"],
+                "long/short Sharpe": round(ls["sharpe_annualized"], 2),
+                "long-only Sharpe": round(lo["sharpe_annualized"], 2),
+                "long-only t": round(lo["t_statistic"], 2),
+            }
+        )
+    st.dataframe(pd.DataFrame(comp), hide_index=True, use_container_width=True)
+
+    costs = [
+        {
+            "cost (bps)": c["cost_bps"],
+            "long/short Sharpe": round(c["long_short_sharpe"], 2),
+            "long-only Sharpe": round(c["long_only_sharpe"], 2),
+        }
+        for c in rob.get("cost_sensitivity", [])
+    ]
+    st.markdown(
+        "**Cost sensitivity (20-day).** Long-only survives even 25 bps (Sharpe 0.31); "
+        "long/short goes negative once realistically costed:"
+    )
+    st.dataframe(pd.DataFrame(costs), hide_index=True, use_container_width=True)
+
+    years = rob.get("by_year_long_only", [])
+    if years:
+        st.markdown(
+            "**But it decayed.** Long-only 20-day Sharpe by year — strong in the early 2010s, "
+            "**negative by 2017–19.** The aggregate edge is carried by the early years, which is "
+            "the honest warning going into the reserved 2020–24 holdout:"
+        )
+        ser = pd.DataFrame(years)
+        ser["sharpe"] = ser["sharpe"].astype(float).round(2)
+        st.bar_chart(ser.set_index("year")["sharpe"])
 
 
 def render_004_results(bundle: dict[str, Any]) -> None:

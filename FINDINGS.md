@@ -73,13 +73,16 @@ same way for weeks. Using the market's own immediate reaction as the surprise (o
 entry, no lookahead), we enter *after* the pop and hold a long-big-surprise / short-small-surprise
 book for 20–60 days.
 
-**Finding (development, holdout reserved):** for the first time the sign is *right*, and it
-behaves like real PEAD — the drift is positive and **grows with the holding period** (annualized
-Sharpe 0.14 → 0.22 → 0.23 at 20 → 40 → 60 days). But on development data the edge is
-economically small — the 20-day primary of 0.14 is below the 0.30 materiality bar — and not yet
-statistically significant. It is the most promising direction the platform has produced, and its
-single confirmatory holdout read is deliberately **not yet spent**. Honesty demands the
-distinction: a right-signed development result is a lead, not yet a discovery.
+**Finding (development, holdout reserved):** the first real signal — with an honest asterisk.
+The long/short book is weak (20-day Sharpe 0.14), but the *pre-registered long-only variant* —
+PEAD is classically a long-side effect — **clears the 0.30 materiality bar (Sharpe 0.53, and
+still 0.31 at 25 bps costs)**, the first construction in the whole project to do so. The catch is
+decay: a year-by-year cut shows the long-only edge was strong through 2016 and then **negative in
+2017, 2018 and 2019**. The pooled number is carried by the early 2010s. So the reserved 2020–2024
+holdout inherits a *fading* signal, and the honest prior is that it will be weak. This is a
+genuine lead — the platform's best — but a right-signed, decaying development result is exactly
+the kind of thing that must survive a single clean out-of-sample test before it is called a
+discovery. That test is not yet spent.
 
 ### Reaction Gap — the ambitious follow-up, deliberately not built
 The idea: reconstruct when news *first* went public, estimate the reaction historically

@@ -193,21 +193,26 @@ class PeadResult:
         }
 
 
+def _by_month(
+    scored_with_return: list[tuple[Scored, float, str]],
+) -> list[tuple[str, list[tuple[Scored, float]]]]:
+    """Group (scored, return, month) into sorted (month, [(scored, return), ...]) buckets."""
+    buckets: dict[str, list[tuple[Scored, float]]] = defaultdict(list)
+    for s, ret, month in scored_with_return:
+        buckets[month].append((s, ret))
+    return sorted(buckets.items())
+
+
 def _quintile_long_short_monthly(
     scored_with_return: list[tuple[Scored, float, str]], cost_bps: float
-) -> list[float]:
-    """Monthly long-high-surprise / short-low-surprise returns.
+) -> list[tuple[str, float]]:
+    """Monthly long-high-surprise / short-low-surprise returns, labeled by month.
 
-    Each item is (scored, market_excess_return, entry_month). Within a month, sort by surprise;
-    long the top quintile (biggest positive surprise), short the bottom quintile. If PEAD holds,
-    both legs earn positive drift, so the series is positive on average.
+    Within a month, sort by surprise; long the top quintile (biggest positive surprise), short
+    the bottom quintile. If PEAD holds, both legs earn positive drift, so the series is positive.
     """
-    by_month: dict[str, list[tuple[Scored, float]]] = defaultdict(list)
-    for s, ret, month in scored_with_return:
-        by_month[month].append((s, ret))
-
-    series: list[float] = []
-    for _, group in sorted(by_month.items()):
+    series: list[tuple[str, float]] = []
+    for month, group in _by_month(scored_with_return):
         if len(group) < 5:
             continue
         ordered = sorted(group, key=lambda sr: sr[0].surprise)
@@ -218,8 +223,45 @@ def _quintile_long_short_monthly(
         high_surprise = ordered[-size:]  # long these
         long_leg = statistics.fmean(ret - cost_bps / 10_000.0 for _, ret in high_surprise)
         short_leg = statistics.fmean(-ret - cost_bps / 10_000.0 for _, ret in low_surprise)
-        series.append((long_leg + short_leg) / 2.0)
+        series.append((month, (long_leg + short_leg) / 2.0))
     return series
+
+
+def _long_only_monthly(
+    scored_with_return: list[tuple[Scored, float, str]], cost_bps: float
+) -> list[tuple[str, float]]:
+    """Monthly long-only top-surprise-quintile market-excess returns, labeled by month.
+
+    PEAD is classically stronger on the long side; this is the pre-registered variant that
+    drops the short leg (where borrow cost and the post-2000 decay bite hardest).
+    """
+    series: list[tuple[str, float]] = []
+    for month, group in _by_month(scored_with_return):
+        if len(group) < 5:
+            continue
+        ordered = sorted(group, key=lambda sr: sr[0].surprise)
+        size = len(ordered) // 5
+        if size == 0:
+            continue
+        top = ordered[-size:]  # long the biggest positive surprises
+        series.append((month, statistics.fmean(ret - cost_bps / 10_000.0 for _, ret in top)))
+    return series
+
+
+def _series_stats(values: list[float]) -> dict[str, object]:
+    """Annualized Sharpe, t-stat and drawdown of a monthly return series."""
+    n = len(values)
+    mean = statistics.fmean(values) if values else 0.0
+    stdev = statistics.stdev(values) if n > 1 else 0.0
+    sharpe = (mean / stdev) * math.sqrt(MONTHS_PER_YEAR) if stdev > 0 else 0.0
+    t = mean / (stdev / math.sqrt(n)) if n > 1 and stdev > 0 else 0.0
+    return {
+        "months": n,
+        "mean_monthly": mean,
+        "sharpe_annualized": sharpe,
+        "t_statistic": t,
+        "max_drawdown": max_drawdown(values),
+    }
 
 
 def evaluate(
@@ -248,7 +290,7 @@ def evaluate(
 
         for partition in partitions:
             data = rows_by_part[partition]
-            series = _quintile_long_short_monthly(data, cost_bps)
+            series = [v for _, v in _quintile_long_short_monthly(data, cost_bps)]
             n = len(series)
             mean = statistics.fmean(series) if series else 0.0
             stdev = statistics.stdev(series) if n > 1 else 0.0
@@ -268,6 +310,83 @@ def evaluate(
                 )
             )
     return results
+
+
+def _drift_data(
+    conn: sqlite3.Connection, scored: list[Scored], horizon: int, partition: str
+) -> list[tuple[Scored, float, str]]:
+    """(scored, drift excess return, entry month) for one horizon and partition."""
+    prices = PriceLookup(conn)
+    out: list[tuple[Scored, float, str]] = []
+    for s in scored:
+        if s.partition != partition:
+            continue
+        fr = filing_excess_return(s.accession_no, s.ticker, s.accepted_at_utc, horizon, prices)
+        if fr is None:
+            continue
+        out.append((s, fr.excess_return, fr.entry_date.strftime("%Y-%m")))
+    return out
+
+
+def _by_year(labeled: list[tuple[str, float]]) -> list[dict[str, object]]:
+    """Per-calendar-year Sharpe of a labeled monthly series (decay check)."""
+    buckets: dict[str, list[float]] = defaultdict(list)
+    for month, val in labeled:
+        buckets[month[:4]].append(val)
+    out: list[dict[str, object]] = []
+    for year, vals in sorted(buckets.items()):
+        stats = _series_stats(vals)
+        out.append({"year": year, "months": stats["months"], "sharpe": stats["sharpe_annualized"]})
+    return out
+
+
+def robustness(
+    conn: sqlite3.Connection,
+    scored: list[Scored],
+    partition: str = "explore",
+    horizons: tuple[int, ...] = PEAD_HORIZONS,
+    costs: tuple[int, ...] = config.COST_LEVELS_BPS,
+    primary_horizon: int = 20,
+) -> dict[str, object]:
+    """EXPLORE-legal robustness battery: long-only variant, per-year decay, cost sensitivity.
+
+    Computed on EXPLORE only so the single HOLDOUT shot stays reserved (PROTOCOL §4: subgroup
+    and variant cuts are robustness, not new experiments).
+    """
+    data_by_h = {h: _drift_data(conn, scored, h, partition) for h in horizons}
+
+    # Long/short vs long-only at each horizon (base cost).
+    base_cost = config.BASE_CASE_COST_BPS
+    book_comparison: list[dict[str, object]] = []
+    for h in horizons:
+        ls = _series_stats([v for _, v in _quintile_long_short_monthly(data_by_h[h], base_cost)])
+        lo = _series_stats([v for _, v in _long_only_monthly(data_by_h[h], base_cost)])
+        book_comparison.append({"horizon": h, "long_short": ls, "long_only": lo})
+
+    # Cost sensitivity at the primary horizon, both books.
+    base = data_by_h[primary_horizon]
+    cost_sensitivity: list[dict[str, object]] = []
+    for c in costs:
+        ls = _series_stats([v for _, v in _quintile_long_short_monthly(base, c)])
+        lo = _series_stats([v for _, v in _long_only_monthly(base, c)])
+        cost_sensitivity.append(
+            {
+                "cost_bps": c,
+                "long_short_sharpe": ls["sharpe_annualized"],
+                "long_only_sharpe": lo["sharpe_annualized"],
+            }
+        )
+
+    # Per-year decay at the primary horizon (long-only — the variant we care most about).
+    by_year_long_only = _by_year(_long_only_monthly(base, config.BASE_CASE_COST_BPS))
+
+    return {
+        "partition": partition,
+        "primary_horizon": primary_horizon,
+        "book_comparison": book_comparison,
+        "cost_sensitivity": cost_sensitivity,
+        "by_year_long_only": by_year_long_only,
+    }
 
 
 def run(

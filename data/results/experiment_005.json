@@ -46,12 +46,138 @@
       "is_meaningful": true
     }
   ],
+  "robustness": {
+    "partition": "explore",
+    "primary_horizon": 20,
+    "book_comparison": [
+      {
+        "horizon": 20,
+        "long_short": {
+          "months": 120,
+          "mean_monthly": 0.0007011841828920681,
+          "sharpe_annualized": 0.14115945731849708,
+          "t_statistic": 0.44638539839977515,
+          "max_drawdown": 0.22171612148085929
+        },
+        "long_only": {
+          "months": 120,
+          "mean_monthly": 0.0036767151132555288,
+          "sharpe_annualized": 0.5303984682104613,
+          "t_statistic": 1.6772672270094702,
+          "max_drawdown": 0.21421030339936253
+        }
+      },
+      {
+        "horizon": 40,
+        "long_short": {
+          "months": 120,
+          "mean_monthly": 0.0017029172443640422,
+          "sharpe_annualized": 0.2185714049146439,
+          "t_statistic": 0.6911834709131957,
+          "max_drawdown": 0.2738092304434273
+        },
+        "long_only": {
+          "months": 120,
+          "mean_monthly": 0.0026899458338151055,
+          "sharpe_annualized": 0.2146661391221459,
+          "t_statistic": 0.6788339361405593,
+          "max_drawdown": 0.3521711296579284
+        }
+      },
+      {
+        "horizon": 60,
+        "long_short": {
+          "months": 120,
+          "mean_monthly": 0.0022482147788910004,
+          "sharpe_annualized": 0.23119347494757087,
+          "t_statistic": 0.7310979610034013,
+          "max_drawdown": 0.3475260948449622
+        },
+        "long_only": {
+          "months": 120,
+          "mean_monthly": 0.0034803673446863873,
+          "sharpe_annualized": 0.25600632954243313,
+          "t_statistic": 0.8095630967737406,
+          "max_drawdown": 0.4178704562498424
+        }
+      }
+    ],
+    "cost_sensitivity": [
+      {
+        "cost_bps": 0,
+        "long_short_sharpe": 0.3424752610154347,
+        "long_only_sharpe": 0.6746572567954771
+      },
+      {
+        "cost_bps": 10,
+        "long_short_sharpe": 0.14115945731849708,
+        "long_only_sharpe": 0.5303984682104613
+      },
+      {
+        "cost_bps": 25,
+        "long_short_sharpe": -0.16081424822690915,
+        "long_only_sharpe": 0.31401028533293773
+      }
+    ],
+    "by_year_long_only": [
+      {
+        "year": "2010",
+        "months": 12,
+        "sharpe": 1.6793518605143412
+      },
+      {
+        "year": "2011",
+        "months": 12,
+        "sharpe": -0.6043683074822783
+      },
+      {
+        "year": "2012",
+        "months": 12,
+        "sharpe": 1.1554060030361741
+      },
+      {
+        "year": "2013",
+        "months": 12,
+        "sharpe": 2.075398656651421
+      },
+      {
+        "year": "2014",
+        "months": 12,
+        "sharpe": 0.8528328438723461
+      },
+      {
+        "year": "2015",
+        "months": 12,
+        "sharpe": 1.6666868266665378
+      },
+      {
+        "year": "2016",
+        "months": 12,
+        "sharpe": 1.9161399478192138
+      },
+      {
+        "year": "2017",
+        "months": 12,
+        "sharpe": -1.3717902722021507
+      },
+      {
+        "year": "2018",
+        "months": 12,
+        "sharpe": -1.0228250027508727
+      },
+      {
+        "year": "2019",
+        "months": 12,
+        "sharpe": -0.7697613008393679
+      }
+    ]
+  },
   "manifest": {
     "stage": "experiment_005_pead",
-    "git_sha": "52aaa738c4bd98afa3d7e0d00ada1be359006052-dirty",
-    "started_at_utc": "2026-08-11T17:40:00.439383+00:00",
-    "finished_at_utc": "2026-08-11T17:40:20.538391+00:00",
-    "duration_seconds": 20.1,
+    "git_sha": "257eb16c22ff4c95ab7b04810a0220a7fbf61dc5-dirty",
+    "started_at_utc": "2026-08-11T17:51:07.392770+00:00",
+    "finished_at_utc": "2026-08-11T17:51:36.305706+00:00",
+    "duration_seconds": 28.9,
     "python": "3.12.10",
     "platform": "Windows-11-10.0.26200-SP0",
     "params": {
