@@ -649,16 +649,19 @@ EXPERIMENTS: list[dict[str, str]] = [
     {
         "id": "001",
         "title": "Can an AI predict the move from the filing text?",
-        "status": "running",
+        "status": "done",
         "bundle": "",
         "question": "Show a model an 8-K with the company name and date stripped out — can "
         "it call which way the stock goes?",
-        "how": "Score ~5,000 anonymized filings at temperature 0, then check the actual "
+        "how": "Score 5,000 anonymized filings (DeepSeek, temperature 0), then check the actual "
         "market-excess move at 1 / 5 / 20 days, after trading costs.",
         "why": "The original question, and the honest baseline. A coin-flip result here is "
         "expected — and it's what motivates every experiment below.",
-        "result": "Preliminary: about a coin flip (~52% at 5 days), no significant edge. "
-        "Final number pending the full scoring run.",
+        "result": "Final: a coin flip. Directional hit rate 49.9% / 51.2% / 49.8% at 1/5/20 "
+        "days; 5-day quintile Sharpe +0.14 after costs, below the null threshold, so H1 is not "
+        "supported. And the confidence is miscalibrated the revealing way — when the model says "
+        "80%+ it is right about half the time (Brier 0.263, overconfident by ~0.08). It reads "
+        "fluently and predicts nothing.",
     },
     {
         "id": "002",
@@ -761,6 +764,26 @@ EXPERIMENTS: list[dict[str, str]] = [
         "gate — and the holdout was left unspent. 'Real' and 'tradeable' are different bars.",
     },
     {
+        "id": "008",
+        "title": "Does one firm's news move its industry peers next?",
+        "status": "dev_reserved",
+        "bundle": "experiment_008.json",
+        "question": "When a company's 8-K moves its stock, do its same-industry peers drift the "
+        "same way over the following days — information diffusing slowly across related firms?",
+        "how": "Map every issuer to its SIC industry, and for each filing take the sign of the "
+        "filer's reaction, then buy/sell its peers at the *next* open and hold 5 / 20 / 60 days. "
+        "A monthly long/short peer book is the tradeable object.",
+        "why": "A documented anomaly (industry lead-lag, economic-link momentum). It also stress-"
+        "tests the platform's honesty: correlated peers make a naive t-stat lie, and the "
+        "pre-registered overlap correction is what catches it.",
+        "result": "Development null — and a clean example of the overlap trap. The 20-day signed "
+        "peer return is a coin flip (+1.4 bps, t 0.97). One cell *looks* significant (60-day "
+        "t 3.99), but that pools 173k massively-correlated peer pairs; collapse them into a "
+        "monthly long/short book and it's **negative** (Sharpe −0.17). The 'discovery' was an "
+        "artifact of overlap, exactly what the pre-registered correction exists to expose. "
+        "Holdout unspent.",
+    },
+    {
         "id": "RG",
         "title": "Reaction Gap — did the market move *enough*? (future branch)",
         "status": "gated",
@@ -807,8 +830,10 @@ def _fmt_p(p: float) -> str:
 FINDINGS: dict[str, tuple[str, str]] = {
     "001": (
         "warning",
-        "So far: a coin flip. The AI shows no reliable edge — which is the honest, "
-        "expected result and the reason the other experiments exist.",
+        "A coin flip, now final. Over 5,000 anonymized filings the AI's directional hit rate is "
+        "49.9% / 51.2% / 49.8% (1/5/20 days) and the 5-day Sharpe is +0.14 after costs — below "
+        "the null threshold, so H1 is not supported. Its stated confidence is anti-informative: "
+        "80%+ calls land ~50/50. The honest, expected result the other experiments build on.",
     ),
     "002": (
         "warning",
@@ -848,6 +873,14 @@ FINDINGS: dict[str, tuple[str, str]] = {
         "scores only 0.22 Sharpe, under the 0.30 bar — so it clears the significance gate and "
         "fails the materiality one. The holdout was preserved.",
     ),
+    "008": (
+        "warning",
+        "Null, and a lesson in not trusting a lone t-stat. Same-industry peers don't reliably "
+        "follow a filer's reaction: the 20-day signed return is a coin flip (+1.4 bps, t 0.97). "
+        "A 60-day cell looks significant (t 3.99) only because it double-counts thousands of "
+        "correlated peers — the monthly tradeable book is negative (Sharpe −0.17). In large "
+        "caps, industry news is priced together, not with a lag. Holdout preserved.",
+    ),
     "RG": (
         "info",
         "Not built. The cheap check (004) said the premise is only half-true, so this stays "
@@ -867,17 +900,19 @@ def _finding_box(exp_id: str) -> None:
 
 # Compact, skimmable summary per experiment: result badge + one-line key finding.
 _RESULT_BADGE: dict[str, str] = {
-    "001": "❌ No edge (final run pending)",
+    "001": "❌ Coin flip (51% @5d, H1 not supported)",
     "002": "❌ Near-null",
     "003": "❌ Rejected — wrong sign",
     "004": "◑ Diagnostic — ~47% stale",
     "005": "❌ 0.53 on dev → −0.38 on holdout",
     "006": "❌ Dev null (−37 bps, 20d)",
     "007": "◑ Significant, not material (Sharpe 0.22)",
+    "008": "❌ Null (overlap-inflated t; book −0.17)",
     "RG": "🔒 Not built (gated)",
 }
 _KEY_FINDING: dict[str, str] = {
-    "001": "An AI reading anonymized filings scores about a coin flip — no reliable direction.",
+    "001": "An AI reading 5,000 anonymized filings scores a coin flip (51% at 5d, Sharpe +0.14, "
+    "H1 not supported) — and is confidently wrong, with 80%+ calls landing ~50/50.",
     "002": "Once you enter at the next open, high-impact events barely beat routine ones (p≈0.8).",
     "003": "Buying least-changed / shorting most-changed 8-Ks loses money (20d Sharpe −0.87).",
     "004": "~47% of the average filing's move is already over before you can trade it; "
@@ -888,6 +923,8 @@ _KEY_FINDING: dict[str, str] = {
     "the classic insider edge is a small-cap effect this universe can't capture.",
     "007": "Buried 8-Ks (Friday/weekend/holiday dumps) trail the control group by 24 bps over "
     "20 days (p≈0.04) — real, but the short book scores 0.22 Sharpe, below the materiality bar.",
+    "008": "Industry peers don't lag a filer's reaction (20d +1.4 bps, coin flip); a 'significant' "
+    "60d t-stat is an artifact of correlated peers — the monthly book is −0.17 Sharpe.",
     "RG": "004 showed no cleanly-fresh event class, so this expensive branch was not built.",
 }
 
@@ -1205,6 +1242,39 @@ def render_007_results(bundle: dict[str, Any]) -> None:
         )
 
 
+def render_008_results(bundle: dict[str, Any]) -> None:
+    """Peer/lead-lag diffusion: signed peer return by horizon (development)."""
+    rows = [
+        {
+            "horizon (days)": r["horizon"],
+            "trigger events": f"{r['n_events']:,}",
+            "peer pairs": f"{r['n_pairs']:,}",
+            "mean signed (bps)": round(r["mean_signed_bps"], 2),
+            "t-stat (event-level)": round(r["t_statistic"], 2),
+            "hit rate": f"{r['hit_rate']:.1%}",
+        }
+        for r in bundle.get("diffusion", [])
+        if r["partition"] == "explore" and r["n_pairs"]
+    ]
+    st.markdown(
+        "**Did peers follow the filer?** The signal is the peer's market-excess return times "
+        "the sign of the filer's own reaction — positive means peers drifted the *same* way. "
+        "Peers enter the next open after the filer's reaction is public (no lookahead)."
+    )
+    st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+    mat = bundle.get("materiality_long_short", {}).get("explore", {})
+    if mat:
+        st.caption(
+            f"The 20-day mean is a coin flip (+1.4 bps, t 0.97). The 60-day t-stat (3.99) looks "
+            f"significant, but it pools ~173k *correlated* peer pairs — every filing in an "
+            f"industry trades the same names — so its standard error is far too small. Collapse "
+            f"the overlap into a monthly long/short book and the effect is **negative**: "
+            f"Sharpe {mat.get('sharpe', 0):.2f}, below the 0.30 bar. The apparent discovery was "
+            f"an overlap artifact, which the pre-registered correction exposes. The 2020–24 "
+            f"holdout was **not** spent."
+        )
+
+
 _RESULT_RENDERERS = {
     "002": render_002_results,
     "003": render_003_results,
@@ -1212,6 +1282,7 @@ _RESULT_RENDERERS = {
     "005": render_005_results,
     "006": render_006_results,
     "007": render_007_results,
+    "008": render_008_results,
 }
 
 
@@ -1220,7 +1291,7 @@ def render_overview() -> None:
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("8-K filings", "100K+")
     c2.metric("price observations", "1.58M")
-    c3.metric("pre-registered experiments", "7")
+    c3.metric("pre-registered experiments", "8")
     c4.metric("signals that survived", "0", help="Nothing cleared the pass/fail bar. 005 came "
               "closest — a 0.53-Sharpe long-only signal on development — but the reserved holdout "
               "returned −0.38, exactly the false discovery the discipline exists to catch.")
@@ -1330,6 +1401,7 @@ _TAB_LABELS: dict[str, str] = {
     "005": "005 · PEAD",
     "006": "006 · Insiders",
     "007": "007 · Timing",
+    "008": "008 · Peers",
     "RG": "Reaction Gap",
 }
 

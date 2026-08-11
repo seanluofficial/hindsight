@@ -32,24 +32,25 @@ experiments stay in the table — every test counts.
 
 | # | Title | Primary endpoint | Status | HOLDOUT result | Primary p |
 |---|---|---|---|---|---|
-| 001 | LLM analysis of anonymized 8-Ks → abnormal returns | 5-day, 10bps quintile L/S Sharpe (full sample; holdout already spent) | `running` | ~coin flip (pending full run) | — |
+| 001 | LLM analysis of anonymized 8-Ks → abnormal returns | 5-day, 10bps quintile L/S Sharpe (full sample; holdout already spent) | `null` | coin flip: 51% hit @5d, Sharpe +0.14, H1 not supported; overconfident (Brier 0.263) | +0.14 (Sharpe) |
 | 002 | Event-type conditional returns | 5-day, 10bps high-impact−routine mean-excess difference (HOLDOUT) | `exploratory` | near-null (+1.9 bps, p 0.83) | 0.83 |
 | 003 | Filing novelty / linguistic change vs. prior filings ("Lazy Prices") | 20-day, 10bps quintile L/S Sharpe on change-score (HOLDOUT) | `exploratory` | null, wrong sign (Sharpe −0.87) | — |
 | 004 | Information staleness / first-disclosure (**diagnostic**) | Median staleness fraction > 0.5 on HOLDOUT (not a trading endpoint) | `exploratory` | ~47% (H1 not supported) | — |
 | 005 | Post-earnings-announcement drift (PEAD) | 20-day, 10bps quintile L/S Sharpe on the surprise signal (HOLDOUT) | `null` (holdout spent) | long-only 0.53 on dev → **−0.38 on holdout**; H1 not supported (decayed effect, caught out-of-sample) | −0.86 (t) |
 | 006 | Insider cluster-buying (Form 4) | 20-day, 10bps mean market-excess of cluster-buy events (HOLDOUT) | `null` (dev; **holdout reserved**) | dev −37 bps / Sharpe −0.18; H1 not supported (small-cap effect, absent in large caps) | −1.41 (t) |
 | 007 | "Bury bad news" filing timing | 20-day, 10bps mean market-excess of buried 8-Ks; H1 negative (HOLDOUT) | `null` (dev; **holdout reserved**) | dev buried −17 bps, buried−control −24 bps (p 0.039) but short-book Sharpe **0.22 < 0.30**; significant, not material | 0.039 (diff) |
+| 008 | Peer / lead-lag information diffusion | 20-day, 10bps mean signed peer market-excess, 3-digit SIC peers; H1 positive (HOLDOUT) | `null` (dev; **holdout reserved**) | dev 20d +1.4 bps (t 0.97); 60d t 3.99 is overlap artifact — monthly L/S book **Sharpe −0.17**; H1 not supported | 0.97 (t, 20d) |
 
 **Read the narrative:** [`../FINDINGS.md`](../FINDINGS.md). 001–005 are in-sample (see
-`../DEVIATIONS.md` D-EXP1); 006 and 007 failed the development gate so their holdouts were left
-unspent. Nothing cleared both gates (significance **and** materiality), so no family-wise
-correction was needed — though 007 is the first to clear the *statistical* gate on development
-(buried − control p 0.039) while failing the economic one (short-book Sharpe 0.22 < 0.30).
+`../DEVIATIONS.md` D-EXP1); 006, 007 and 008 failed the development gate so their holdouts were
+left unspent. Nothing cleared both gates (significance **and** materiality), so no family-wise
+correction was needed — 007 is the first to clear the *statistical* gate on development
+(buried − control p 0.039) while failing the economic one (Sharpe 0.22 < 0.30), and 008 is a
+worked example of why the overlap correction is fixed in advance (a 60-day event-level t of 3.99
+collapses to a −0.17 Sharpe once correlated peers are pooled monthly).
 
-Planned but not yet drafted (kept here so the family is declared up front, not discovered —
-see `PROTOCOL.md` §3): peer/lead-lag information diffusion (008). Subgroup conditioning
-(size/sector/regime) is a **robustness dimension**, not a standalone experiment — see
-`PROTOCOL.md` §4.
+The drafted family is now complete (002–008). Subgroup conditioning (size/sector/regime) is a
+**robustness dimension**, not a standalone experiment — see `PROTOCOL.md` §4.
 
 ### Major branch — gated, not yet started
 

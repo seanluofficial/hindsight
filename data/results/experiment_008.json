@@ -1,0 +1,76 @@
+{
+  "experiment": "008",
+  "title": "Peer / lead-lag information diffusion",
+  "primary": "20-day, 10bps mean signed peer market-excess (sign of filer reaction), 3-digit SIC peers (HOLDOUT); H1 positive",
+  "horizons": [
+    5,
+    20,
+    60
+  ],
+  "cost_bps": 10,
+  "diffusion": [
+    {
+      "partition": "explore",
+      "horizon": 5,
+      "n_pairs": 177510,
+      "n_events": 30839,
+      "mean_signed_bps": 0.010609147875026254,
+      "t_statistic": 0.013272893728558876,
+      "hit_rate": 0.5004450453495578
+    },
+    {
+      "partition": "explore",
+      "horizon": 20,
+      "n_pairs": 176409,
+      "n_events": 30827,
+      "mean_signed_bps": 1.3987154079114883,
+      "t_statistic": 0.9717065042548775,
+      "hit_rate": 0.5069015753164521
+    },
+    {
+      "partition": "explore",
+      "horizon": 60,
+      "n_pairs": 173044,
+      "n_events": 30764,
+      "mean_signed_bps": 9.728809174680537,
+      "t_statistic": 3.9916801158032005,
+      "hit_rate": 0.5064492267862509
+    }
+  ],
+  "materiality_long_short": {
+    "explore": {
+      "n_months": 121,
+      "mean_monthly": -0.0003910776427487141,
+      "sharpe": -0.1686184136323222,
+      "max_drawdown": 0.10958556457110025
+    }
+  },
+  "n_events": 42250,
+  "sic_prefix": 3,
+  "manifest": {
+    "stage": "experiment_008_diffusion",
+    "git_sha": "9020324dda86ac1f274d72ffff52a3f98afd3248-dirty",
+    "started_at_utc": "2026-08-11T21:11:15.894940+00:00",
+    "finished_at_utc": "2026-08-11T21:11:57.638011+00:00",
+    "duration_seconds": 41.7,
+    "python": "3.12.10",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "params": {
+      "partitions": [
+        "explore"
+      ]
+    },
+    "counts": {
+      "events_built": 42250,
+      "sic_groups": 156
+    },
+    "exclusions": {
+      "filer_no_price_coverage": 5340,
+      "filer_no_prior_close_or_penny": 20642,
+      "filer_reaction_unavailable_or_flat": 6
+    },
+    "exclusion_examples": {},
+    "total_excluded": 25988,
+    "errors": []
+  }
+}

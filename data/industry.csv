@@ -1,0 +1,637 @@
+cik,ticker,sic,sic_description
+1755672,CTVA,0100,Agricultural Production-Crops
+764065,CLF,1000,Metal Mining
+831259,FCX,1000,Metal Mining
+1798562,TMC,1000,Metal Mining
+1164727,NEM,1040,Gold and Silver Ores
+1064728,BTU,1221,Bituminous Coal & Lignite Surface Mining
+1841666,APA,1311,Crude Petroleum & Natural Gas
+1070412,CNX,1311,Crude Petroleum & Natural Gas
+1090012,DVN,1311,Crude Petroleum & Natural Gas
+821189,EOG,1311,Crude Petroleum & Natural Gas
+887396,EP,1311,Crude Petroleum & Natural Gas
+33213,EQT,1311,Crude Petroleum & Natural Gas
+895126,EXE,1311,Crude Petroleum & Natural Gas
+1539838,FANG,1311,Crude Petroleum & Natural Gas
+717423,MUR,1311,Crude Petroleum & Natural Gas
+797468,OXY,1311,Crude Petroleum & Natural Gas
+315852,RRC,1311,Crude Petroleum & Natural Gas
+46765,HP,1381,Drilling Oil & Gas Wells
+1163739,NBR,1381,Drilling Oil & Gas Wells
+1895262,NE,1381,Drilling Oil & Gas Wells
+1451505,RIG,1381,Drilling Oil & Gas Wells
+45012,HAL,1389,"Oil & Gas Field Services, NEC"
+87347,SLB,1389,"Oil & Gas Field Services, NEC"
+916076,MLM,1400,Mining & Quarrying of  Nonmetallic Minerals (No Fuels)
+1396009,VMC,1400,Mining & Quarrying of  Nonmetallic Minerals (No Fuels)
+920760,LEN,1520,General Bldg Contractors - Residential Bldgs
+882184,DHI,1531,Operative Builders
+795266,KBH,1531,Operative Builders
+906163,NVR,1531,Operative Builders
+822416,PHM,1531,Operative Builders
+1124198,FLR,1600,Heavy Construction Other Than Bldg Const - Contractors
+52988,J,1600,Heavy Construction Other Than Bldg Const - Contractors
+105634,EME,1731,Electrical Work
+1035983,FIX,1731,Electrical Work
+1050915,PWR,1731,Electrical Work
+23217,CAG,2000,Food and Kindred Products
+16732,CPB,2000,Food and Kindred Products
+1103982,MDLZ,2000,Food and Kindred Products
+48465,HRL,2011,Meat Packing Plants
+100493,TSN,2015,Poultry Slaughtering and Processing
+1637459,KHC,2030,"Canned, Frozen & Preservd Fruit, Veg & Food Specialties"
+1679273,LW,2030,"Canned, Frozen & Preservd Fruit, Veg & Food Specialties"
+91419,SJM,2033,"Canned, Fruits, Veg, Preserves, Jams & Jellies"
+40704,GIS,2040,Grain Mill Products
+47111,HSY,2060,Sugar & Confectionery Products
+7084,ADM,2070,Fats & Oils
+1996862,BG,2070,Fats & Oils
+14693,BF-B,2080,Beverages
+1418135,KDP,2080,Beverages
+21344,KO,2080,Beverages
+77476,PEP,2080,Beverages
+16918,STZ,2080,Beverages
+24545,TAP,2082,Malt Beverages
+865752,MNST,2086,Bottled & Canned Soft Drinks & Carbonated Waters
+63754,MKC,2090,Miscellaneous Food Preparations & Kindred Products
+764180,MO,2111,Cigarettes
+1413329,PM,2111,Cigarettes
+851968,MHK,2273,Carpets & Rugs
+1397187,LULU,2300,Apparel & Other Finishd Prods of  Fabrics & Similar Matl
+1336917,UA,2300,Apparel & Other Finishd Prods of  Fabrics & Similar Matl
+1336917,UAA,2300,Apparel & Other Finishd Prods of  Fabrics & Similar Matl
+723254,CTAS,2320,"Men's & Boys' Furnishgs, Work Clothg, & Allied Garments"
+78239,PVH,2320,"Men's & Boys' Furnishgs, Work Clothg, & Allied Garments"
+1037038,RL,2320,"Men's & Boys' Furnishgs, Work Clothg, & Allied Garments"
+103379,VFC,2320,"Men's & Boys' Furnishgs, Work Clothg, & Allied Garments"
+58492,LEG,2510,Household Furniture
+1941365,MBC,2511,"Wood Household Furniture, (No Upholstered)"
+51434,IP,2621,Paper Mills
+75677,PKG,2650,Paperboard Containers & Boxes
+2005951,SW,2650,Paperboard Containers & Boxes
+8818,AVY,2670,Converted Paper & Paperboard Prods (No Contaners/Boxes)
+55785,KMB,2670,Converted Paper & Paperboard Prods (No Contaners/Boxes)
+1564708,NWS,2711,Newspapers: Publishing or  Publishing & Printing
+1564708,NWSA,2711,Newspapers: Publishing or  Publishing & Printing
+71691,NYT,2711,Newspapers: Publishing or  Publishing & Printing
+37785,FMC,2800,Chemicals & Allied Products
+2064953,SOLS,2800,Chemicals & Allied Products
+2969,APD,2810,Industrial Inorganic Chemicals
+1707925,LIN,2810,Industrial Inorganic Chemicals
+1306830,CE,2820,"Plastic Material, Synth Resin/Rubber, Cellulos (No Glass)"
+915913,ALB,2821,"Plastic Materials, Synth Resins & Nonvulcan Elastomers"
+1666700,DD,2821,"Plastic Materials, Synth Resins & Nonvulcan Elastomers"
+1751788,DOW,2821,"Plastic Materials, Synth Resins & Nonvulcan Elastomers"
+915389,EMN,2821,"Plastic Materials, Synth Resins & Nonvulcan Elastomers"
+1551152,ABBV,2834,Pharmaceutical Preparations
+1800,ABT,2834,Pharmaceutical Preparations
+1771910,ADCT,2834,Pharmaceutical Preparations
+14272,BMY,2834,Pharmaceutical Preparations
+1818794,DYN,2834,Pharmaceutical Preparations
+200406,JNJ,2834,Pharmaceutical Preparations
+59478,LLY,2834,Pharmaceutical Preparations
+310158,MRK,2834,Pharmaceutical Preparations
+906709,NKTR,2834,Pharmaceutical Preparations
+1821825,OGN,2834,Pharmaceutical Preparations
+78003,PFE,2834,Pharmaceutical Preparations
+1585364,PRGO,2834,Pharmaceutical Preparations
+872589,REGN,2834,Pharmaceutical Preparations
+875320,VRTX,2834,Pharmaceutical Preparations
+1792044,VTRS,2834,Pharmaceutical Preparations
+1555280,ZTS,2834,Pharmaceutical Preparations
+874716,IDXX,2835,In Vitro & In Vivo Diagnostic Substances
+318154,AMGN,2836,"Biological Products, (No Diagnostic Substances)"
+1745999,BEAM,2836,"Biological Products, (No Diagnostic Substances)"
+875045,BIIB,2836,"Biological Products, (No Diagnostic Substances)"
+882095,GILD,2836,"Biological Products, (No Diagnostic Substances)"
+1682852,MRNA,2836,"Biological Products, (No Diagnostic Substances)"
+842023,TECH,2836,"Biological Products, (No Diagnostic Substances)"
+313927,CHD,2840,"Soap, Detergents, Cleang Preparations, Perfumes, Cosmetics"
+31462,ECL,2840,"Soap, Detergents, Cleang Preparations, Perfumes, Cosmetics"
+80424,PG,2840,"Soap, Detergents, Cleang Preparations, Perfumes, Cosmetics"
+21076,CLX,2842,"Specialty Cleaning, Polishing and Sanitation Preparations"
+21665,CL,2844,"Perfumes, Cosmetics & Other Toilet Preparations"
+1024305,COTY,2844,"Perfumes, Cosmetics & Other Toilet Preparations"
+1001250,EL,2844,"Perfumes, Cosmetics & Other Toilet Preparations"
+1944048,KVUE,2844,"Perfumes, Cosmetics & Other Toilet Preparations"
+79879,PPG,2851,"Paints, Varnishes, Lacquers, Enamels & Allied Prods"
+51253,IFF,2860,Industrial Organic Chemicals
+1489393,LYB,2860,Industrial Organic Chemicals
+1324404,CF,2870,Agricultural Chemicals
+1285785,MOS,2870,Agricultural Chemicals
+1163165,COP,2911,Petroleum Refining
+93410,CVX,2911,Petroleum Refining
+1510295,MPC,2911,Petroleum Refining
+1534701,PSX,2911,Petroleum Refining
+1552275,SUN,2911,Petroleum Refining
+1035002,VLO,2911,Petroleum Refining
+34088,XOM,2911,Petroleum Refining
+42582,GT,3011,Tires & Inner Tubes
+910521,DECK,3021,Rubber & Plastics Footwear
+320187,NKE,3021,Rubber & Plastics Footwear
+814453,NWL,3089,"Plastics Products, NEC"
+1530721,CPRI,3100,Leather & Leather Products
+1116132,TPR,3100,Leather & Leather Products
+812074,OI,3221,Glass Containers
+849395,CRH,3241,"Cement, Hydraulic"
+73309,NUE,3312,"Steel Works, Blast Furnaces & Rolling Mills (Coke Ovens)"
+1022671,STLD,3312,"Steel Works, Blast Furnaces & Rolling Mills (Coke Ovens)"
+1018963,ATI,3317,Steel Pipe & Tubes
+1675149,AA,3334,Primary Production of  Aluminum
+4281,HWM,3350,Rolling Drawing & Extruding of  Nonferrous Metals
+24741,GLW,3357,Drawing & Insulating of  Nonferrous Wire
+9389,BALL,3411,Metal Cans
+1219601,CCK,3411,Metal Cans
+91440,SNA,3420,"Cutlery, Handtools & General Hardware"
+93556,SWK,3420,"Cutlery, Handtools & General Hardware"
+62996,MAS,3430,"Heating Equip, Except Elec & Warm Air; & Plumbing Fixtures"
+1069183,AXON,3480,"Ordnance & Accessories, (No Vehicles/Guided Missiles)"
+76334,PH,3490,Miscellaneous Fabricated Metal Products
+14930,BC,3510,Engines & Turbines
+26172,CMI,3510,Engines & Turbines
+315189,DE,3523,Farm Machinery & Equipment
+29905,DOV,3530,"Construction, Mining & Materials Handling Machinery & Equip"
+18230,CAT,3531,Construction Machinery & Equip
+1701605,BKR,3533,Oil & Gas Field Machinery & Equipment
+1681459,FTI,3533,Oil & Gas Field Machinery & Equipment
+1021860,NOV,3533,Oil & Gas Field Machinery & Equipment
+77360,PNR,3550,Special Industry Machinery (No Metalworking Machinery)
+707549,LRCX,3559,"Special Industry Machinery, NEC"
+1699150,IR,3560,General Industrial Machinery & Equipment
+49826,ITW,3560,General Industrial Machinery & Equipment
+877212,ZBRA,3560,General Industrial Machinery & Equipment
+30625,FLS,3561,Pumps & Pumping Equipment
+832101,IEX,3561,Pumps & Pumping Equipment
+216228,ITT,3561,Pumps & Pumping Equipment
+1524472,XYL,3561,Pumps & Pumping Equipment
+72331,NDSN,3569,"General Industrial Machinery & Equipment, NEC"
+1645590,HPE,3570,Computer & office Equipment
+47217,HPQ,3570,Computer & office Equipment
+51143,IBM,3570,Computer & office Equipment
+320193,AAPL,3571,Electronic Computers
+1571996,DELL,3571,Electronic Computers
+1375365,SMCI,3571,Electronic Computers
+1002047,NTAP,3572,Computer Storage Devices
+2023554,SNDK,3572,Computer Storage Devices
+1137789,STX,3572,Computer Storage Devices
+106040,WDC,3572,Computer Storage Devices
+1596532,ANET,3576,Computer Communications Equipment
+858877,CSCO,3576,Computer Communications Equipment
+1048695,FFIV,3576,Computer Communications Equipment
+1262039,FTNT,3577,"Computer Peripheral Equipment, NEC"
+1327567,PANW,3577,"Computer Peripheral Equipment, NEC"
+1770450,XRX,3577,"Computer Peripheral Equipment, NEC"
+78814,PBI,3579,"Office Machines, NEC"
+1783180,CARR,3585,Air-Cond & Warm Air Heatg Equip & Comm & Indl Refrig Equip
+833444,JCI,3585,Air-Cond & Warm Air Heatg Equip & Comm & Indl Refrig Equip
+1069202,LII,3585,Air-Cond & Warm Air Heatg Equip & Comm & Indl Refrig Equip
+1551182,ETN,3590,Misc Industrial & Commercial Machinery & Equipment
+32604,EMR,3600,Electronic & Other Electrical Equipment (No Computer Equip)
+40545,GE,3600,Electronic & Other Electrical Equipment (No Computer Equip)
+1996810,GEV,3600,Electronic & Other Electrical Equipment (No Computer Equip)
+1781335,OTIS,3600,Electronic & Other Electrical Equipment (No Computer Equip)
+1474735,GNRC,3621,Motors & Generators
+91142,AOS,3630,Household Appliances
+106640,WHR,3630,Household Appliances
+1144215,AYI,3640,Electric Lighting & Wiring Equipment
+936395,CIEN,3661,Telephone & Telegraph Apparatus
+68505,MSI,3663,Radio & Tv Broadcasting & Communications Equipment
+804328,QCOM,3663,Radio & Tv Broadcasting & Communications Equipment
+1633978,LITE,3669,"Communications Equipment, NEC"
+48898,HUBB,3670,Electronic Components & Accessories
+866374,FLEX,3672,Printed Circuit Boards
+898293,JBL,3672,Printed Circuit Boards
+6281,ADI,3674,Semiconductors & Related Devices
+6951,AMAT,3674,Semiconductors & Related Devices
+2488,AMD,3674,Semiconductors & Related Devices
+1730168,AVGO,3674,Semiconductors & Related Devices
+1463101,ENPH,3674,Semiconductors & Related Devices
+1274494,FSLR,3674,Semiconductors & Related Devices
+50863,INTC,3674,Semiconductors & Related Devices
+1111928,IPGP,3674,Semiconductors & Related Devices
+827054,MCHP,3674,Semiconductors & Related Devices
+1280452,MPWR,3674,Semiconductors & Related Devices
+1835632,MRVL,3674,Semiconductors & Related Devices
+723125,MU,3674,Semiconductors & Related Devices
+1045810,NVDA,3674,Semiconductors & Related Devices
+1413447,NXPI,3674,Semiconductors & Related Devices
+1097864,ON,3674,Semiconductors & Related Devices
+2058873,Q,3674,Semiconductors & Related Devices
+1604778,QRVO,3674,Semiconductors & Related Devices
+1419612,SEDG,3674,Semiconductors & Related Devices
+4127,SWKS,3674,Semiconductors & Related Devices
+1992243,TE,3674,Semiconductors & Related Devices
+97476,TXN,3674,Semiconductors & Related Devices
+820313,APH,3678,Electronic Connectors
+1674101,VRT,3679,"Electronic Components, NEC"
+1881551,STI,3690,"Miscellaneous Electrical Machinery, Equipment & Supplies"
+37996,F,3711,Motor Vehicles & Passenger Car Bodies
+1467858,GM,3711,Motor Vehicles & Passenger Car Bodies
+75362,PCAR,3711,Motor Vehicles & Passenger Car Bodies
+1318605,TSLA,3711,Motor Vehicles & Passenger Car Bodies
+1521332,APTV,3714,Motor Vehicle Parts & Accessories
+908255,BWA,3714,Motor Vehicle Parts & Accessories
+217346,TXT,3720,Aircraft & Parts
+12927,BA,3721,Aircraft
+773840,HON,3724,Aircraft Engines & Engine Parts
+2089271,HONA,3724,Aircraft Engines & Engine Parts
+101829,RTX,3724,Aircraft Engines & Engine Parts
+1260221,TDG,3728,"Aircraft Parts & Auxiliary Equipment, NEC"
+40533,GD,3730,Ship & Boat Building & Repairing
+1501585,HII,3730,Ship & Boat Building & Repairing
+943452,WAB,3743,Railroad Equipment
+793952,HOG,3751,"Motorcycles, Bicycles & Parts"
+936468,LMT,3760,Guided Missiles & Space Vehicles & Parts
+1121788,GRMN,3812,"Search, Detection, Navigation, Guidance, Aeronautical Sys"
+202058,LHX,3812,"Search, Detection, Navigation, Guidance, Aeronautical Sys"
+1133421,NOC,3812,"Search, Detection, Navigation, Guidance, Aeronautical Sys"
+1094285,TDY,3812,"Search, Detection, Navigation, Guidance, Aeronautical Sys"
+1466258,TT,3822,Auto Controls For Regulating Residential & Comml Environments
+1037868,AME,3823,"Industrial Instruments For Measurement, Display, and Control"
+313616,DHR,3823,"Industrial Instruments For Measurement, Display, and Control"
+1659166,FTV,3823,"Industrial Instruments For Measurement, Display, and Control"
+1601046,KEYS,3823,"Industrial Instruments For Measurement, Display, and Control"
+882835,ROP,3823,"Industrial Instruments For Measurement, Display, and Control"
+1786842,VNT,3824,Totalizing Fluid Meters & Counting Devices
+97210,TER,3825,Instruments For Meas & Testing of  Electricity & Elec Signals
+1967680,VLTO,3825,Instruments For Meas & Testing of  Electricity & Elec Signals
+1090872,A,3826,Laboratory Analytical Instruments
+12208,BIO,3826,Laboratory Analytical Instruments
+1110803,ILMN,3826,Laboratory Analytical Instruments
+1037646,MTD,3826,Laboratory Analytical Instruments
+31791,RVTY,3826,Laboratory Analytical Instruments
+1000697,WAT,3826,Laboratory Analytical Instruments
+820318,COHR,3827,Optical Instruments & Lenses
+319201,KLAC,3827,Optical Instruments & Lenses
+1024478,ROK,3829,"Measuring & Controlling Devices, NEC"
+97745,TMO,3829,"Measuring & Controlling Devices, NEC"
+864749,TRMB,3829,"Measuring & Controlling Devices, NEC"
+10456,BAX,3841,Surgical & Medical Instruments & Apparatus
+10795,BDX,3841,Surgical & Medical Instruments & Apparatus
+885725,BSX,3841,Surgical & Medical Instruments & Apparatus
+1093557,DXCM,3841,Surgical & Medical Instruments & Apparatus
+66740,MMM,3841,Surgical & Medical Instruments & Apparatus
+1145197,PODD,3841,Surgical & Medical Instruments & Apparatus
+943819,RMD,3841,Surgical & Medical Instruments & Apparatus
+1778922,SGP,3841,Surgical & Medical Instruments & Apparatus
+1964738,SOLV,3841,Surgical & Medical Instruments & Apparatus
+310764,SYK,3841,Surgical & Medical Instruments & Apparatus
+96943,TFX,3841,Surgical & Medical Instruments & Apparatus
+105770,WST,3841,Surgical & Medical Instruments & Apparatus
+1097149,ALGN,3842,"Orthopedic, Prosthetic & Surgical Appliances & Supplies"
+1099800,EW,3842,"Orthopedic, Prosthetic & Surgical Appliances & Supplies"
+1035267,ISRG,3842,"Orthopedic, Prosthetic & Surgical Appliances & Supplies"
+1757898,STE,3842,"Orthopedic, Prosthetic & Surgical Appliances & Supplies"
+1136869,ZBH,3842,"Orthopedic, Prosthetic & Surgical Appliances & Supplies"
+818479,XRAY,3843,Dental Equipment & Supplies
+1932393,GEHC,3844,X-Ray Apparatus & Tubes & Related Irradiation Apparatus
+1613103,MDT,3845,Electromedical & Electrotherapeutic Apparatus
+711404,COO,3851,Ophthalmic Goods
+883569,FOSL,3873,"Watches, Clocks, Clockwork Operated Devices/Parts"
+63276,MAT,3942,Dolls & Stuffed Toys
+46080,HAS,3944,"Games, Toys & Children's Vehicles (No Dolls & Bicycles)"
+1748790,AMCR,3990,Miscellaneous Manufacturing Industries
+277948,CSX,4011,"Railroads, Line-Haul Operating"
+702165,NSC,4011,"Railroads, Line-Haul Operating"
+100885,UNP,4011,"Railroads, Line-Haul Operating"
+1090727,UPS,4210,Trucking & Courier Services (No Air)
+728535,JBHT,4213,Trucking (No Local)
+878927,ODFL,4213,Trucking (No Local)
+815097,CCL,4400,Water Transportation
+1513761,NCLH,4400,Water Transportation
+884887,RCL,4400,Water Transportation
+6201,AAL,4512,"Air Transportation, Scheduled"
+766421,ALK,4512,"Air Transportation, Scheduled"
+27904,DAL,4512,"Air Transportation, Scheduled"
+92380,LUV,4512,"Air Transportation, Scheduled"
+100517,UAL,4512,"Air Transportation, Scheduled"
+1048911,FDX,4513,Air Courier Services
+2082247,FDXF,4513,Air Courier Services
+1075531,BKNG,4700,Transportation Services
+1324424,EXPE,4700,Transportation Services
+1043277,CHRW,4731,Arrangement of  Transportation of  Freight & Cargo
+746515,EXPD,4731,Arrangement of  Transportation of  Freight & Cargo
+1283699,TMUS,4812,Radiotelephone Communications
+18926,LUMN,4813,Telephone Communications (No Radiotelephone)
+732717,T,4813,Telephone Communications (No Radiotelephone)
+732712,VZ,4813,Telephone Communications (No Radiotelephone)
+1754301,FOX,4833,Television Broadcasting Stations
+1754301,FOXA,4833,Television Broadcasting Stations
+2041610,PSKY,4833,Television Broadcasting Stations
+1091667,CHTR,4841,Cable & Other Pay Television Services
+1166691,CMCSA,4841,Cable & Other Pay Television Services
+1437107,WBD,4841,Cable & Other Pay Television Services
+1415404,ECHO,4899,"Communications Services, NEC"
+4904,AEP,4911,Electric Services
+1868275,CEG,4911,Electric Services
+1130310,CNP,4911,Electric Services
+715957,D,4911,Electric Services
+936340,DTE,4911,Electric Services
+827052,EIX,4911,Electric Services
+72741,ES,4911,Electric Services
+65984,ETR,4911,Electric Services
+1031296,FE,4911,Electric Services
+753308,NEE,4911,Electric Services
+1013871,NRG,4911,Electric Services
+764622,PNW,4911,Electric Services
+922224,PPL,4911,Electric Services
+92122,SO,4911,Electric Services
+1692819,VST,4911,Electric Services
+1506307,KMI,4922,Natural Gas Transmission
+1389170,TRGP,4922,Natural Gas Transmission
+107263,WMB,4922,Natural Gas Transmission
+1039684,OKE,4923,Natural Gas Transmisison & Distribution
+731802,ATO,4924,Natural Gas Distribution
+1002910,AEE,4931,Electric & Other Services Combined
+811156,CMS,4931,Electric & Other Services Combined
+827099,CPWR,4931,Electric & Other Services Combined
+1326160,DUK,4931,Electric & Other Services Combined
+1047862,ED,4931,Electric & Other Services Combined
+1711269,EVRG,4931,Electric & Other Services Combined
+1109357,EXC,4931,Electric & Other Services Combined
+352541,LNT,4931,Electric & Other Services Combined
+1111711,NI,4931,Electric & Other Services Combined
+1004980,PCG,4931,Electric & Other Services Combined
+788784,PEG,4931,Electric & Other Services Combined
+783325,WEC,4931,Electric & Other Services Combined
+72903,XEL,4931,Electric & Other Services Combined
+1032208,SRE,4932,Gas & Other Services Combined
+1410636,AWK,4941,Water Supply
+1060391,RSG,4953,Refuse Systems
+823768,WM,4953,Refuse Systems
+874761,AES,4991,Cogeneration Services & Small Power Producers
+277135,GWW,5000,Wholesale-Durable Goods
+1065696,LKQ,5010,Wholesale-Motor Vehicles & Motor Vehicle Parts & Supplies
+40987,GPC,5013,Wholesale-Motor Vehicle Supplies & New Parts
+1000228,HSIC,5047,"Wholesale-Medical, Dental & Hospital Equipment & Supplies"
+1385157,TEL,5065,"Wholesale-Electronic Parts & Equipment, NEC"
+945841,POOL,5090,Wholesale-Misc Durable Goods
+721371,CAH,5122,"Wholesale-Drugs, Proprietaries & Druggists' Sundries"
+1140859,COR,5122,"Wholesale-Drugs, Proprietaries & Druggists' Sundries"
+927653,MCK,5122,"Wholesale-Drugs, Proprietaries & Druggists' Sundries"
+1286681,DPZ,5140,Wholesale-Groceries & Related Products
+96021,SYY,5140,Wholesale-Groceries & Related Products
+2080921,APC,5172,Wholesale-Petroleum & Petroleum Products (No Bulk Stations)
+815556,FAST,5200,"Retail-Building Materials, Hardware, Garden Supply"
+89800,SHW,5200,"Retail-Building Materials, Hardware, Garden Supply"
+916365,TSCO,5200,"Retail-Building Materials, Hardware, Garden Supply"
+1316835,BLDR,5211,Retail-Lumber & Other Building Materials Dealers
+354950,HD,5211,Retail-Lumber & Other Building Materials Dealers
+60667,LOW,5211,Retail-Lumber & Other Building Materials Dealers
+885639,KSS,5311,Retail-Department Stores
+794367,M,5311,Retail-Department Stores
+909832,COST,5331,Retail-Variety Stores
+29534,DG,5331,Retail-Variety Stores
+935703,DLTR,5331,Retail-Variety Stores
+27419,TGT,5331,Retail-Variety Stores
+104169,WMT,5331,Retail-Variety Stores
+56873,KR,5411,Retail-Grocery Stores
+350698,AN,5500,Retail-Auto Dealers & Gasoline Stations
+726958,CASY,5500,Retail-Auto Dealers & Gasoline Stations
+900075,CPRT,5500,Retail-Auto Dealers & Gasoline Stations
+1690820,CVNA,5500,Retail-Auto Dealers & Gasoline Stations
+1170010,KMX,5500,Retail-Auto Dealers & Gasoline Stations
+1158449,AAP,5531,Retail-Auto & Home Supply Stores
+866787,AZO,5531,Retail-Auto & Home Supply Stores
+898173,ORLY,5531,Retail-Auto & Home Supply Stores
+1018840,ANF,5651,Retail-Family Clothing Stores
+745732,ROST,5651,Retail-Family Clothing Stores
+109198,TJX,5651,Retail-Family Clothing Stores
+912615,URBN,5651,Retail-Family Clothing Stores
+719955,WSM,5700,"Retail-Home Furniture, Furnishings & Equipment Stores"
+764478,BBY,5731,"Retail-Radio, Tv & Consumer Electronics Stores"
+1326380,GME,5734,Retail-Computer & Computer Software Stores
+829224,SBUX,5810,Retail-Eating & Drinking Places
+1058090,CMG,5812,Retail-Eating  Places
+940944,DRI,5812,Retail-Eating  Places
+63908,MCD,5812,Retail-Eating  Places
+1041061,YUM,5812,Retail-Eating  Places
+1877971,POM,5900,Retail-Miscellaneous Retail
+64803,CVS,5912,Retail-Drug Stores and Proprietary Stores
+832988,SIG,5944,Retail-Jewelry Stores
+1018724,AMZN,5961,Retail-Catalog & Mail-Order Houses
+1130713,BBBY,5961,Retail-Catalog & Mail-Order Houses
+1402057,CDW,5961,Retail-Catalog & Mail-Order Houses
+701985,BBWI,5990,"Retail-Retail Stores, NEC"
+1403568,ULTA,5990,"Retail-Retail Stores, NEC"
+70858,BAC,6021,National Commercial Banks
+831001,C,6021,National Commercial Banks
+927628,COF,6021,National Commercial Banks
+36966,FHN,6021,National Commercial Banks
+49196,HBAN,6021,National Commercial Banks
+19617,JPM,6021,National Commercial Banks
+91576,KEY,6021,National Commercial Banks
+713676,PNC,6021,National Commercial Banks
+1281761,RF,6021,National Commercial Banks
+92230,TFC,6021,National Commercial Banks
+36104,USB,6021,National Commercial Banks
+72971,WFC,6021,National Commercial Banks
+109380,ZION,6021,National Commercial Banks
+1390777,BNY,6022,State Commercial Banks
+759944,CFG,6022,State Commercial Banks
+35527,FITB,6022,State Commercial Banks
+36270,MTB,6022,State Commercial Banks
+73124,NTRS,6022,State Commercial Banks
+93751,STT,6022,State Commercial Banks
+312070,GRN,6029,"Commercial Banks, NEC"
+1032033,SLM,6141,Personal Credit Institutions
+4962,AXP,6199,Finance Services
+1679788,COIN,6199,Finance Services
+1958713,MI,6199,Finance Services
+1512920,SII,6199,Finance Services
+1601712,SYF,6199,Finance Services
+1374310,CBOE,6200,"Security & Commodity Brokers, Dealers, Exchanges & Services"
+1156375,CME,6200,"Security & Commodity Brokers, Dealers, Exchanges & Services"
+1571949,ICE,6200,"Security & Commodity Brokers, Dealers, Exchanges & Services"
+1120193,NDAQ,6200,"Security & Commodity Brokers, Dealers, Exchanges & Services"
+2012383,BLK,6211,"Security Brokers, Dealers & Flotation Companies"
+886982,GS,6211,"Security Brokers, Dealers & Flotation Companies"
+1783879,HOOD,6211,"Security Brokers, Dealers & Flotation Companies"
+1381197,IBKR,6211,"Security Brokers, Dealers & Flotation Companies"
+96223,JEF,6211,"Security Brokers, Dealers & Flotation Companies"
+1278021,MKTX,6211,"Security Brokers, Dealers & Flotation Companies"
+895421,MS,6211,"Security Brokers, Dealers & Flotation Companies"
+1593538,NAVI,6211,"Security Brokers, Dealers & Flotation Companies"
+720005,RJF,6211,"Security Brokers, Dealers & Flotation Companies"
+316709,SCHW,6211,"Security Brokers, Dealers & Flotation Companies"
+1405528,USL,6221,Commodity Contracts Brokers & Dealers
+1004434,AMG,6282,Investment Advice
+820027,AMP,6282,Investment Advice
+1858681,APO,6282,Investment Advice
+1176948,ARES,6282,Investment Advice
+38777,BEN,6282,Investment Advice
+1393818,BX,6282,Investment Advice
+914208,IVZ,6282,Investment Advice
+1404912,KKR,6282,Investment Advice
+1113169,TROW,6282,Investment Advice
+1685040,BHF,6311,Life Insurance
+320335,GL,6311,Life Insurance
+1276520,GNW,6311,Life Insurance
+59558,LNC,6311,Life Insurance
+1099219,MET,6311,Life Insurance
+1137774,PRU,6311,Life Insurance
+4977,AFL,6321,Accident & Health Insurance
+1126328,PFG,6321,Accident & Health Insurance
+5513,UNM,6321,Accident & Health Insurance
+1739940,CI,6324,Hospital & Medical Service Plans
+1071739,CNC,6324,Hospital & Medical Service Plans
+1156039,ELV,6324,Hospital & Medical Service Plans
+49071,HUM,6324,Hospital & Medical Service Plans
+1179929,MOH,6324,Hospital & Medical Service Plans
+731766,UNH,6324,Hospital & Medical Service Plans
+947484,ACGL,6331,"Fire, Marine & Casualty Insurance"
+5272,AIG,6331,"Fire, Marine & Casualty Insurance"
+899051,ALL,6331,"Fire, Marine & Casualty Insurance"
+1067983,BRK-B,6331,"Fire, Marine & Casualty Insurance"
+896159,CB,6331,"Fire, Marine & Casualty Insurance"
+20286,CINF,6331,"Fire, Marine & Casualty Insurance"
+1095073,EG,6331,"Fire, Marine & Casualty Insurance"
+874766,HIG,6331,"Fire, Marine & Casualty Insurance"
+2055116,KG,6331,"Fire, Marine & Casualty Insurance"
+60086,L,6331,"Fire, Marine & Casualty Insurance"
+80661,PGR,6331,"Fire, Marine & Casualty Insurance"
+86312,TRV,6331,"Fire, Marine & Casualty Insurance"
+11544,WRB,6331,"Fire, Marine & Casualty Insurance"
+814585,MBI,6351,Surety Insurance
+1267238,AIZ,6399,"Insurance Carriers, NEC"
+354190,AJG,6411,"Insurance Agents, Brokers & Service"
+315293,AON,6411,"Insurance Agents, Brokers & Service"
+79282,BRO,6411,"Insurance Agents, Brokers & Service"
+922621,ERIE,6411,"Insurance Agents, Brokers & Service"
+1788451,LIFE,6411,"Insurance Agents, Brokers & Service"
+62709,MRSH,6411,"Insurance Agents, Brokers & Service"
+1140536,WTW,6411,"Insurance Agents, Brokers & Service"
+1138118,CBRE,6500,Real Estate
+1687229,INVH,6510,Real Estate Operators (No Developers) & Lessors
+1578732,MMI,6531,Real Estate Agents & Managers (For Others)
+1811074,TPL,6792,Oil Royalty Traders
+922864,AIV,6798,Real Estate Investment Trusts
+1053507,AMT,6798,Real Estate Investment Trusts
+1035443,ARE,6798,Real Estate Investment Trusts
+915912,AVB,6798,Real Estate Investment Trusts
+1037540,BXP,6798,Real Estate Investment Trusts
+1051470,CCI,6798,Real Estate Investment Trusts
+906345,CPT,6798,Real Estate Investment Trusts
+1297996,DLR,6798,Real Estate Investment Trusts
+765880,DOC,6798,Real Estate Investment Trusts
+1101239,EQIX,6798,Real Estate Investment Trusts
+906107,EQR,6798,Real Estate Investment Trusts
+920522,ESS,6798,Real Estate Investment Trusts
+1289490,EXR,6798,Real Estate Investment Trusts
+34903,FRT,6798,Real Estate Investment Trusts
+1070750,HST,6798,Real Estate Investment Trusts
+1020569,IRM,6798,Real Estate Investment Trusts
+879101,KIM,6798,Real Estate Investment Trusts
+912595,MAA,6798,Real Estate Investment Trusts
+912242,MAC,6798,Real Estate Investment Trusts
+726728,O,6798,Real Estate Investment Trusts
+1045609,PLD,6798,Real Estate Investment Trusts
+1393311,PSA,6798,Real Estate Investment Trusts
+910606,REG,6798,Real Estate Investment Trusts
+1034054,SBAC,6798,Real Estate Investment Trusts
+1040971,SLG,6798,Real Estate Investment Trusts
+1063761,SPG,6798,Real Estate Investment Trusts
+74208,UDR,6798,Real Estate Investment Trusts
+1705696,VICI,6798,Real Estate Investment Trusts
+899689,VNO,6798,Real Estate Investment Trusts
+740260,VTR,6798,Real Estate Investment Trusts
+766704,WELL,6798,Real Estate Investment Trusts
+106535,WY,6798,Real Estate Investment Trusts
+1590895,CZR,7011,Hotels & Motels
+1585689,HLT,7011,Hotels & Motels
+1300514,LVS,7011,Hotels & Motels
+1048286,MAR,7011,Hotels & Motels
+789570,MGM,7011,Hotels & Motels
+921738,PENN,7011,Hotels & Motels
+1174922,WYNN,7011,Hotels & Motels
+12659,HRB,7200,Services-Personal Services
+29989,OMC,7311,Services-Advertising Agencies
+33185,EFX,7320,"Services-Consumer Credit Reporting, Collection Agencies"
+1059556,MCO,7320,"Services-Consumer Credit Reporting, Collection Agencies"
+64040,SPGI,7320,"Services-Consumer Credit Reporting, Collection Agencies"
+1559720,ABNB,7340,Services-To Dwellings & Other Buildings
+84839,ROL,7340,Services-To Dwellings & Other Buildings
+1067701,URI,7359,"Services-Equipment Rental & Leasing, NEC"
+315213,RHI,7363,Services-Help Supply Services
+1751008,APP,7370,"Services-Computer Programming, Data Processing, Etc."
+1819928,DV,7370,"Services-Computer Programming, Data Processing, Etc."
+1013237,FDS,7370,"Services-Computer Programming, Data Processing, Etc."
+1652044,GOOG,7370,"Services-Computer Programming, Data Processing, Etc."
+1652044,GOOGL,7370,"Services-Computer Programming, Data Processing, Etc."
+1326801,META,7370,"Services-Computer Programming, Data Processing, Etc."
+891103,MTCH,7370,"Services-Computer Programming, Data Processing, Etc."
+1526520,TRIP,7370,"Services-Computer Programming, Data Processing, Etc."
+1671933,TTD,7370,"Services-Computer Programming, Data Processing, Etc."
+1595761,WB,7370,"Services-Computer Programming, Data Processing, Etc."
+1058290,CTSH,7371,Services-Computer Programming Services
+1352010,EPAM,7371,Services-Computer Programming Services
+1014473,VRSN,7371,Services-Computer Programming Services
+796343,ADBE,7372,Services-Prepackaged Software
+769397,ADSK,7372,Services-Prepackaged Software
+813672,CDNS,7372,Services-Prepackaged Software
+1108524,CRM,7372,Services-Prepackaged Software
+1535527,CRWD,7372,Services-Prepackaged Software
+1561550,DDOG,7372,Services-Prepackaged Software
+712515,EA,7372,Services-Prepackaged Software
+849399,GEN,7372,Services-Prepackaged Software
+896878,INTU,7372,Services-Prepackaged Software
+789019,MSFT,7372,Services-Prepackaged Software
+1373715,NOW,7372,Services-Prepackaged Software
+1341439,ORCL,7372,Services-Prepackaged Software
+1590955,PAYC,7372,Services-Prepackaged Software
+1321655,PLTR,7372,Services-Prepackaged Software
+857005,PTC,7372,Services-Prepackaged Software
+1583708,S,7372,Services-Prepackaged Software
+883241,SNPS,7372,Services-Prepackaged Software
+816761,TDC,7372,Services-Prepackaged Software
+946581,TTWO,7372,Services-Prepackaged Software
+860731,TYL,7372,Services-Prepackaged Software
+1393052,VEEV,7372,Services-Prepackaged Software
+1512673,XYZ,7372,Services-Prepackaged Software
+1609711,GDDY,7373,Services-Computer Integrated Systems Design
+779152,JKHY,7373,Services-Computer Integrated Systems Design
+1336920,LDOS,7373,Services-Computer Integrated Systems Design
+1621672,SLE,7373,Services-Computer Integrated Systems Design
+8670,ADP,7374,Services-Computer Processing & Data Preparation
+1688568,DXC,7374,Services-Computer Processing & Data Preparation
+1442145,VRSK,7374,Services-Computer Processing & Data Preparation
+1327811,WDAY,7374,Services-Computer Processing & Data Preparation
+1703399,SE,7380,Services-Miscellaneous Business Services
+1703056,ADT,7381,"Services-Detective, Guard & Armored Car Services"
+1579241,ALLE,7381,"Services-Detective, Guard & Armored Car Services"
+1467373,ACN,7389,"Services-Business Services, NEC"
+1086222,AKAM,7389,"Services-Business Services, NEC"
+2011286,AMTM,7389,"Services-Business Services, NEC"
+1383312,BR,7389,"Services-Business Services, NEC"
+1175454,CPAY,7389,"Services-Business Services, NEC"
+1057352,CSGP,7389,"Services-Business Services, NEC"
+1792789,DASH,7389,"Services-Business Services, NEC"
+1065088,EBAY,7389,"Services-Business Services, NEC"
+1370637,ETSY,7389,"Services-Business Services, NEC"
+814547,FICO,7389,"Services-Business Services, NEC"
+1136893,FIS,7389,"Services-Business Services, NEC"
+798354,FISV,7389,"Services-Business Services, NEC"
+1123360,GPN,7389,"Services-Business Services, NEC"
+1141391,MA,7389,"Services-Business Services, NEC"
+1408198,MSCI,7389,"Services-Business Services, NEC"
+1633917,PYPL,7389,"Services-Business Services, NEC"
+1543151,UBER,7389,"Services-Business Services, NEC"
+1403161,V,7389,"Services-Business Services, NEC"
+1365135,WU,7389,"Services-Business Services, NEC"
+85961,R,7510,Services-Auto Rental & Leasing (No Drivers)
+1065280,NFLX,7841,Services-Video Tape Rental
+1335258,LYV,7900,Services-Amusement & Recreation Services
+1973266,TKO,7900,Services-Amusement & Recreation Services
+1744489,DIS,7990,Services-Miscellaneous Amusement & Recreation
+860730,HCA,8062,"Services-General Medical & Surgical Hospitals, NEC"
+70318,THC,8062,"Services-General Medical & Surgical Hospitals, NEC"
+352915,UHS,8062,"Services-General Medical & Surgical Hospitals, NEC"
+1022079,DGX,8071,Services-Medical Laboratories
+920148,LH,8071,Services-Medical Laboratories
+927066,DVA,8090,"Services-Misc Health & Allied Services, NEC"
+104889,GHC,8200,Services-Educational Services
+723531,PAYX,8700,"Services-Engineering, Accounting, Research, Management"
+1100682,CRL,8731,Services-Commercial Physical & Biological Research
+879169,INCY,8731,Services-Commercial Physical & Biological Research
+1478242,IQV,8731,Services-Commercial Physical & Biological Research
+749251,IT,8741,Services-Management Services

@@ -1,9 +1,10 @@
 # Findings
 
-**One sentence:** across seven pre-registered experiments — six testing for a tradeable signal,
+**One sentence:** across eight pre-registered experiments — seven testing for a tradeable signal,
 one diagnostic — no signal cleared both the significance and the materiality gate, and the
-failures explain each other: the market prices public information (8-K filings, earnings, even
-insider purchases and the timing of disclosure) faster than a late reader can trade it. The most
+failures explain each other: the market prices public information (8-K filings, earnings, insider
+purchases, the timing of disclosure, and one firm's news reaching its peers) faster than a late
+reader can trade it. The most
 instructive result is 005 (post-earnings drift), which *looked* like a genuine win on development
 — a 0.53-Sharpe long-only signal that survived costs — and was then killed by the reserved
 holdout (−0.38): the single clearest demonstration of why this platform is built the way it is.
@@ -11,9 +12,12 @@ Experiment 006 (insider cluster-buying) was a development null, confirming the i
 edge is a small-cap effect this S&P 500 universe cannot capture. Experiment 007 ("bury bad news"
 timing) is the subtlest: buried filings *do* underperform, and detectably so (−24 bps vs control
 over 20 days, p ≈ 0.04 on development) — but the tradeable short book scores only 0.22 Sharpe,
-below the materiality floor, a textbook statistically-significant-but-not-economic result. (A
-separate branch, Reaction Gap, was deliberately gated and never built — a branch you choose not
-to build is a decision, not a result.)
+below the materiality floor, a textbook statistically-significant-but-not-economic result.
+Experiment 008 (peer lead-lag diffusion) is the methodological bookend: a 60-day peer effect
+*looks* significant (t ≈ 4) until you notice it double-counts thousands of correlated peers, at
+which point the honest monthly book is negative — the pre-registered overlap correction turning
+a would-be discovery back into a null. (A separate branch, Reaction Gap, was deliberately gated
+and never built — a branch you choose not to build is a decision, not a result.)
 
 This is an honest measurement, not a trading system. A clean, well-explained null is the
 intended deliverable.
@@ -28,10 +32,13 @@ Each experiment asks the question the previous one raised.
 Show a language model an 8-K with every clue to the company's identity and date stripped
 out, and ask which way the stock will move.
 
-**Finding:** about a coin flip (~52% directional accuracy at 5 days), no statistically
-significant edge. *(Final number pending completion of the full DeepSeek scoring run; the
-Loughran-McDonald dictionary baseline is likewise a null — negative Sharpe at every horizon
-and cost level.)*
+**Finding (final):** a coin flip. Across 5,000 anonymized filings (DeepSeek, temperature 0),
+directional hit rate is **49.9% / 51.2% / 49.8%** at 1 / 5 / 20 days, and the 5-day quintile
+long/short Sharpe is **+0.14 after 10 bps** — below the pre-registered null threshold, so **H1 is
+not supported (§14)**. The calibration is the revealing part: the model is **overconfident by
+~0.08 (Brier 0.263)**, and its reliability curve is flat — when it states 80%+ confidence it is
+right about half the time. It reads fluently and predicts nothing. *(The Loughran-McDonald
+dictionary baseline is likewise a null — negative Sharpe at every horizon and cost level.)*
 
 There is also a deeper problem the audit exposed: asked to name the issuer of an anonymized
 filing, the model succeeded **38.7% of the time** — because filings *describe themselves*
@@ -128,6 +135,25 @@ The lesson is precise: an effect can be real and detectable and still not worth 
 demand it survive costs at daily-bar, next-open resolution. "Statistically significant" and
 "tradeable" are different bars; 007 clears the first and not the second.
 
+### 008 — does one firm's news move its industry peers next?
+007 asked about the *timing* of a filing; 008 asks about its *reach*. An 8-K is partly news
+about a whole industry, and if that information diffuses slowly to related firms, a filer's peers
+should drift in the same direction as the filer over the following days (industry lead-lag,
+economic-link momentum). Mapping every issuer to its SIC industry, 008 signs each peer's return
+by the filer's own reaction and enters the peers at the next open — and doubles as a stress test
+of the platform's statistics, because same-industry peers are heavily correlated.
+
+**Finding — a development null, and the clearest overlap lesson in the project.** The 20-day
+signed peer return is a coin flip (**+1.4 bps, t 0.97**, hit rate 50.7%). One cell looks like a
+discovery — the 60-day event-level t-stat is **3.99** — but it pools **173,000 peer pairs that
+are massively cross-correlated** (every filing in an industry trades the same handful of names),
+so its standard error is far too small to believe. The pre-registered fix is to collapse the
+overlap into a **monthly long/short book** — one observation per month — and there the effect is
+**negative: −0.17 Sharpe.** The apparent signal was an artifact of double-counting. In a
+universe of large-cap S&P 500 names, industry news is priced across peers *together*, not with a
+tradeable lag; the small-cap, supply-chain venue where the effect lives is out of scope here.
+The holdout was left unspent.
+
 ### Reaction Gap — the ambitious follow-up, deliberately not built
 The idea: reconstruct when news *first* went public, estimate the reaction historically
 comparable events produced, and test whether the *gap* between expected and observed reaction
@@ -165,8 +191,15 @@ there, in the right direction, at p ≈ 0.04 — and a project with a single sig
 have called it a discovery. The materiality floor is what stops that: a 0.22-Sharpe short book is
 not a signal you can trade, however real the underlying drift. Requiring a construction to clear
 *both* gates — significance and materiality — before it may even touch the holdout is exactly
-what keeps a true-but-tiny effect from being oversold. Seven experiments, zero signals clearing
-both gates — and each null pins down *why*, which is the actual contribution.
+what keeps a true-but-tiny effect from being oversold.
+
+The eighth (008) closes the loop on the statistics themselves. Its headline peer effect is a
+coin flip, but one horizon throws a t-stat near 4 — and a project that read that number at face
+value would have declared a discovery and spent its holdout on noise. The reason it is noise is
+overlap: the "independent" observations are thousands of correlated peers reacting to the same
+industry news. Because the overlap correction (a monthly book) was fixed *in advance*, the honest
+answer — a negative Sharpe — was never in doubt. Eight experiments, zero signals clearing both
+gates — and each null pins down *why*, which is the actual contribution.
 
 ## Limitations (stated plainly)
 
@@ -185,9 +218,10 @@ both gates — and each null pins down *why*, which is the actual contribution.
 
 ## What I would do next
 
-1. **Finish 001** — complete the DeepSeek run and report the final directional accuracy,
-   calibration (Brier), and quintile Sharpe, restricted to the filings the model could *not*
-   identify (per the contamination rule).
+1. **001 is complete** (5,000 filings: coin flip, H1 not supported). The remaining refinement is
+   to re-cut it *restricted to the filings the model could not identify* (per the contamination
+   rule) — the audit ran on a smaller model, so the current number is a mild upper bound on the
+   disguise's leakiness, not on the edge.
 2. **Test Lazy Prices where it belongs** — on 10-K/10-Q text, which this corpus does not yet
    contain. That is the fair venue for 003's hypothesis.
 3. **Only then reconsider Reaction Gap**, and only with real intraday + first-disclosure data.

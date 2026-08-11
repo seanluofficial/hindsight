@@ -1,0 +1,26 @@
+{
+  "model_id": "deepseek-v4-flash",
+  "git_sha": "9020324dda86ac1f274d72ffff52a3f98afd3248-dirty",
+  "exported_at_utc": "2026-08-11T21:17:32.810021+00:00",
+  "table_counts": {
+    "filings": 100559,
+    "universe": 886,
+    "prices": 1583216,
+    "predictions": 18652,
+    "evaluations": 145851
+  },
+  "anonymized_filings": 75756,
+  "filing_span": {
+    "first": "2010-01-04T13:09:17+00:00",
+    "last": "2024-12-31T21:46:31+00:00"
+  },
+  "trades": 9146,
+  "exclusions": {
+    "no_prior_close": 4527,
+    "no_price_coverage_for_ticker": 1026,
+    "prior_close_below_5_usd": 18,
+    "prediction_is_null": 264,
+    "security_did_not_trade_on_entry": 3,
+    "missing_price_in_window": 16
+  }
+}

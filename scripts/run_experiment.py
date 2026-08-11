@@ -16,7 +16,15 @@ import json
 from typing import Any
 
 from hindsight import config, db
-from hindsight.experiments import event_type, insider, novelty, pead, staleness, timing
+from hindsight.experiments import (
+    diffusion,
+    event_type,
+    insider,
+    novelty,
+    pead,
+    staleness,
+    timing,
+)
 from hindsight.manifest import RunManifest
 
 RESULTS_DIR = config.DATA_DIR / "results"
@@ -124,10 +132,28 @@ def run_007(partitions: tuple[str, ...]) -> dict[str, Any]:
         }
 
 
+def run_008(partitions: tuple[str, ...]) -> dict[str, Any]:
+    with RunManifest("experiment_008_diffusion", partitions=list(partitions)) as manifest:
+        with db.session() as conn:
+            payload = diffusion.run(conn, manifest, partitions=partitions)
+        return {
+            "experiment": "008",
+            "title": "Peer / lead-lag information diffusion",
+            "primary": "20-day, 10bps mean signed peer market-excess (sign of filer reaction), "
+            "3-digit SIC peers (HOLDOUT); H1 positive",
+            "horizons": list(diffusion.DIFFUSION_HORIZONS),
+            "cost_bps": config.BASE_CASE_COST_BPS,
+            **payload,
+            "manifest": manifest.to_dict(),
+        }
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument(
-        "--experiment", required=True, choices=["002", "003", "004", "005", "006", "007"]
+        "--experiment",
+        required=True,
+        choices=["002", "003", "004", "005", "006", "007", "008"],
     )
     ap.add_argument(
         "--partition",
@@ -145,6 +171,7 @@ def main() -> None:
         "005": run_005,
         "006": run_006,
         "007": run_007,
+        "008": run_008,
     }
     bundle = runners[args.experiment](partitions)
 
