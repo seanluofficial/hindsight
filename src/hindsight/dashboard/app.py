@@ -788,6 +788,66 @@ def _finding_box(exp_id: str) -> None:
     )
 
 
+# Compact, skimmable summary per experiment: result badge + one-line key finding.
+_RESULT_BADGE: dict[str, str] = {
+    "001": "❌ No edge (final run pending)",
+    "002": "❌ Near-null",
+    "003": "❌ Rejected — wrong sign",
+    "004": "◑ Diagnostic — ~47% stale",
+    "RG": "🔒 Not built (gated)",
+}
+_KEY_FINDING: dict[str, str] = {
+    "001": "An AI reading anonymized filings scores about a coin flip — no reliable direction.",
+    "002": "Once you enter at the next open, high-impact events barely beat routine ones (p≈0.8).",
+    "003": "Buying least-changed / shorting most-changed 8-Ks loses money (20d Sharpe −0.87).",
+    "004": "~47% of the average filing's move is already over before you can trade it; "
+    "earnings 8-Ks are stalest at 57%.",
+    "RG": "004 showed no cleanly-fresh event class, so this expensive branch was not built.",
+}
+
+
+# Contamination audit numbers, fixed in §6 before any code was written.
+_CONTAM_EXAMPLES = [
+    ("American Water Works", "\"largest publicly traded U.S. water utility, 6,800+ employees\""),
+    ("Delta Air Lines", "\"Atlanta airport power outage\", \"Trainer refinery\", pilot profit-sharing"),
+    ("Mosaic", "\"phosphate and potash operations\", \"Vale S.A.\", \"TIPLAM port\""),
+    ("O'Reilly Automotive", "\"leading automotive-aftermarket retailer, 5,000+ stores\""),
+    ("Allergan", "named its own subsidiary \"Forest Laboratories, LLC\""),
+]
+
+
+def render_contamination_panel() -> None:
+    """The 38.7% issuer-identification finding — arguably the most interesting result."""
+    st.markdown(
+        "#### The disguise fails 38.7% of the time\n"
+        "The whole project hinges on the model *not* knowing which company it is reading. So "
+        "we asked it directly: name the issuer of an anonymized filing. It succeeded on "
+        "**58 of 150 (38.7%)** — nearly double the 20% red line we fixed *before* writing any "
+        "code."
+    )
+    a, b = st.columns(2)
+    a.metric("identified the company", "38.7%", help="58 of 150 anonymized filings")
+    b.metric("stayed anonymous", "61.3%")
+    st.markdown(
+        "It works because **filings describe themselves**, and no name-redaction touches that:"
+    )
+    st.dataframe(
+        pd.DataFrame(
+            [{"the model guessed": name, "from a clue like": clue}
+             for name, clue in _CONTAM_EXAMPLES],
+        ),
+        hide_index=True,
+        use_container_width=True,
+    )
+    st.caption(
+        "Redaction defeats string-matching, not comprehension. §6 fixed the consequence in "
+        "advance: above 20%, the primary analysis is restricted to filings the model could "
+        "*not* identify, and both versions reported. This measured rate is a **lower bound** — "
+        "the audit ran on a smaller model than scoring, and smaller models recognize fewer "
+        "companies."
+    )
+
+
 def render_002_results(bundle: dict[str, Any]) -> None:
     """Event-type contrast, by partition and horizon, in basis points."""
     rows = []
@@ -919,20 +979,21 @@ def render_overview() -> None:
         "result means, the limitations, and what I'd do next."
     )
     st.markdown("**The experiments at a glance** — open each tab above for the full story:")
-    st.dataframe(
-        pd.DataFrame(
-            [
-                {
-                    "tab": e["id"],
-                    "experiment": e["title"].replace("*", ""),
-                    "status": f"{_STATUS_STYLE[e['status']][0]} {_STATUS_STYLE[e['status']][1]}",
-                }
-                for e in EXPERIMENTS
-            ]
-        ),
-        hide_index=True,
-        use_container_width=True,
+    cols = st.columns(2)
+    for i, e in enumerate(EXPERIMENTS):
+        with cols[i % 2].container(border=True):
+            st.markdown(f"**{e['id']} — {e['title'].replace('*', '')}**")
+            st.markdown(f"{_RESULT_BADGE.get(e['id'], '')}")
+            st.caption(_KEY_FINDING.get(e["id"], ""))
+
+    st.divider()
+    render_contamination_panel()
+    st.caption(
+        "This is arguably the most interesting result in the project — and the reason "
+        "\"I anonymized the ticker\" is not a safe assumption when the reader is an LLM. Full "
+        "detail on the **001** tab."
     )
+    st.divider()
     st.info(
         "**Why so cautious?** Run several experiments and one will look 'significant' by pure "
         "luck. The final verdict corrects for how many were tried and reports only what "
@@ -957,7 +1018,8 @@ def render_findings() -> None:
 def render_experiment_detail(exp: dict[str, str]) -> None:
     icon, label = _STATUS_STYLE.get(exp["status"], ("•", exp["status"]))
     st.subheader(f"{exp['id']} — {exp['title'].replace('*', '')}")
-    st.markdown(f"{icon} *{label}*")
+    st.markdown(f"{icon} *{label}* &nbsp;·&nbsp; **{_RESULT_BADGE.get(exp['id'], '')}**")
+    st.caption(_KEY_FINDING.get(exp["id"], ""))
 
     st.markdown(f"### In one sentence\n{exp['question']}")
     _finding_box(exp["id"])
@@ -980,7 +1042,9 @@ def render_experiment_detail(exp: dict[str, str]) -> None:
     # 001 carries the deep research view (contamination, calibration, exclusions).
     if exp["id"] == "001":
         st.divider()
-        with st.expander("Full research detail (contamination audit, calibration, exclusions)"):
+        render_contamination_panel()
+        st.divider()
+        with st.expander("Full research detail (calibration, returns, exclusions)"):
             render_research()
 
 

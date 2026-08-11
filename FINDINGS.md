@@ -107,8 +107,9 @@ like — and measuring it honestly, four ways, is the result.
 
 ## Why this is the point
 
-Strong backtest results from public data are almost always bugs — lookahead, survivorship, or
-overfitting a winner out of many tries. Hindsight is built to make those mistakes hard:
+Surprisingly strong backtests on public data deserve skepticism, not celebration — lookahead
+bias, survivorship bias, multiple testing, and unrealistic fills each manufacture convincing
+false signals. Hindsight is built to make those mistakes hard:
 point-in-time universe, next-open entry on a real trading calendar, mandatory costs,
 pre-registered hypotheses with fixed pass/fail tests, and immutable predictions. The payoff of
 that machinery is the ability to state a null and *believe it* — and to explain, mechanically,
