@@ -1,0 +1,112 @@
+{
+  "experiment": "005",
+  "title": "Post-earnings-announcement drift (PEAD)",
+  "primary": "20-day, 10bps quintile long/short Sharpe on the surprise signal (HOLDOUT)",
+  "cost_bps": 10,
+  "horizons": [
+    20,
+    40,
+    60
+  ],
+  "results": [
+    {
+      "partition": "explore",
+      "horizon": 20,
+      "cost_bps": 10,
+      "n_months": 120,
+      "n_positions": 11031,
+      "mean_monthly": 0.0007011841828920681,
+      "sharpe_annualized": 0.14115945731849708,
+      "t_statistic": 0.44638539839977515,
+      "max_drawdown": 0.22171612148085929,
+      "is_meaningful": true
+    },
+    {
+      "partition": "explore",
+      "horizon": 40,
+      "cost_bps": 10,
+      "n_months": 120,
+      "n_positions": 10942,
+      "mean_monthly": 0.0017029172443640422,
+      "sharpe_annualized": 0.2185714049146439,
+      "t_statistic": 0.6911834709131957,
+      "max_drawdown": 0.2738092304434273,
+      "is_meaningful": true
+    },
+    {
+      "partition": "explore",
+      "horizon": 60,
+      "cost_bps": 10,
+      "n_months": 120,
+      "n_positions": 10871,
+      "mean_monthly": 0.0022482147788910004,
+      "sharpe_annualized": 0.23119347494757087,
+      "t_statistic": 0.7310979610034013,
+      "max_drawdown": 0.3475260948449622,
+      "is_meaningful": true
+    }
+  ],
+  "manifest": {
+    "stage": "experiment_005_pead",
+    "git_sha": "52aaa738c4bd98afa3d7e0d00ada1be359006052-dirty",
+    "started_at_utc": "2026-08-11T17:40:00.439383+00:00",
+    "finished_at_utc": "2026-08-11T17:40:20.538391+00:00",
+    "duration_seconds": 20.1,
+    "python": "3.12.10",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "params": {
+      "partitions": [
+        "explore"
+      ]
+    },
+    "counts": {
+      "earnings_filings": 30375,
+      "filings_considered": 100559,
+      "scored": 16729
+    },
+    "exclusions": {
+      "missing_pre_window_price": 3,
+      "missing_price_in_window": 285,
+      "no_event_date": 4144,
+      "no_price_coverage_for_ticker": 1791,
+      "no_prior_close_or_penny": 7708
+    },
+    "exclusion_examples": {
+      "no_prior_close_or_penny": [
+        "0001110783-10-000002",
+        "0000950123-10-000565",
+        "0001144204-10-000804",
+        "0000950123-10-001245",
+        "0000310764-10-000005"
+      ],
+      "no_event_date": [
+        "0001181431-10-002046",
+        "0001193125-10-002479",
+        "0001181431-10-002180",
+        "0001157523-10-000165",
+        "0001193125-10-007199"
+      ],
+      "no_price_coverage_for_ticker": [
+        "0001193125-10-002724",
+        "0000897101-10-000047",
+        "0001157523-10-000114",
+        "0001193125-10-005275",
+        "0000950123-10-003757"
+      ],
+      "missing_pre_window_price": [
+        "0001274494-10-000002",
+        "0001188112-10-002924",
+        "0000732717-18-000003"
+      ],
+      "missing_price_in_window": [
+        "0001385187-15-000002:h20",
+        "0001564590-18-003237:h20",
+        "0001144204-18-024569:h20",
+        "0001496048-18-000036:h20",
+        "0001615774-19-003356:h20"
+      ]
+    },
+    "total_excluded": 13931,
+    "errors": []
+  }
+}

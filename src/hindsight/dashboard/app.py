@@ -707,6 +707,23 @@ EXPERIMENTS: list[dict[str, str]] = [
         "001's coin flip, but just under half, so the filing isn't pure old news either.",
     },
     {
+        "id": "005",
+        "title": "Do earnings surprises keep drifting? (PEAD)",
+        "status": "draft",
+        "bundle": "experiment_005.json",
+        "question": "After an earnings report, does the stock keep moving in the direction of "
+        "the surprise for weeks — the classic 'post-earnings drift' — even entered late?",
+        "how": "Use the market's own immediate reaction as the surprise, enter *after* it at "
+        "the next open, and hold a long-big-surprise / short-small-surprise book for 20–60 days.",
+        "why": "The first experiment designed after diagnosing why 001–004 failed: stop fighting "
+        "the announcement pop, ride the documented drift that follows it. PEAD is real and "
+        "widely replicated — the open question is whether it survives *here*, with costs.",
+        "result": "Development read (holdout reserved): the sign is finally *right* and it grows "
+        "with horizon (Sharpe 0.14 → 0.22 → 0.23 at 20 → 40 → 60 days) — real PEAD behaviour — "
+        "but it's economically weak on development and not yet significant. The most promising "
+        "direction so far; the single holdout shot is not yet spent.",
+    },
+    {
         "id": "RG",
         "title": "Reaction Gap — did the market move *enough*? (future branch)",
         "status": "gated",
@@ -771,6 +788,13 @@ FINDINGS: dict[str, tuple[str, str]] = {
         "earnings filings are the stalest (57%). No event type is cleanly 'fresh', so the "
         "filing rarely beats the market to its own news.",
     ),
+    "005": (
+        "warning",
+        "The best sign yet: earnings surprises really do keep drifting the right way, more so "
+        "the longer you hold. But on development data the edge is small (Sharpe 0.14 at the "
+        "20-day primary, below the 0.30 bar) and not yet significant — and the holdout is "
+        "deliberately not spent.",
+    ),
     "RG": (
         "info",
         "Not built. The cheap check (004) said the premise is only half-true, so this stays "
@@ -794,6 +818,7 @@ _RESULT_BADGE: dict[str, str] = {
     "002": "❌ Near-null",
     "003": "❌ Rejected — wrong sign",
     "004": "◑ Diagnostic — ~47% stale",
+    "005": "◐ Right sign, weak (holdout reserved)",
     "RG": "🔒 Not built (gated)",
 }
 _KEY_FINDING: dict[str, str] = {
@@ -802,6 +827,8 @@ _KEY_FINDING: dict[str, str] = {
     "003": "Buying least-changed / shorting most-changed 8-Ks loses money (20d Sharpe −0.87).",
     "004": "~47% of the average filing's move is already over before you can trade it; "
     "earnings 8-Ks are stalest at 57%.",
+    "005": "Earnings drift continues in the surprise direction and grows with horizon "
+    "(Sharpe 0.14→0.23, 20→60d on development) — but stays below the 0.30 materiality bar.",
     "RG": "004 showed no cleanly-fresh event class, so this expensive branch was not built.",
 }
 
@@ -894,6 +921,30 @@ def render_003_results(bundle: dict[str, Any]) -> None:
     st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
 
 
+def render_005_results(bundle: dict[str, Any]) -> None:
+    """PEAD long/short Sharpe by partition and horizon."""
+    rows = []
+    for r in bundle.get("results", []):
+        rows.append(
+            {
+                "data": "2010–19 (dev)" if r["partition"] == "explore" else "2020–24",
+                "hold (days)": r["horizon"],
+                "months": r["n_months"],
+                "return / month": f"{r['mean_monthly'] * 100:.3f}%",
+                "Sharpe (per year)": round(r["sharpe_annualized"], 2),
+                "t-stat": round(r["t_statistic"], 2),
+            }
+        )
+    st.markdown(
+        "**A long/short book that buys the biggest positive earnings surprises and shorts the "
+        "biggest negatives, held for 20–60 days.** For the first time the numbers are *positive* "
+        "and grow with the holding period — the fingerprint of real post-earnings drift. The "
+        "0.30 line is the materiality bar a signal must clear to count; development doesn't reach "
+        "it yet, and the confirmatory 2020–24 read is intentionally still reserved."
+    )
+    st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+
+
 def render_004_results(bundle: dict[str, Any]) -> None:
     """Staleness fraction by partition."""
     rows = []
@@ -943,6 +994,7 @@ _RESULT_RENDERERS = {
     "002": render_002_results,
     "003": render_003_results,
     "004": render_004_results,
+    "005": render_005_results,
 }
 
 
@@ -951,13 +1003,15 @@ def render_overview() -> None:
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("8-K filings", "100K+")
     c2.metric("price observations", "1.58M")
-    c3.metric("pre-registered experiments", "4")
-    c4.metric("signals that survived", "0", help="Nothing cleared the pass/fail bar. That is "
-              "the honest headline, not a footnote.")
+    c3.metric("pre-registered experiments", "5")
+    c4.metric("signals that survived", "0", help="Nothing has cleared the pass/fail bar yet. "
+              "005 (post-earnings drift) is the first with the right sign, but it's below the "
+              "materiality bar on development and its holdout is still reserved.")
     st.caption(
         "A contamination-resistant research platform for testing whether SEC filings carry "
-        "tradeable information. Four experiments, none surviving — the strongest explanation "
-        "is that ~half the price reaction happens before the filing is even public."
+        "tradeable information. Four honest nulls — the strongest explanation is that ~half the "
+        "price reaction happens before the filing is even public — and a fifth (post-earnings "
+        "drift) that finally shows the right sign and is still under test."
     )
     st.markdown(
         "**Hindsight asks a simple question honestly: can public company filings tell you "
@@ -971,8 +1025,9 @@ def render_overview() -> None:
         "**The story so far, in one line:** an AI reading anonymized filings can't beat a coin "
         "flip (001); the *type* of event doesn't rescue it (002); roughly **half the market's "
         "reaction is already over before the filing is even public** (004); and *new* wording "
-        "doesn't predict returns either (003). A coherent, honest set of null results — which "
-        "is a legitimate and valuable outcome, not a failure."
+        "doesn't predict returns either (003). Four honest nulls that explain each other — then "
+        "**005** uses that diagnosis to target the drift that *continues* after an earnings "
+        "surprise, and for the first time the sign comes out right (still under test)."
     )
     st.markdown(
         "📄 **Read the [Findings] tab** for the full written narrative — the arc, what each "
@@ -1054,6 +1109,7 @@ _TAB_LABELS: dict[str, str] = {
     "002": "002 · Event type",
     "003": "003 · Novelty",
     "004": "004 · Staleness",
+    "005": "005 · PEAD",
     "RG": "Reaction Gap",
 }
 

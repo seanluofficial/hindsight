@@ -3,9 +3,11 @@
 **One sentence:** across four pre-registered experiments — three testing for a tradeable
 signal, one diagnostic — the market appears to price the information in an 8-K *before the
 filing is even public*, so there is little left for a model — AI or otherwise — to predict
-from the filing itself. No signal survived, and the nulls explain each other. (A fifth
-branch, Reaction Gap, was deliberately gated and never built — see below; a branch you
-choose not to build is a decision, not a result.)
+from the filing itself. No signal survived, and the nulls explain each other. A fifth
+experiment (005), designed *from* that diagnosis, is the first to come out the right way —
+post-earnings drift — and is still under test. (A separate branch, Reaction Gap, was
+deliberately gated and never built — a branch you choose not to build is a decision, not a
+result.)
 
 This is an honest measurement, not a trading system. A clean, well-explained null is the
 intended deliverable.
@@ -61,6 +63,23 @@ development years only), then run a long-low-change / short-high-change portfoli
 single-shot test; see `DEVIATIONS.md`). The effect does not transfer — most likely
 because an 8-K's "prior comparable filing" is a far weaker analog than last year's 10-K is to
 this year's.
+
+### 005 — the informed follow-up: ride the drift instead of the reaction (in progress)
+The first four experiments share a diagnosis: they all try to predict the announcement
+reaction from the filing's own text, entered at the next open, over 1–20 days — the part the
+market prices fastest. So 005 changes the target. Post-earnings-announcement drift (PEAD) is a
+decades-old, widely-replicated anomaly: after an earnings surprise, the stock keeps drifting the
+same way for weeks. Using the market's own immediate reaction as the surprise (observable at
+entry, no lookahead), we enter *after* the pop and hold a long-big-surprise / short-small-surprise
+book for 20–60 days.
+
+**Finding (development, holdout reserved):** for the first time the sign is *right*, and it
+behaves like real PEAD — the drift is positive and **grows with the holding period** (annualized
+Sharpe 0.14 → 0.22 → 0.23 at 20 → 40 → 60 days). But on development data the edge is
+economically small — the 20-day primary of 0.14 is below the 0.30 materiality bar — and not yet
+statistically significant. It is the most promising direction the platform has produced, and its
+single confirmatory holdout read is deliberately **not yet spent**. Honesty demands the
+distinction: a right-signed development result is a lead, not yet a discovery.
 
 ### Reaction Gap — the ambitious follow-up, deliberately not built
 The idea: reconstruct when news *first* went public, estimate the reaction historically

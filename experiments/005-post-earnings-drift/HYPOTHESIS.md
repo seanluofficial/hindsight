@@ -6,7 +6,7 @@
 > announcement reaction, it tries to ride the well-documented *drift that continues after it*.
 
 **Status:** `draft`
-**Locked at (git SHA):** _____
+**Locked at (git SHA):** 52aaa73
 **Primary endpoint:** 20-day, 10 bps quintile long/short annualized Sharpe of a portfolio that
 longs the most-positive and shorts the most-negative earnings surprises, HOLDOUT (2020-2024).
 
@@ -96,12 +96,35 @@ HOLDOUT 20-day; EXPLORE is development.
 
 ## 8. Results
 
-_Pending — EXPLORE run first; HOLDOUT reserved for a single shot._
+**EXPLORE (2010-2019) — development read. HOLDOUT (2020-2024) remains untouched.**
+30,375 earnings 8-Ks considered; 16,729 scored a surprise; exclusions counted (7,708 penny/no
+prior close, 4,144 no event date, 1,791 no price coverage, 288 missing window prices).
+
+| partition | H (days) | months | positions | return/mo | Sharpe (ann.) | t | max DD |
+|---|---|---|---|---|---|---|---|
+| explore | 20 | 120 | 11,031 | +0.070% | **0.14** | 0.45 | −22% |
+| explore | 40 | 120 | 10,942 | +0.170% | 0.22 | 0.69 | −27% |
+| explore | 60 | 120 | 10,871 | +0.225% | 0.23 | 0.73 | −35% |
+
+**The sign is finally right, and it behaves like real PEAD.** Unlike 001-003, every horizon is
+**positive** (drift continues in the surprise direction, not against it), and the effect **grows
+with horizon** (0.14 → 0.22 → 0.23 Sharpe as the drift accumulates over 20 → 40 → 60 days) —
+exactly the signature the literature describes. But on development data it is **economically
+weak**: the primary 20-day Sharpe of 0.14 is well below the 0.30 materiality floor, and no
+horizon is statistically significant (|t| < 1). A promising direction that does not, on its own,
+clear the bar.
+
+_HOLDOUT is deliberately not yet run — see §10._
 
 ## 9. Failure analysis
 
-_Pending._
+_Pending the confirmatory read and the EXPLORE robustness battery (long-only leg, per-year
+decay, 25 bps, surprise-window sensitivity)._
 
 ## 10. Decision
 
-_Pending._
+_Open. The pre-registered primary (20-day L/S) is sub-threshold on development, so a single
+HOLDOUT shot would most likely confirm a weak-null at that horizon. Before freezing, the
+EXPLORE-legal secondaries in §5-6 (long-only variant — PEAD is classically stronger on the long
+side — and per-year decay) are worth running to see whether a pre-specified construction is
+materially stronger. Refinement stays on EXPLORE; HOLDOUT is spent once, later._

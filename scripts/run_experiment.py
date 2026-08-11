@@ -16,7 +16,7 @@ import json
 from typing import Any
 
 from hindsight import config, db
-from hindsight.experiments import event_type, novelty, staleness
+from hindsight.experiments import event_type, novelty, pead, staleness
 from hindsight.manifest import RunManifest
 
 RESULTS_DIR = config.DATA_DIR / "results"
@@ -66,9 +66,24 @@ def run_004(partitions: tuple[str, ...]) -> dict[str, Any]:
         }
 
 
+def run_005(partitions: tuple[str, ...]) -> dict[str, Any]:
+    with RunManifest("experiment_005_pead", partitions=list(partitions)) as manifest:
+        with db.session() as conn:
+            results = pead.run(conn, manifest, partitions=partitions)
+        return {
+            "experiment": "005",
+            "title": "Post-earnings-announcement drift (PEAD)",
+            "primary": "20-day, 10bps quintile long/short Sharpe on the surprise signal (HOLDOUT)",
+            "cost_bps": config.BASE_CASE_COST_BPS,
+            "horizons": list(pead.PEAD_HORIZONS),
+            "results": [r.as_dict() for r in results],
+            "manifest": manifest.to_dict(),
+        }
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--experiment", required=True, choices=["002", "003", "004"])
+    ap.add_argument("--experiment", required=True, choices=["002", "003", "004", "005"])
     ap.add_argument(
         "--partition",
         choices=["both", "explore", "holdout"],
@@ -78,7 +93,7 @@ def main() -> None:
     args = ap.parse_args()
 
     partitions = ("explore", "holdout") if args.partition == "both" else (args.partition,)
-    runners = {"002": run_002, "003": run_003, "004": run_004}
+    runners = {"002": run_002, "003": run_003, "004": run_004, "005": run_005}
     bundle = runners[args.experiment](partitions)
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
