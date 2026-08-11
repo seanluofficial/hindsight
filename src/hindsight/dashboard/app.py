@@ -699,8 +699,9 @@ EXPERIMENTS: list[dict[str, str]] = [
         "the filing' around the event date, using prices we already have — no new data.",
         "why": "The most likely reason 001 fails: if the market already moved, there's "
         "nothing left to predict. This diagnostic shows where the *fresh* information is.",
-        "result": "Diagnostic — it explains the null rather than trading on it. See the "
-        "staleness fraction below (closer to 1.0 = the move was over before the filing).",
+        "result": "Development read: the median filing has ~47% of its abnormal move "
+        "*already over* before it can be traded — substantial staleness that partly explains "
+        "001's coin flip, but just under half, so the filing isn't pure old news either.",
     },
     {
         "id": "RG",
@@ -713,7 +714,9 @@ EXPERIMENTS: list[dict[str, str]] = [
         "historically-similar events produced, and test whether the gap predicts later drift.",
         "why": "The ambitious payoff, and the best story — but it needs data we don't have "
         "yet (intraday prices, news timestamps), so it is gated on what 004 finds.",
-        "result": "Not started. Built only if 004 confirms filings are genuinely late.",
+        "result": "Gate only half-passed: 004 shows real pre-filing staleness (~47%) but not "
+        "a clean majority, so this stays on the shelf until a sharper, intraday measure "
+        "(or an event-type split) says it's worth the data-engineering cost.",
     },
 ]
 

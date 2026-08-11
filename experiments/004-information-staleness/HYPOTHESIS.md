@@ -76,4 +76,29 @@ family for transparency but does not assert a tradeable Sharpe; any drift claim 
 secondary analysis that *would* be tradeable is flagged as hypothesis-generating for a future
 pre-registered experiment, never a result claimed here.
 
-## 8–10. Results / Failure analysis / Decision _(filled after)_
+## 8. Results (in-sample — see DEVIATIONS D-EXP1)
+Event dates were recovered by reparsing the cached filings (78,139 filled; 13,115 cached
+documents were exhibits without the cover line, excluded and counted). Staleness fraction =
+|pre-filing move| / (|pre| + |post|), 5-day post window:
+
+| data | filings | median | mean | share > 50% |
+|---|---|---|---|---|
+| development | 36,645 | 46.4% | 47.5% | 46.1% |
+| held-out | 17,254 | 47.0% | 47.7% | 46.5% |
+
+**H1 (median > 0.5) not supported — but not rejected as trivial either.** About **47% of the
+typical filing's abnormal move is already over before it can be traded.** That is a lot of
+staleness — enough to help explain why 001 and 002 find little tradeable post-filing signal —
+but it does not cross a clean majority, so the 8-K is not pure old news.
+
+## 9. Failure analysis
+Coarseness caveats (pre-registered): daily bars can't see the intraday reaction, and the
+pre-window length is variable (event date → filing) while the post-window is a fixed 5 days,
+so the fraction is a rough estimate. A sharper test needs intraday prices and true
+first-disclosure timestamps — i.e. the Reaction Gap branch.
+
+## 10. Decision
+`inconclusive` (leaning: substantial-but-partial staleness). **Gate for Reaction Gap is only
+half-passed** — do not build that branch's data pipeline on this evidence alone. Next cheap
+refinement worth doing: staleness *by event type* (does one class stay fresh?), which would
+tell Reaction Gap where to look if it is ever built.

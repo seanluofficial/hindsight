@@ -1,0 +1,95 @@
+{
+  "experiment": "004",
+  "title": "Information staleness / first-disclosure",
+  "primary": "Median staleness fraction > 0.5 on HOLDOUT (diagnostic)",
+  "horizon": 5,
+  "results": [
+    {
+      "partition": "explore",
+      "n": 36645,
+      "median_fraction": 0.46400536061744063,
+      "mean_fraction": 0.4752921610721254,
+      "share_mostly_stale": 0.4606085414108337
+    },
+    {
+      "partition": "holdout",
+      "n": 17254,
+      "median_fraction": 0.47027451105708984,
+      "mean_fraction": 0.477109397564953,
+      "share_mostly_stale": 0.465051582241799
+    }
+  ],
+  "manifest": {
+    "stage": "experiment_004_staleness",
+    "git_sha": "d46791acb96a1593f46dd4a848c1d4bb0624e9bd",
+    "started_at_utc": "2026-08-11T00:48:25.749788+00:00",
+    "finished_at_utc": "2026-08-11T00:48:35.128536+00:00",
+    "duration_seconds": 9.4,
+    "python": "3.12.10",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "params": {},
+    "counts": {
+      "explore_evaluated": 36645,
+      "filings_considered": 100559,
+      "holdout_evaluated": 17254
+    },
+    "exclusions": {
+      "calendar_edge": 1,
+      "event_not_before_entry": 55,
+      "missing_post_window_price": 47,
+      "missing_pre_window_price": 54,
+      "no_event_date": 13115,
+      "no_price_coverage_for_ticker": 6064,
+      "no_prior_close_or_penny": 27324
+    },
+    "exclusion_examples": {
+      "missing_pre_window_price": [
+        "0000895126-10-000002",
+        "0001193125-10-000332",
+        "0001104659-10-000094",
+        "0000950123-10-000166",
+        "0001299933-10-000005"
+      ],
+      "no_event_date": [
+        "0001157523-10-000006",
+        "0001104659-10-000165",
+        "0000950159-10-000002",
+        "0000092230-10-000003",
+        "0001157523-10-000025"
+      ],
+      "no_prior_close_or_penny": [
+        "0000887396-10-000001",
+        "0000950123-10-000178",
+        "0000950123-10-000185",
+        "0000020520-10-000002",
+        "0001193125-10-001173"
+      ],
+      "no_price_coverage_for_ticker": [
+        "0001193125-10-001282",
+        "0001193125-10-001329",
+        "0000007332-10-000001",
+        "0000065011-10-000003",
+        "0001437749-10-000017"
+      ],
+      "calendar_edge": [
+        "0001193125-10-123296"
+      ],
+      "event_not_before_entry": [
+        "0001506307-12-000125",
+        "0001506307-13-000004",
+        "0001506307-13-000012",
+        "0001506307-13-000017",
+        "0001506307-13-000025"
+      ],
+      "missing_post_window_price": [
+        "0001193125-15-091081",
+        "0001193125-15-244355",
+        "0001104659-16-100239",
+        "0001104659-16-102088",
+        "0001104659-16-102090"
+      ]
+    },
+    "total_excluded": 46660,
+    "errors": []
+  }
+}

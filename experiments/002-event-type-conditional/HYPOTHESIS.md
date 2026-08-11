@@ -66,4 +66,25 @@ Event-study mean market-excess return per group; Newey-West / clustered SEs give
 20-day windows; portfolio readout via the existing harness with `direction` set by the group's
 EXPLORE sign (fixed before HOLDOUT).
 
-## 8–10. Results / Failure analysis / Decision _(filled after)_
+## 8. Results (in-sample — see DEVIATIONS D-EXP1)
+Computed across ~62k filings/horizon (exclusions counted; most are filings whose tickers
+lack full price coverage). High-impact minus routine mean market-excess return:
+
+| data | horizon | high-impact | routine | high − routine | p |
+|---|---|---|---|---|---|
+| development | 5d | +1.7 bps | −2.0 bps | +3.7 bps | 0.45 |
+| held-out | 5d | −18.5 bps | −20.4 bps | +1.9 bps | 0.83 |
+| held-out | 20d | −26.4 bps | −49.3 bps | +22.8 bps | 0.15 |
+
+**Near-null.** No horizon shows a high-impact vs. routine difference distinguishable from
+chance. Because entry is the *next* open, the announcement reaction is already excluded; what
+remains is post-filing drift, and it barely depends on event type.
+
+## 9. Failure analysis
+The signal isn't the *event type* — it's the *announcement*, which happens before the tradeable
+entry. This is consistent with an efficient market to public 8-K events and directly motivates
+Experiment 004 (is the move already over before the filing?).
+
+## 10. Decision
+`null` (in-sample). Validated the harness end-to-end on a no-LLM signal. Does not spawn a
+trading experiment; feeds the staleness question (004).
