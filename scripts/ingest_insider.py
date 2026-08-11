@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import csv
 import io
+import re
 import sqlite3
 import zipfile
 from datetime import date, datetime
@@ -44,6 +45,37 @@ FIELDS = [
     "price",
     "value",
 ]
+
+
+# Exchange codes that appear glued to the symbol in the raw Form 4 field
+# (e.g. "OTCBB:BDCG", "NYSE: DM", "VZX:TSXV"). They are not tickers.
+_EXCHANGE_CODES = frozenset(
+    {
+        "NYSE", "NASDAQ", "NASD", "OTCBB", "OTC", "OTCMKTS", "OTCQB", "OTCQX",
+        "TSX", "TSXV", "AMEX", "ARCA", "BATS", "PINK", "OB", "NYSEAMERICAN",
+        "NYSEMKT", "CBOE", "NYSEARCA",
+    }
+)
+_NON_TICKERS = frozenset({"NA", "NONE", "N", "A", "NULL", "TBD"})
+_TICKER_RE = re.compile(r"[A-Z][A-Z0-9.\-]{0,6}")
+
+
+def clean_ticker(raw: str) -> str | None:
+    """Recover a plausible US ticker from the messy Form 4 ISSUERTRADINGSYMBOL field.
+
+    The field is free text: symbols arrive wrapped in brackets/quotes, prefixed with an
+    exchange ("NYSE: DM"), doubled up ("ISCA, ISCB"), or replaced by a company name. We split
+    on anything that is not ticker-ish and take the first token that looks like a symbol and is
+    not a known exchange code. Returns None when nothing usable is found (counted, never
+    silently coerced).
+    """
+    for token in re.split(r"[^A-Z0-9.\-]+", raw.upper()):
+        token = token.strip(".-")
+        if not token or token in _EXCHANGE_CODES or token in _NON_TICKERS:
+            continue
+        if _TICKER_RE.fullmatch(token):
+            return token
+    return None
 
 
 def _parse_date(raw: str) -> date | None:
@@ -141,10 +173,11 @@ def _process_quarter(
         if scope == "all":
             # Whole-market scope (experiment 009): keep any issuer with a usable ticker;
             # point-in-time membership is enforced later by price coverage at the event date.
-            if not ticker.strip():
-                manifest.exclude("issuer_no_ticker")
+            cleaned = clean_ticker(ticker)
+            if cleaned is None:
+                manifest.exclude("issuer_no_usable_ticker")
                 continue
-            ticker_pit = ticker.strip().upper()
+            ticker_pit = cleaned
         else:
             member = universe.member_ticker(issuer_cik, ticker, filed)
             if member is None:
