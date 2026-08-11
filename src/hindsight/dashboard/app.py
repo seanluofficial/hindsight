@@ -644,92 +644,187 @@ def render_today() -> None:
 # --------------------------------------------------------------------------
 # Kept as a static, self-contained list so the page renders from the committed
 # results bundle without a database. Mirrors experiments/*/HYPOTHESIS.md; update
-# both together. Status drives the badge colour.
+# both together. `bundle` names the results JSON in data/results/ (if any).
 EXPERIMENTS: list[dict[str, str]] = [
     {
         "id": "001",
         "title": "Can an AI predict the move from the filing text?",
         "status": "running",
-        "question": "Show a model an 8-K with the company name and date stripped out. "
-        "Can it call which way the stock goes?",
+        "bundle": "",
+        "question": "Show a model an 8-K with the company name and date stripped out — can "
+        "it call which way the stock goes?",
         "how": "Score ~5,000 anonymized filings at temperature 0, then check the actual "
         "market-excess move at 1 / 5 / 20 days, after trading costs.",
-        "why": "It's the original question — and the honest baseline. A coin-flip result "
-        "here is expected, and it's what motivates every experiment below.",
-        "result": "Preliminary: about a coin flip (~52% direction at 5 days), no "
-        "statistically significant edge. Final number pending the full run.",
+        "why": "The original question, and the honest baseline. A coin-flip result here is "
+        "expected — and it's what motivates every experiment below.",
+        "result": "Preliminary: about a coin flip (~52% at 5 days), no significant edge. "
+        "Final number pending the full scoring run.",
     },
     {
         "id": "002",
         "title": "Does the *type* of event matter — no AI needed?",
-        "status": "draft",
-        "question": "Forget reading the text. Does a high-impact filing (a financial "
-        "restatement, a big write-down) move the stock more than a routine notice?",
-        "how": "Group filings by their SEC item code and compare the average move of the "
-        "high-impact group against the routine group on held-out years.",
-        "why": "It's almost certainly true — which is the point. It proves the measuring "
-        "machine works before we trust it on harder questions. Costs ~$0.",
-        "result": "Not yet run. Locked before looking at the answer.",
+        "status": "exploratory",
+        "bundle": "experiment_002.json",
+        "question": "Forget reading the text. Does a high-impact filing (a restatement, a big "
+        "write-down) drift more *after* it is filed than a routine notice?",
+        "how": "Group filings by SEC item code and compare the average market-excess return "
+        "of the high-impact group against the routine group, entering at the next open.",
+        "why": "Almost the point of a sanity check — it proves the measuring machine works "
+        "before we trust it on harder questions. Costs ~$0.",
+        "result": "Development read: a near-null. Because entry is the *next* open, the "
+        "announcement pop is already gone, and the leftover drift barely differs by event "
+        "type — consistent with an efficient market (and with Experiment 004).",
     },
     {
         "id": "003",
         "title": "Does *new* language beat boilerplate? ('Lazy Prices')",
         "status": "draft",
+        "bundle": "",
         "question": "When a company suddenly rewrites its usual filing language instead of "
         "copy-pasting, is that a warning sign the stock will underperform?",
         "how": "Measure how much each filing's text changed from the company's own prior "
         "comparable filing, rank filings by that change, and test a long/short portfolio.",
         "why": "A published effect for annual reports — the open question is whether it "
         "carries over to short, messy 8-Ks. The one real signal-discovery experiment here.",
-        "result": "Not yet run. Locked before looking at the answer.",
+        "result": "Not yet run. Its holdout is still clean — reserved for a single-shot test.",
     },
     {
         "id": "004",
         "title": "Was the news already old by the time it was filed?",
-        "status": "draft",
+        "status": "exploratory",
+        "bundle": "experiment_004.json",
         "question": "How much of the stock's reaction already happened *before* the 8-K "
         "reached EDGAR?",
-        "how": "For each filing, split the abnormal move into 'before the filing' and "
-        "'after the filing' using the prices we already have — no new data.",
+        "how": "For each filing, split the abnormal move into 'before the filing' and 'after "
+        "the filing' around the event date, using prices we already have — no new data.",
         "why": "The most likely reason 001 fails: if the market already moved, there's "
-        "nothing left to predict. This diagnostic tells us where the *fresh* information is.",
-        "result": "Not yet run. Diagnostic — it explains the null rather than trading on it.",
+        "nothing left to predict. This diagnostic shows where the *fresh* information is.",
+        "result": "Diagnostic — it explains the null rather than trading on it. See the "
+        "staleness fraction below (closer to 1.0 = the move was over before the filing).",
     },
     {
         "id": "RG",
         "title": "Reaction Gap — did the market move *enough*? (future branch)",
         "status": "gated",
+        "bundle": "",
         "question": "When real news breaks, did the stock move as much as similar news "
         "historically moved comparable companies — or is there unprocessed news left?",
         "how": "Reconstruct when the news first went public, estimate the reaction "
         "historically-similar events produced, and test whether the gap predicts later drift.",
-        "why": "The ambitious payoff — and the best story. But it needs data we don't have "
-        "yet (intraday prices, news timestamps), so it's gated on what Experiment 004 finds.",
-        "result": "Not started. Only built if 004 confirms filings are genuinely late.",
+        "why": "The ambitious payoff, and the best story — but it needs data we don't have "
+        "yet (intraday prices, news timestamps), so it is gated on what 004 finds.",
+        "result": "Not started. Built only if 004 confirms filings are genuinely late.",
     },
 ]
 
 _STATUS_STYLE: dict[str, tuple[str, str]] = {
     "running": ("🟢", "running"),
-    "draft": ("⚪", "pre-registered, not yet run"),
+    "exploratory": ("🟡", "development read (in-sample)"),
+    "draft": ("⚪", "pre-registered, holdout reserved"),
     "gated": ("🔒", "gated — not started"),
     "done": ("✅", "complete"),
 }
 
 
+def load_experiment_bundle(name: str) -> dict[str, Any] | None:
+    if not name:
+        return None
+    path = RESULTS_DIR / name
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))  # type: ignore[no-any-return]
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def _fmt_p(p: float) -> str:
+    return "<0.001" if p < 0.001 else f"{p:.3f}"
+
+
+def render_002_results(bundle: dict[str, Any]) -> None:
+    """Event-type contrast, by partition and horizon, in basis points."""
+    rows = []
+    for r in bundle.get("results", []):
+        g = r["groups"]
+        rows.append(
+            {
+                "data": "development" if r["partition"] == "explore" else "held-out",
+                "horizon (days)": r["horizon"],
+                "high-impact (bps)": round(g["high-impact"]["mean"] * 1e4, 1),
+                "routine (bps)": round(g["routine"]["mean"] * 1e4, 1),
+                "high − routine (bps)": round(r["high_minus_routine_bps"], 1),
+                "p-value": _fmt_p(r["p_value"]),
+            }
+        )
+    df = pd.DataFrame(rows)
+    st.markdown(
+        "**Average market-excess return after the filing, by event type.** A gap between "
+        "high-impact and routine that survived costs and chance would be the signal — here "
+        "it does not (p-values are large)."
+    )
+    st.dataframe(df, hide_index=True, use_container_width=True)
+
+
+def render_004_results(bundle: dict[str, Any]) -> None:
+    """Staleness fraction by partition."""
+    rows = []
+    for r in bundle.get("results", []):
+        if not r["n"]:
+            continue
+        rows.append(
+            {
+                "data": "development" if r["partition"] == "explore" else "held-out",
+                "filings measured": f"{r['n']:,}",
+                "median staleness": f"{r['median_fraction']:.0%}",
+                "share mostly-stale (>50%)": f"{r['share_mostly_stale']:.0%}",
+            }
+        )
+    if not rows:
+        st.info("Staleness is still computing (event dates are being backfilled). Check back.")
+        return
+    st.markdown(
+        "**How much of the move was already over before the filing.** Higher = the market "
+        "had already reacted, so there was little left for a filing-reader to predict."
+    )
+    st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+
+
 def render_experiments() -> None:
-    st.header("Experiments")
+    st.header("The experiments")
     st.markdown(
         "Hindsight is not one strategy — it is a small family of **pre-registered "
-        "experiments**. Each one is written down, with its success test fixed, *before* the "
-        "answer is looked at. The discipline is the point: it's what stops 'we tried a bunch "
-        "of things and one worked' from masquerading as a discovery."
+        "experiments**. Each is written down, with its pass/fail test fixed, *before* the "
+        "answer is looked at. That discipline is the point: it stops 'we tried a bunch of "
+        "things and one worked' from masquerading as a discovery."
+    )
+    st.markdown(
+        "**The research arc:** _Can an AI predict from a filing?_ (001) → _Does the event "
+        "type matter?_ (002) → _Was the news already old?_ (004) → _Does new wording carry "
+        "signal?_ (003) → _Did the market react enough?_ (Reaction Gap)."
+    )
+
+    # At-a-glance status table.
+    st.dataframe(
+        pd.DataFrame(
+            [
+                {
+                    "#": e["id"],
+                    "experiment": e["title"],
+                    "status": f"{_STATUS_STYLE[e['status']][0]} {_STATUS_STYLE[e['status']][1]}",
+                }
+                for e in EXPERIMENTS
+            ]
+        ),
+        hide_index=True,
+        use_container_width=True,
     )
     st.caption(
-        "How to read a card: the **question** in plain English, **how** we test it, **why** "
-        "it's worth doing, and where it stands. Full method lives in each "
-        "`experiments/NNN/HYPOTHESIS.md`."
+        "🟡 *development read (in-sample)* — 002 and 004 were computed on all years while "
+        "building them, so they are reported honestly as in-sample, not as clean single-shot "
+        "tests (see DEVIATIONS.md). 003's held-out years remain untouched."
     )
+
     for exp in EXPERIMENTS:
         icon, label = _STATUS_STYLE.get(exp["status"], ("•", exp["status"]))
         with st.container(border=True):
@@ -739,10 +834,16 @@ def render_experiments() -> None:
             st.markdown(f"**How we test it.** {exp['how']}")
             st.markdown(f"**Why it matters.** {exp['why']}")
             st.markdown(f"**Where it stands.** {exp['result']}")
+            bundle = load_experiment_bundle(exp.get("bundle", ""))
+            if bundle and exp["id"] == "002":
+                render_002_results(bundle)
+            elif bundle and exp["id"] == "004":
+                render_004_results(bundle)
+
     st.info(
-        "Because we run several experiments, any single 'significant' result could be luck. "
-        "The final read applies a multiple-comparisons correction across all of them, and "
-        "reports what survives — including, and especially, when nothing does."
+        "**Why the caution?** Run several experiments and one will look 'significant' by luck. "
+        "The final read applies a multiple-comparisons correction across all of them and "
+        "reports only what survives — including, and especially, when nothing does."
     )
 
 

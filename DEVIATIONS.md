@@ -8,6 +8,34 @@ require a reason. Nothing in this file overrides `PREREGISTRATION.md`.
 
 ---
 
+## 2026-08-10 — Experiment platform (experiments/)
+
+### D-EXP1. Experiments 002 and 004 computed across both partitions during implementation
+
+The `experiments/PROTOCOL.md` holdout discipline says each experiment touches HOLDOUT
+(2020-2024) once, with a frozen procedure, *after* locking. When first implementing the
+002 (event-type) and 004 (staleness) signal code, `scripts/run_experiment.py` computed
+**both** EXPLORE and HOLDOUT partitions in the same run, before either hypothesis was
+locked. So their holdouts are no longer naive.
+
+**Consequence, recorded honestly:** 002 and 004 are reported as **exploratory / in-sample**
+(like 001, whose holdout was likewise spent), not as clean single-shot confirmatory tests.
+The dashboard labels them as such. The EXPLORE⁄HOLDOUT single-shot discipline still binds
+**003 and 005+**, whose signals have not been computed on 2020-2024. This is acceptable
+because 002 is by design a harness-validation near-replication and 004 is a diagnostic —
+neither claims a novel tradeable edge — and the development read is a near-null regardless.
+
+### D-EXP2. `period_of_report` backfilled from the cached filings
+
+Ingest populated the event date for only part of the corpus (2018 in full, part of 2014),
+leaving every HOLDOUT year blank and blocking 004. `scripts/backfill_event_dates.py`
+reparses the **local cache** (no refetch — the caching invariant holds) for the "Date of
+earliest event reported" line and fills only blank rows. Filings whose cached document does
+not contain the line (e.g. the cached file is an EX-99 exhibit) stay blank and are excluded
+and counted by 004, not guessed.
+
+---
+
 ## 2026-07-27 — Phase 1 foundation
 
 ### D1. Price vendor: Tiingo (open choice, not a departure)

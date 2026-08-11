@@ -1,0 +1,239 @@
+{
+  "experiment": "002",
+  "title": "Event-type conditional returns",
+  "primary": "5-day, 10bps high-impact minus routine mean market-excess (HOLDOUT)",
+  "groups": [
+    "high-impact",
+    "earnings",
+    "routine"
+  ],
+  "results": [
+    {
+      "partition": "explore",
+      "horizon": 1,
+      "groups": {
+        "high-impact": {
+          "n": 7915,
+          "mean": -0.00019305172846181186,
+          "stdev": 0.01999045206157742,
+          "median": -5.8965481161799005e-05
+        },
+        "earnings": {
+          "n": 12527,
+          "mean": 0.00025543491877379947,
+          "stdev": 0.022537491827572895,
+          "median": 0.0001534682949728694
+        },
+        "routine": {
+          "n": 21797,
+          "mean": 3.8691184675016e-05,
+          "stdev": 0.018981502149465933,
+          "median": 5.7175778163109925e-06
+        }
+      },
+      "high_minus_routine_bps": -2.3174291313682787,
+      "t_statistic": -0.895178111554979,
+      "p_value": 0.37069188354381577
+    },
+    {
+      "partition": "holdout",
+      "horizon": 1,
+      "groups": {
+        "high-impact": {
+          "n": 4055,
+          "mean": -0.0006065726354765927,
+          "stdev": 0.026722728481739292,
+          "median": -0.0008447308018423305
+        },
+        "earnings": {
+          "n": 6502,
+          "mean": -9.168347078312294e-05,
+          "stdev": 0.028937919885730117,
+          "median": -0.0006784399754383719
+        },
+        "routine": {
+          "n": 9495,
+          "mean": -0.001023480226759861,
+          "stdev": 0.028698950896680248,
+          "median": -0.0008720674435442888
+        }
+      },
+      "high_minus_routine_bps": 4.169075912832683,
+      "t_statistic": 0.81318123285249,
+      "p_value": 0.41611415772406946
+    },
+    {
+      "partition": "explore",
+      "horizon": 5,
+      "groups": {
+        "high-impact": {
+          "n": 7908,
+          "mean": 0.0001666605220913785,
+          "stdev": 0.03857200195163749,
+          "median": -0.0002939816763299907
+        },
+        "earnings": {
+          "n": 12524,
+          "mean": 0.000499495453104936,
+          "stdev": 0.03463773630273834,
+          "median": -1.394547444616423e-05
+        },
+        "routine": {
+          "n": 21769,
+          "mean": -0.0002016092779501664,
+          "stdev": 0.033084272379855915,
+          "median": -0.00044599260702882226
+        }
+      },
+      "high_minus_routine_bps": 3.682698000415449,
+      "t_statistic": 0.754214934002721,
+      "p_value": 0.4507201716540421
+    },
+    {
+      "partition": "holdout",
+      "horizon": 5,
+      "groups": {
+        "high-impact": {
+          "n": 4055,
+          "mean": -0.001847988161578663,
+          "stdev": 0.04630866747694823,
+          "median": -0.0020361830462272135
+        },
+        "earnings": {
+          "n": 6503,
+          "mean": -0.0004361816834411076,
+          "stdev": 0.04475005268719104,
+          "median": -0.0013550412558931413
+        },
+        "routine": {
+          "n": 9493,
+          "mean": -0.002041185802754189,
+          "stdev": 0.04921291693482517,
+          "median": -0.0027563946066120337
+        }
+      },
+      "high_minus_routine_bps": 1.9319764117552607,
+      "t_statistic": 0.2181976295888636,
+      "p_value": 0.8272751319044855
+    },
+    {
+      "partition": "explore",
+      "horizon": 20,
+      "groups": {
+        "high-impact": {
+          "n": 7874,
+          "mean": 0.0003716889893948728,
+          "stdev": 0.07117885467982606,
+          "median": 0.00036743351912249533
+        },
+        "earnings": {
+          "n": 12510,
+          "mean": 0.001436800766759005,
+          "stdev": 0.061104907403918655,
+          "median": 0.0009018626947305819
+        },
+        "routine": {
+          "n": 21642,
+          "mean": -0.00012619742422805317,
+          "stdev": 0.06165757417677156,
+          "median": -0.0004277646113887701
+        }
+      },
+      "high_minus_routine_bps": 4.97886413622926,
+      "t_statistic": 0.5501259268098093,
+      "p_value": 0.5822330049166786
+    },
+    {
+      "partition": "holdout",
+      "horizon": 20,
+      "groups": {
+        "high-impact": {
+          "n": 4053,
+          "mean": -0.002643029864076458,
+          "stdev": 0.08446034020551255,
+          "median": -0.004663489231016227
+        },
+        "earnings": {
+          "n": 6500,
+          "mean": -0.0001448701667083361,
+          "stdev": 0.07773671887927244,
+          "median": -0.003458587322493545
+        },
+        "routine": {
+          "n": 9490,
+          "mean": -0.004926892346373199,
+          "stdev": 0.08472363558170552,
+          "median": -0.006591957225708378
+        }
+      },
+      "high_minus_routine_bps": 22.83862482296741,
+      "t_statistic": 1.43971215299205,
+      "p_value": 0.14994885360327226
+    }
+  ],
+  "manifest": {
+    "stage": "experiment_002_event_type",
+    "git_sha": "44d8d6fe6458929edfec5dd7c65360bb40a205f5-dirty",
+    "started_at_utc": "2026-08-11T00:29:37.133089+00:00",
+    "finished_at_utc": "2026-08-11T00:29:58.498650+00:00",
+    "duration_seconds": 21.4,
+    "python": "3.12.10",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "params": {},
+    "counts": {
+      "explore_h1_positions": 42239,
+      "explore_h20_positions": 42026,
+      "explore_h5_positions": 42201,
+      "filings_considered": 100559,
+      "holdout_h1_positions": 20052,
+      "holdout_h20_positions": 20043,
+      "holdout_h5_positions": 20051
+    },
+    "exclusions": {
+      "missing_price_in_window": 300,
+      "no_price_coverage_for_ticker": 20940,
+      "no_prior_close": 93387,
+      "prior_close_below_5_usd": 408,
+      "security_did_not_trade_on_entry": 30
+    },
+    "exclusion_examples": {
+      "no_prior_close": [
+        "0000887396-10-000001:h1",
+        "0000950123-10-000178:h1",
+        "0000950123-10-000185:h1",
+        "0000020520-10-000002:h1",
+        "0000092230-10-000003:h1"
+      ],
+      "no_price_coverage_for_ticker": [
+        "0001193125-10-001282:h1",
+        "0001193125-10-001329:h1",
+        "0000007332-10-000001:h1",
+        "0000065011-10-000003:h1",
+        "0001437749-10-000017:h1"
+      ],
+      "prior_close_below_5_usd": [
+        "0001144204-10-000846:h1",
+        "0001299933-10-000097:h1",
+        "0001104659-10-001969:h1",
+        "0000950123-10-004292:h1",
+        "0001299933-10-000247:h1"
+      ],
+      "security_did_not_trade_on_entry": [
+        "0001193125-15-094831:h1",
+        "0001193125-16-639518:h1",
+        "0001193125-18-106369:h1",
+        "0000875159-18-000068:h1",
+        "0001193125-19-090633:h1"
+      ],
+      "missing_price_in_window": [
+        "0001104659-16-102088:h1",
+        "0001104659-16-102090:h1",
+        "0000950103-17-006344:h1",
+        "0001193125-18-352837:h1",
+        "0000702165-19-000025:h1"
+      ]
+    },
+    "total_excluded": 115065,
+    "errors": []
+  }
+}

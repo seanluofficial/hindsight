@@ -46,6 +46,27 @@ def ensure_dirs() -> None:
 STUDY_START = date(2010, 1, 1)
 STUDY_END = date(2024, 12, 31)
 
+# --------------------------------------------------------------------------
+# Experiment-platform partitions (experiments/PROTOCOL.md §2) — NOT from the
+# pre-registration; they govern experiments 002+, not the original 001 study.
+# EXPLORE is seen and tunable; HOLDOUT is quarantined and touched once per
+# experiment; FORWARD is post-freeze live data (not yet ingested).
+# --------------------------------------------------------------------------
+EXPLORE_START = date(2010, 1, 1)
+EXPLORE_END = date(2019, 12, 31)
+HOLDOUT_START = date(2020, 1, 1)
+HOLDOUT_END = date(2024, 12, 31)
+
+
+def partition_of(accepted_at_utc: str) -> str:
+    """'explore' | 'holdout' | 'other' for a filing's acceptance timestamp (YYYY-... str)."""
+    year = int(accepted_at_utc[:4])
+    if EXPLORE_START.year <= year <= EXPLORE_END.year:
+        return "explore"
+    if HOLDOUT_START.year <= year <= HOLDOUT_END.year:
+        return "holdout"
+    return "other"
+
 # Exclusions fixed in advance (§3). Each is counted and reported, never silently applied.
 ACCEPTANCE_WINDOW_ET = (time(4, 0), time(20, 0))
 MIN_PRIOR_CLOSE_USD = 5.00
