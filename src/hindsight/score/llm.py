@@ -38,10 +38,16 @@ from hindsight.score import prompt as prompts
 log = logging.getLogger(__name__)
 
 MAX_RETRIES = 2
-# Generous on purpose. At 300 the model was cut off mid-rationale, so the closing brace
-# never arrived and the strict parser refused a response that was otherwise fine — schema
-# failures that looked like incompetence but were a truncated buffer.
-MAX_TOKENS = 800
+# Generous on purpose, and it has had to grow twice. At 300 the model was cut off
+# mid-rationale, so the closing brace never arrived and the strict parser refused a response
+# that was otherwise fine. At 800 the same failure returned for a subtler reason: reasoning
+# models (DeepSeek v4, Gemini 2.5) spend a chunk of this budget on hidden `reasoning_content`
+# before emitting any JSON, and the longest filings exhausted all 800 tokens thinking, so
+# `content` came back empty with finish_reason=length. Because temperature is 0 the retries
+# reproduced the identical truncation — wasted spend, not recovery. 2048 leaves room for the
+# reasoning pass plus the JSON on every filing measured; unused tokens are never billed, so a
+# high cap costs nothing except on the rare call that actually needs it.
+MAX_TOKENS = 2048
 
 _RE_JSON = re.compile(r"\{.*\}", re.S)
 

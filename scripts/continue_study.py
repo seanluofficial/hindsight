@@ -160,10 +160,9 @@ def main(argv: list[str] | None = None) -> int:
     for year in before.years_missing:
         run(["scripts/run_ingest.py", "filings", "--year", year], f"filings {year}")
 
-    # 3. Anonymize whatever is new. Local and free.
-    run(["scripts/run_score.py", "anonymize"], "anonymize")
-
-    # 4. Sample — only once the filings span the study period.
+    # 3. Sample — only once the filings span the study period. Drawn before anonymizing so
+    # the expensive stages that follow touch only the ~5,000 filings the study actually uses
+    # (D16), not the full ~100,000-filing census.
     after_ingest = state()
     if SAMPLE_PATH.exists():
         log("--- sample already frozen; leaving it alone")
@@ -172,21 +171,26 @@ def main(argv: list[str] | None = None) -> int:
     else:
         run(["scripts/draw_sample.py", "--size", str(args.sample_size)], "draw sample")
 
-    # 5. Scoring — the only stage that spends money, and it is capped.
-    if not args.skip_scoring:
-        run(
-            [
-                "scripts/run_score.py",
-                "llm",
-                "--provider",
-                args.provider,
-                "--limit",
-                str(args.sample_size),
-                "--budget",
-                str(args.budget),
-            ],
-            f"score (<= ${args.budget:.2f})",
-        )
+    # 4. Anonymize the sample. Local and free, and gated on the sample existing — there is
+    # nothing to score until it does, so anonymizing the whole census would be wasted work.
+    if SAMPLE_PATH.exists():
+        run(["scripts/run_score.py", "anonymize", "--sample"], "anonymize sample")
+
+        # 5. Scoring — the only stage that spends money, and it is capped. Restricted to the
+        # frozen sample so the scored population is exactly the one drawn under a fixed seed.
+        if not args.skip_scoring:
+            run(
+                [
+                    "scripts/run_score.py",
+                    "llm",
+                    "--sample",
+                    "--provider",
+                    args.provider,
+                    "--budget",
+                    str(args.budget),
+                ],
+                f"score (<= ${args.budget:.2f})",
+            )
 
     # Wait for the background price job, which by now has usually been running for as long
     # as everything else took. Nothing above depended on it; evaluation does.

@@ -15,6 +15,7 @@ so `--limit 500` means the same 500 filings on every run (invariant 4).
 from __future__ import annotations
 
 import argparse
+import csv
 import logging
 import sqlite3
 import sys
@@ -34,6 +35,28 @@ log = logging.getLogger(__name__)
 
 LEXICON_MODEL_ID = f"loughran-mcdonald-{lexicon.LEXICON_VERSION}"
 
+SAMPLE_PATH = config.DATA_DIR / "study_sample.csv"
+
+
+def load_sample_accessions(path: Path) -> set[str]:
+    """Accession numbers of the frozen study sample (D16).
+
+    The study is defined to run on this stratified sample, not on whichever filings happen
+    to be anonymized first. Scoring reads the frozen CSV so the scored population is exactly
+    the one drawn under a fixed seed — reproducible and immune to redrawing after seeing
+    results (invariant 4).
+    """
+    if not path.exists():
+        raise SystemExit(
+            f"{path} does not exist. Draw the frozen sample first:\n"
+            "    python scripts/draw_sample.py --size 5000"
+        )
+    with path.open(newline="", encoding="utf-8") as fh:
+        accessions = {row["accession_no"] for row in csv.DictReader(fh)}
+    if not accessions:
+        raise SystemExit(f"{path} is empty; nothing to score.")
+    return accessions
+
 
 def setup_logging(verbose: bool) -> None:
     config.ensure_dirs()
@@ -48,11 +71,27 @@ def setup_logging(verbose: bool) -> None:
 
 
 def select_filings(
-    conn: sqlite3.Connection, limit: int | None, need_anon: bool
+    conn: sqlite3.Connection,
+    limit: int | None,
+    need_anon: bool,
+    restrict_to: set[str] | None = None,
 ) -> list[sqlite3.Row]:
-    """Deterministic filing order, so --limit N is the same N every time."""
-    where = "WHERE anonymized_text IS NOT NULL AND anon_version = ?" if need_anon else ""
-    params: tuple[object, ...] = (anon.ANON_VERSION,) if need_anon else ()
+    """Deterministic filing order, so --limit N is the same N every time.
+
+    When `restrict_to` is given, only those accession numbers are returned — this is how the
+    frozen study sample is enforced on the scored population (D16). Ordering is by acceptance
+    timestamp then accession number regardless, so the result is reproducible.
+    """
+    conditions: list[str] = []
+    params: list[object] = []
+    if need_anon:
+        conditions.append("anonymized_text IS NOT NULL AND anon_version = ?")
+        params.append(anon.ANON_VERSION)
+    if restrict_to is not None:
+        placeholders = ",".join("?" * len(restrict_to))
+        conditions.append(f"accession_no IN ({placeholders})")
+        params.extend(sorted(restrict_to))
+    where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
     sql = f"""
         SELECT accession_no, cik, ticker, accepted_at_utc, item_codes, raw_path,
                anonymized_text, anon_version
@@ -61,17 +100,47 @@ def select_filings(
     """
     if limit:
         sql += " LIMIT ?"
-        params = (*params, limit)
+        params.append(limit)
     return list(conn.execute(sql, params))
 
 
+def already_scored(
+    conn: sqlite3.Connection, model_id: str, prompt_version: str, run_mode: str
+) -> set[str]:
+    """Accession numbers that already carry a prediction for this exact configuration.
+
+    Used to resume a long paid run without re-charging for work already committed. A row
+    exists whether the prior attempt parsed or was recorded as a null (§7), so a null is not
+    retried — acceptable because parse failures are near-zero and rerunning is about cost, not
+    salvage.
+    """
+    rows = conn.execute(
+        """
+        SELECT accession_no FROM predictions
+         WHERE model_id = ? AND prompt_version = ? AND run_mode = ?
+        """,
+        (model_id, prompt_version, run_mode),
+    )
+    return {r[0] for r in rows}
+
+
 # --------------------------------------------------------------------------
+def resolve_sample(args: argparse.Namespace) -> set[str] | None:
+    """The frozen sample's accession numbers when --sample is passed, else None."""
+    if not getattr(args, "sample", False):
+        return None
+    return load_sample_accessions(SAMPLE_PATH)
+
+
 def cmd_anonymize(args: argparse.Namespace) -> int:
+    sample = resolve_sample(args)
     with (
-        RunManifest("anonymize", limit=args.limit, anon_version=anon.ANON_VERSION) as manifest,
+        RunManifest(
+            "anonymize", limit=args.limit, anon_version=anon.ANON_VERSION, sample=bool(sample)
+        ) as manifest,
         db.session() as conn,
     ):
-        rows = select_filings(conn, args.limit, need_anon=False)
+        rows = select_filings(conn, args.limit, need_anon=False, restrict_to=sample)
         # Company names come from each filing's cached EDGAR header, which carries both the
         # conformed name and any former names. Reading the cache costs no requests.
         fetcher = CachedFetcher()
@@ -133,11 +202,14 @@ def cmd_anonymize(args: argparse.Namespace) -> int:
 
 def cmd_lexicon(args: argparse.Namespace) -> int:
     """Score with the Loughran-McDonald baseline. Deterministic, free, no network."""
+    sample = resolve_sample(args)
     with (
-        RunManifest("lexicon", limit=args.limit, model_id=LEXICON_MODEL_ID) as manifest,
+        RunManifest(
+            "lexicon", limit=args.limit, model_id=LEXICON_MODEL_ID, sample=bool(sample)
+        ) as manifest,
         db.session() as conn,
     ):
-        rows = select_filings(conn, args.limit, need_anon=True)
+        rows = select_filings(conn, args.limit, need_anon=True, restrict_to=sample)
         created = datetime.now(UTC).isoformat()
 
         for row in rows:
@@ -191,6 +263,7 @@ def cmd_llm(args: argparse.Namespace) -> int:
     backend = llm.make_backend(args.provider)
     if args.model:
         backend.model_id = args.model
+    sample = resolve_sample(args)
     with (
         RunManifest(
             "llm",
@@ -198,11 +271,24 @@ def cmd_llm(args: argparse.Namespace) -> int:
             mode=args.mode,
             provider=args.provider,
             model_id=backend.model_id,
+            sample=bool(sample),
         ) as manifest,
         db.session() as conn,
     ):
-        rows = select_filings(conn, args.limit, need_anon=True)
+        rows = select_filings(conn, args.limit, need_anon=True, restrict_to=sample)
         client = llm.ScoringClient(backend=backend, budget_usd=args.budget)
+
+        # Resume cost-safely (Phase 5): skip filings already scored under this exact
+        # model + prompt + run_mode, so a crash at filing 4,000 never re-charges the API for
+        # the first 3,999 on the next run. Uniqueness is enforced in the schema too, but the
+        # INSERT there fires only *after* the paid call — this skips the call itself.
+        done = already_scored(conn, client.model_id, client.prompt.version, args.mode)
+        before = len(rows)
+        rows = [r for r in rows if r["accession_no"] not in done]
+        if before - len(rows):
+            print(f"  resuming: {before - len(rows):,} already scored, {len(rows):,} remaining")
+        manifest.count("already_scored_skipped", before - len(rows))
+
         if args.budget:
             print(f"  spend ceiling: ${args.budget:.2f} (run halts cleanly at the limit)")
         print(f"  scoring {len(rows):,} filings with {backend.model_id} (temperature 0)")
@@ -224,8 +310,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("-v", "--verbose", action="store_true")
     sub = parser.add_subparsers(dest="command", required=True)
 
+    sample_help = "restrict to the frozen study sample (data/study_sample.csv), per D16"
+
     p_anon = sub.add_parser("anonymize", help="strip identifiers and store anonymized text")
     p_anon.add_argument("--limit", type=int)
+    p_anon.add_argument("--sample", action="store_true", help=sample_help)
     p_anon.add_argument(
         "--force", action="store_true", help="re-anonymize already-processed filings"
     )
@@ -233,10 +322,12 @@ def main(argv: list[str] | None = None) -> int:
 
     p_lex = sub.add_parser("lexicon", help="score with the Loughran-McDonald baseline")
     p_lex.add_argument("--limit", type=int)
+    p_lex.add_argument("--sample", action="store_true", help=sample_help)
     p_lex.set_defaults(func=cmd_lexicon)
 
     p_llm = sub.add_parser("llm", help="score with the LLM")
     p_llm.add_argument("--limit", type=int)
+    p_llm.add_argument("--sample", action="store_true", help=sample_help)
     p_llm.add_argument("--mode", choices=["historical", "live"], default="historical")
     p_llm.add_argument(
         "--provider", choices=["groq", "deepseek", "gemini", "anthropic"], default="groq"
