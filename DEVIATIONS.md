@@ -10,20 +10,24 @@ require a reason. Nothing in this file overrides `PREREGISTRATION.md`.
 
 ## 2026-08-10 — Experiment platform (experiments/)
 
-### D-EXP1. Experiments 002 and 004 computed across both partitions during implementation
+### D-EXP1. Experiments 002, 003, and 004 computed across both partitions during implementation
 
 The `experiments/PROTOCOL.md` holdout discipline says each experiment touches HOLDOUT
-(2020-2024) once, with a frozen procedure, *after* locking. When first implementing the
-002 (event-type) and 004 (staleness) signal code, `scripts/run_experiment.py` computed
-**both** EXPLORE and HOLDOUT partitions in the same run, before either hypothesis was
-locked. So their holdouts are no longer naive.
+(2020-2024) once, with a frozen procedure, *after* locking. `scripts/run_experiment.py`
+computes **both** EXPLORE and HOLDOUT partitions in a single run, and 002, 003, and 004 were
+each run this way while their signal code was being built, before locking. So their holdouts
+are no longer naive.
 
-**Consequence, recorded honestly:** 002 and 004 are reported as **exploratory / in-sample**
-(like 001, whose holdout was likewise spent), not as clean single-shot confirmatory tests.
-The dashboard labels them as such. The EXPLORE⁄HOLDOUT single-shot discipline still binds
-**003 and 005+**, whose signals have not been computed on 2020-2024. This is acceptable
-because 002 is by design a harness-validation near-replication and 004 is a diagnostic —
-neither claims a novel tradeable edge — and the development read is a near-null regardless.
+**Consequence, recorded honestly:** 002, 003, and 004 are reported as **exploratory /
+in-sample** (like 001, whose holdout was likewise spent), not as clean single-shot
+confirmatory tests. The dashboard labels them as such. The EXPLORE⁄HOLDOUT single-shot
+discipline now binds **005+**, whose signals have not been computed on 2020-2024.
+
+003 (filing novelty) was *intended* to be the one clean single-shot holdout, so this is a
+real cost: its held-out 20-day result (Sharpe −0.87, t −1.77, sign contrary to H1) should be
+read as in-sample, not confirmatory. It is a null either way. **Process fix for 005+:** add a
+`--partition explore` flag to the runner and look at EXPLORE only until a hypothesis is locked,
+then run HOLDOUT once — so a future experiment's holdout is not spent by the act of building it.
 
 ### D-EXP2. `period_of_report` backfilled from the cached filings
 

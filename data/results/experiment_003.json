@@ -1,0 +1,158 @@
+{
+  "experiment": "003",
+  "title": "Filing novelty / linguistic change ('Lazy Prices')",
+  "primary": "20-day, 10bps quintile long/short Sharpe on the change score (HOLDOUT)",
+  "cost_bps": 10,
+  "results": [
+    {
+      "partition": "explore",
+      "horizon": 1,
+      "cost_bps": 10,
+      "n_months": 101,
+      "n_positions": 27684,
+      "mean_monthly": -0.0002228705692254815,
+      "sharpe_annualized": -0.1740463480939603,
+      "t_statistic": -0.5049344231159498,
+      "max_drawdown": 0.05845801343007195,
+      "is_meaningful": true
+    },
+    {
+      "partition": "holdout",
+      "horizon": 1,
+      "cost_bps": 10,
+      "n_months": 50,
+      "n_positions": 14314,
+      "mean_monthly": -0.001237978187850939,
+      "sharpe_annualized": -0.6332477673404893,
+      "t_statistic": -1.292611592284064,
+      "max_drawdown": 0.07032617565648225,
+      "is_meaningful": true
+    },
+    {
+      "partition": "explore",
+      "horizon": 5,
+      "cost_bps": 10,
+      "n_months": 101,
+      "n_positions": 27648,
+      "mean_monthly": -0.001104069952871739,
+      "sharpe_annualized": -0.49021525146799216,
+      "t_statistic": -1.422187583441864,
+      "max_drawdown": 0.11326058308345144,
+      "is_meaningful": true
+    },
+    {
+      "partition": "holdout",
+      "horizon": 5,
+      "cost_bps": 10,
+      "n_months": 50,
+      "n_positions": 14314,
+      "mean_monthly": -0.002507260050799979,
+      "sharpe_annualized": -0.8573663494117121,
+      "t_statistic": -1.7500917322428726,
+      "max_drawdown": 0.147274809112108,
+      "is_meaningful": true
+    },
+    {
+      "partition": "explore",
+      "horizon": 20,
+      "cost_bps": 10,
+      "n_months": 101,
+      "n_positions": 27485,
+      "mean_monthly": -0.0006815385422503918,
+      "sharpe_annualized": -0.20144857581918788,
+      "t_statistic": -0.584432374093123,
+      "max_drawdown": 0.13210480612290665,
+      "is_meaningful": true
+    },
+    {
+      "partition": "holdout",
+      "horizon": 20,
+      "cost_bps": 10,
+      "n_months": 50,
+      "n_positions": 14309,
+      "mean_monthly": -0.0040627901289344084,
+      "sharpe_annualized": -0.8663206943250945,
+      "t_statistic": -1.7683697122584334,
+      "max_drawdown": 0.1964066754503525,
+      "is_meaningful": true
+    }
+  ],
+  "manifest": {
+    "stage": "experiment_003_novelty",
+    "git_sha": "1b7a1f239f7a021681f028fb455baa853cb948db-dirty",
+    "started_at_utc": "2026-08-11T01:16:00.342415+00:00",
+    "finished_at_utc": "2026-08-11T01:20:23.450766+00:00",
+    "duration_seconds": 263.1,
+    "python": "3.12.10",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "params": {},
+    "counts": {
+      "explore_docs_for_vocab": 51534,
+      "filings_considered": 100559,
+      "scored": 66211,
+      "vocabulary_size": 40691
+    },
+    "exclusions": {
+      "missing_price_in_window": 276,
+      "no_anonymized_text": 24803,
+      "no_price_coverage_for_ticker": 11268,
+      "no_prior_close": 61023,
+      "no_prior_comparable_filing": 9545,
+      "prior_close_below_5_usd": 297,
+      "security_did_not_trade_on_entry": 15
+    },
+    "exclusion_examples": {
+      "no_prior_comparable_filing": [
+        "0001104659-10-003143",
+        "0001104659-10-007120",
+        "0001104659-10-008501",
+        "0001104659-10-023439",
+        "0001104659-10-034410"
+      ],
+      "no_anonymized_text": [
+        "0001104659-12-003748",
+        "0001104659-12-012552",
+        "0001104659-12-024402",
+        "0001104659-12-026066",
+        "0001104659-12-032103"
+      ],
+      "no_prior_close": [
+        "0000004127-15-000022:h1",
+        "0000004127-15-000025:h1",
+        "0000004127-15-000029:h1",
+        "0001104659-15-069260:h1",
+        "0001104659-15-069696:h1"
+      ],
+      "no_price_coverage_for_ticker": [
+        "0000007332-10-000009:h1",
+        "0000007332-10-000011:h1",
+        "0000007332-10-000012:h1",
+        "0000007332-10-000014:h1",
+        "0000007332-10-000016:h1"
+      ],
+      "prior_close_below_5_usd": [
+        "0000018926-23-000008:h1",
+        "0000037996-20-000020:h1",
+        "0000037996-20-000022:h1",
+        "0000037996-20-000029:h1",
+        "0000037996-20-000036:h1"
+      ],
+      "security_did_not_trade_on_entry": [
+        "0001193125-21-354084:h1",
+        "0001193125-19-090633:h1",
+        "0001387131-19-002276:h1",
+        "0001193125-21-160479:h1",
+        "0000875159-18-000068:h1"
+      ],
+      "missing_price_in_window": [
+        "0001387131-19-002208:h1",
+        "0000078239-19-000007:h1",
+        "0001193125-19-090118:h1",
+        "0000310764-19-000062:h1",
+        "0000702165-19-000025:h1"
+      ]
+    },
+    "total_excluded": 107227,
+    "errors": []
+  }
+}

@@ -36,19 +36,21 @@ HOLDOUT (2020-2024).
 
 ## 2. Signal
 A **textual-change score** between a filing and the same company's most recent prior
-comparable filing: cosine distance on TF-IDF, and (secondary) a normalized edit/Jaccard
-distance, computed on the *raw* (pre-anonymization) text since we compare a company to
-itself, not across companies. Fixed at the acceptance timestamp — the prior filing is always
-older, so no lookahead. Cost ≈ $0 (no LLM). Note: 8-Ks are event-driven and less templated
-than periodic reports, so "comparable prior filing" is defined as the prior 8-K sharing the
-primary item code (rule fixed here); companies with no prior comparable filing are excluded
-and counted.
+comparable filing: **TF-IDF cosine distance** (change = 1 − cosine similarity). Computed on
+the stored **anonymized text** — not the raw text as originally drafted. Because the
+comparison is a company against *itself*, the only identifier that anonymization removes (the
+company name) is constant across both filings and irrelevant to the *change* signal; using the
+in-DB anonymized text is reproducible and avoids re-reading 100k cached files. Fixed at the
+acceptance timestamp — the prior filing is always older, so no lookahead. Cost ≈ $0 (no LLM).
+"Comparable prior filing" = the most recent earlier 8-K from the same company (CIK) sharing
+the **primary item code** (the filing's first listed item; rule fixed here). Companies with no
+prior comparable filing, or filings missing anonymized text, are excluded and counted.
 
 **Vectorizer lookahead — fixed here:** the TF-IDF vocabulary and IDF weights are fit on
 **EXPLORE (2010-2019) text only**, then applied frozen to HOLDOUT filings. Fitting the
 vectorizer on the full corpus would leak holdout-era vocabulary and document frequencies
-backward — a real, silent lookahead. Same rule for any tuned parameter of the edit/Jaccard
-variants.
+backward — a real, silent lookahead. Tokens absent from the EXPLORE vocabulary are ignored at
+transform time.
 
 ## 3. Dataset (point-in-time)
 2010-2024 8-Ks with a locatable prior comparable filing and price coverage. EXPLORE 2010-2019
@@ -81,4 +83,29 @@ Rank filings by change score within each month; form quintile L/S with monthly r
 the existing portfolio harness; overlapping-window-aware SEs; report calibration is N/A (this
 is a ranking signal, not a probability).
 
-## 8–10. Results / Failure analysis / Decision _(filled after)_
+## 8. Results (in-sample — see DEVIATIONS D-EXP1)
+Change scores computed for 66,211 filings (EXPLORE-fit vocabulary of 40,691 tokens).
+Quintile long/short (long least-changed, short most-changed), 10 bps:
+
+| data | horizon | months | Sharpe | t | max DD |
+|---|---|---|---|---|---|
+| development | 20d | 101 | −0.20 | −0.58 | 13.2% |
+| held-out | 5d | 50 | −0.86 | −1.75 | 14.7% |
+| held-out | 20d | 50 | −0.87 | −1.77 | 19.6% |
+
+**H1 rejected.** The Sharpe is *negative* at every horizon and partition — the opposite of the
+literature's prediction that low-change filings outperform — and never statistically
+significant. The "Lazy Prices" linguistic-change effect does **not** transfer to 8-Ks here.
+
+## 9. Failure analysis
+Most likely structural, as pre-registered: 8-Ks are short, event-driven, and heterogeneous, so
+a company's "prior comparable filing" (same primary item code) is a much weaker analog than a
+prior 10-K is to the next 10-K. The change score is dominated by which event happened, not by
+managerial obfuscation. A clean test of Lazy Prices really wants periodic reports (10-K/10-Q),
+which this corpus does not contain.
+
+## 10. Decision
+`null` (in-sample; sign contrary to H1, not significant). Note this experiment was intended as
+the one with a clean single-shot holdout, but per DEVIATIONS D-EXP1 both partitions were
+computed together during implementation, so it is reported in-sample. Does not spawn a follow-up
+on 8-Ks; the honest next step for Lazy Prices would be ingesting 10-K/10-Q text — out of scope.

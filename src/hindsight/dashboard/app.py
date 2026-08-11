@@ -678,15 +678,18 @@ EXPERIMENTS: list[dict[str, str]] = [
     {
         "id": "003",
         "title": "Does *new* language beat boilerplate? ('Lazy Prices')",
-        "status": "draft",
-        "bundle": "",
+        "status": "exploratory",
+        "bundle": "experiment_003.json",
         "question": "When a company suddenly rewrites its usual filing language instead of "
         "copy-pasting, is that a warning sign the stock will underperform?",
         "how": "Measure how much each filing's text changed from the company's own prior "
         "comparable filing, rank filings by that change, and test a long/short portfolio.",
         "why": "A published effect for annual reports — the open question is whether it "
         "carries over to short, messy 8-Ks. The one real signal-discovery experiment here.",
-        "result": "Not yet run. Its holdout is still clean — reserved for a single-shot test.",
+        "result": "Null — and the sign is backwards. The long/short loses money at every "
+        "horizon (held-out 20-day Sharpe −0.87, not significant). 'Lazy Prices' does not "
+        "transfer from annual reports to 8-Ks, most likely because an 8-K's 'prior comparable "
+        "filing' is a far weaker analog than last year's 10-K is to this year's.",
     },
     {
         "id": "004",
@@ -745,6 +748,45 @@ def _fmt_p(p: float) -> str:
     return "<0.001" if p < 0.001 else f"{p:.3f}"
 
 
+# One-line plain-English verdict per experiment: (streamlit box type, text).
+FINDINGS: dict[str, tuple[str, str]] = {
+    "001": (
+        "warning",
+        "So far: a coin flip. The AI shows no reliable edge — which is the honest, "
+        "expected result and the reason the other experiments exist.",
+    ),
+    "002": (
+        "warning",
+        "Near-null. Once you buy at the next morning's open, the *type* of event barely "
+        "matters — the reaction already happened.",
+    ),
+    "003": (
+        "error",
+        "Null, and pointing the wrong way. Rewriting a filing did NOT predict lower returns; "
+        "the 'Lazy Prices' effect does not carry over from annual reports to 8-Ks.",
+    ),
+    "004": (
+        "info",
+        "About 47% of a filing's stock move is already over before you could trade it — "
+        "a big reason the AI has so little left to predict.",
+    ),
+    "RG": (
+        "info",
+        "Not built. The cheap check (004) said the premise is only half-true, so this stays "
+        "on the shelf until it's worth the extra data.",
+    ),
+}
+
+
+def _finding_box(exp_id: str) -> None:
+    tone, text = FINDINGS.get(exp_id, ("info", ""))
+    if not text:
+        return
+    {"warning": st.warning, "error": st.error, "info": st.info, "success": st.success}[tone](
+        f"**What we found.** {text}"
+    )
+
+
 def render_002_results(bundle: dict[str, Any]) -> None:
     """Event-type contrast, by partition and horizon, in basis points."""
     rows = []
@@ -760,13 +802,35 @@ def render_002_results(bundle: dict[str, Any]) -> None:
                 "p-value": _fmt_p(r["p_value"]),
             }
         )
-    df = pd.DataFrame(rows)
     st.markdown(
-        "**Average market-excess return after the filing, by event type.** A gap between "
-        "high-impact and routine that survived costs and chance would be the signal — here "
-        "it does not (p-values are large)."
+        "**Average market-excess return after the filing, by event type (basis points; "
+        "1 bp = 0.01%).** If knowing the event type helped, the *high − routine* gap would be "
+        "large and its p-value small. It isn't."
     )
-    st.dataframe(df, hide_index=True, use_container_width=True)
+    st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+
+
+def render_003_results(bundle: dict[str, Any]) -> None:
+    """Novelty long/short Sharpe by partition and horizon."""
+    rows = []
+    for r in bundle.get("results", []):
+        rows.append(
+            {
+                "data": "development" if r["partition"] == "explore" else "held-out",
+                "horizon (days)": r["horizon"],
+                "months": r["n_months"],
+                "return / month": f"{r['mean_monthly'] * 100:.3f}%",
+                "Sharpe (per year)": round(r["sharpe_annualized"], 2),
+                "t-stat": round(r["t_statistic"], 2),
+            }
+        )
+    st.markdown(
+        "**A long/short portfolio that buys the least-changed filings and shorts the "
+        "most-changed.** A working signal would show a clearly positive Sharpe. Every row is "
+        "negative and none is significant (|t| < 2), so there is no signal — if anything, the "
+        "reverse."
+    )
+    st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
 
 
 def render_004_results(bundle: dict[str, Any]) -> None:
@@ -787,33 +851,44 @@ def render_004_results(bundle: dict[str, Any]) -> None:
         st.info("Staleness is still computing (event dates are being backfilled). Check back.")
         return
     st.markdown(
-        "**How much of the move was already over before the filing.** Higher = the market "
-        "had already reacted, so there was little left for a filing-reader to predict."
+        "**How much of the move was already over before the filing** (100% = the whole "
+        "reaction happened before you could trade it; 0% = the filing was the first the market "
+        "heard of it). The median filing sits near 47%."
     )
     st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
 
 
-def render_experiments() -> None:
-    st.header("The experiments")
-    st.markdown(
-        "Hindsight is not one strategy — it is a small family of **pre-registered "
-        "experiments**. Each is written down, with its pass/fail test fixed, *before* the "
-        "answer is looked at. That discipline is the point: it stops 'we tried a bunch of "
-        "things and one worked' from masquerading as a discovery."
-    )
-    st.markdown(
-        "**The research arc:** _Can an AI predict from a filing?_ (001) → _Does the event "
-        "type matter?_ (002) → _Was the news already old?_ (004) → _Does new wording carry "
-        "signal?_ (003) → _Did the market react enough?_ (Reaction Gap)."
-    )
+_RESULT_RENDERERS = {
+    "002": render_002_results,
+    "003": render_003_results,
+    "004": render_004_results,
+}
 
-    # At-a-glance status table.
+
+def render_overview() -> None:
+    st.subheader("What this project is")
+    st.markdown(
+        "**Hindsight asks a simple question honestly: can public company filings tell you "
+        "where a stock is headed?** Instead of one flashy strategy, it runs a small family of "
+        "**pre-registered experiments** — each one written down, with its pass/fail test fixed "
+        "*before* the answer is looked at. That's the discipline serious quant research runs on, "
+        "and it's what stops 'we tried a bunch of things and one happened to work' from being "
+        "mistaken for a discovery."
+    )
+    st.markdown(
+        "**The story so far, in one line:** an AI reading anonymized filings can't beat a coin "
+        "flip (001); the *type* of event doesn't rescue it (002); roughly **half the market's "
+        "reaction is already over before the filing is even public** (004); and *new* wording "
+        "doesn't predict returns either (003). A coherent, honest set of null results — which "
+        "is a legitimate and valuable outcome, not a failure."
+    )
+    st.markdown("**The experiments at a glance** — open each tab above for the full story:")
     st.dataframe(
         pd.DataFrame(
             [
                 {
-                    "#": e["id"],
-                    "experiment": e["title"],
+                    "tab": e["id"],
+                    "experiment": e["title"].replace("*", ""),
                     "status": f"{_STATUS_STYLE[e['status']][0]} {_STATUS_STYLE[e['status']][1]}",
                 }
                 for e in EXPERIMENTS
@@ -822,74 +897,89 @@ def render_experiments() -> None:
         hide_index=True,
         use_container_width=True,
     )
-    st.caption(
-        "🟡 *development read (in-sample)* — 002 and 004 were computed on all years while "
-        "building them, so they are reported honestly as in-sample, not as clean single-shot "
-        "tests (see DEVIATIONS.md). 003's held-out years remain untouched."
-    )
-
-    for exp in EXPERIMENTS:
-        icon, label = _STATUS_STYLE.get(exp["status"], ("•", exp["status"]))
-        with st.container(border=True):
-            st.markdown(f"#### {exp['id']} — {exp['title']}")
-            st.markdown(f"{icon} *{label}*")
-            st.markdown(f"**The question.** {exp['question']}")
-            st.markdown(f"**How we test it.** {exp['how']}")
-            st.markdown(f"**Why it matters.** {exp['why']}")
-            st.markdown(f"**Where it stands.** {exp['result']}")
-            bundle = load_experiment_bundle(exp.get("bundle", ""))
-            if bundle and exp["id"] == "002":
-                render_002_results(bundle)
-            elif bundle and exp["id"] == "004":
-                render_004_results(bundle)
-
     st.info(
-        "**Why the caution?** Run several experiments and one will look 'significant' by luck. "
-        "The final read applies a multiple-comparisons correction across all of them and "
-        "reports only what survives — including, and especially, when nothing does."
+        "**Why so cautious?** Run several experiments and one will look 'significant' by pure "
+        "luck. The final verdict corrects for how many were tried and reports only what "
+        "survives — including, and especially, when nothing does."
     )
+    st.caption(
+        "🟡 *development read (in-sample)* — 002, 003 and 004 were computed on all years while "
+        "being built, so they're reported honestly as in-sample rather than as clean "
+        "single-shot tests (see DEVIATIONS.md in the repo)."
+    )
+
+
+def render_experiment_detail(exp: dict[str, str]) -> None:
+    icon, label = _STATUS_STYLE.get(exp["status"], ("•", exp["status"]))
+    st.subheader(f"{exp['id']} — {exp['title'].replace('*', '')}")
+    st.markdown(f"{icon} *{label}*")
+
+    st.markdown(f"### In one sentence\n{exp['question']}")
+    _finding_box(exp["id"])
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(f"**How we test it**\n\n{exp['how']}")
+    with col2:
+        st.markdown(f"**Why it matters**\n\n{exp['why']}")
+
+    st.markdown(f"**The detail.** {exp['result']}")
+
+    bundle = load_experiment_bundle(exp.get("bundle", ""))
+    renderer = _RESULT_RENDERERS.get(exp["id"])
+    if bundle and renderer:
+        st.divider()
+        st.markdown("#### The numbers")
+        renderer(bundle)
+
+    # 001 carries the deep research view (contamination, calibration, exclusions).
+    if exp["id"] == "001":
+        st.divider()
+        with st.expander("Full research detail (contamination audit, calibration, exclusions)"):
+            render_research()
+
+
+# Short tab labels, one per experiment.
+_TAB_LABELS: dict[str, str] = {
+    "001": "001 · AI reader",
+    "002": "002 · Event type",
+    "003": "003 · Novelty",
+    "004": "004 · Staleness",
+    "RG": "Reaction Gap",
+}
 
 
 def main() -> None:
     st.title("hindsight")
     st.markdown(
-        "**Can an AI predict a stock's move from a company announcement — if it isn't "
-        "allowed to know which company it is?**"
-    )
-    st.caption(
-        "US public companies must file an 8-K whenever something material happens: earnings, "
-        "an executive departing, a major contract. This project strips out every clue to the "
-        "company's identity, asks a model which way the stock will move, and checks what "
-        "actually happened.\n\n"
-        "The name is the point. These models were trained on data that already contains the "
-        "outcomes, so a model that recognises the company can *remember* the answer instead "
-        "of predicting it. That is hindsight, not skill — and the whole design exists to "
-        "prevent it. The deliverable is an honest measurement, including a finding that "
-        "nothing works."
+        "**Can public company filings tell you where a stock is headed?** "
+        "A family of pre-registered experiments that answer that honestly — including when "
+        "the answer is *no*."
     )
     if not has_database() and not bundled_models():
-        st.error(
-            f"No database at {config.DB_PATH} and no exported results in {RESULTS_DIR}. "
-            "Run the ingest and scoring scripts, then `scripts/export_results.py`."
+        st.warning(
+            "Serving committed results only — the working database isn't deployed. Some "
+            "deeper views under 001 may be empty, but every experiment's headline result is "
+            "read from the committed bundles in data/results/."
         )
-        return
-    if not has_database():
-        st.info(
-            "Serving the committed results bundle — the working database is ~95MB and "
-            "the raw filing cache ~2.8GB, so neither is deployed. Figures are computed "
-            "from exported trades by the same code path."
+    elif not has_database():
+        st.caption(
+            "Serving the committed results bundle — the working database (~95MB) and raw "
+            "filing cache (~2.8GB) are not deployed. Figures come from exported results by the "
+            "same code path."
         )
 
-    experiments, research, track, today = st.tabs(
-        ["Experiments", "Research", "Track record", "Today"]
-    )
-    with experiments:
-        render_experiments()
-    with research:
-        render_research()
-    with track:
+    labels = ["Overview"] + [_TAB_LABELS[e["id"]] for e in EXPERIMENTS] + ["Live"]
+    tabs = st.tabs(labels)
+    with tabs[0]:
+        render_overview()
+    for exp, tab in zip(EXPERIMENTS, tabs[1:], strict=False):
+        with tab:
+            render_experiment_detail(exp)
+    with tabs[-1]:
+        st.caption("Phase 8 — automatic scoring of new filings as they are published.")
         render_track_record()
-    with today:
+        st.divider()
         render_today()
 
     st.caption(f"Data as of {date.today().isoformat()} · schema v{db.SCHEMA_VERSION}")
