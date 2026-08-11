@@ -36,7 +36,7 @@ experiments stay in the table — every test counts.
 | 002 | Event-type conditional returns | 5-day, 10bps high-impact−routine mean-excess difference (HOLDOUT) | `exploratory` | near-null (+1.9 bps, p 0.83) | 0.83 |
 | 003 | Filing novelty / linguistic change vs. prior filings ("Lazy Prices") | 20-day, 10bps quintile L/S Sharpe on change-score (HOLDOUT) | `exploratory` | null, wrong sign (Sharpe −0.87) | — |
 | 004 | Information staleness / first-disclosure (**diagnostic**) | Median staleness fraction > 0.5 on HOLDOUT (not a trading endpoint) | `exploratory` | ~47% (H1 not supported) | — |
-| 005 | Post-earnings-announcement drift (PEAD) | 20-day, 10bps quintile L/S Sharpe on the surprise signal (HOLDOUT) | `draft` (dev read; holdout reserved) | dev: L/S 0.14 (sub-threshold); long-only variant 0.53 (clears bar) but decays to negative by 2017–19 | pending |
+| 005 | Post-earnings-announcement drift (PEAD) | 20-day, 10bps quintile L/S Sharpe on the surprise signal (HOLDOUT) | `null` (holdout spent) | long-only 0.53 on dev → **−0.38 on holdout**; H1 not supported (decayed effect, caught out-of-sample) | −0.86 (t) |
 
 **Read the narrative:** [`../FINDINGS.md`](../FINDINGS.md). All results are in-sample (see
 `../DEVIATIONS.md` D-EXP1); nothing survived, so no family-wise correction was needed.

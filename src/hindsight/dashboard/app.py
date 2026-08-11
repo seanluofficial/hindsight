@@ -709,7 +709,7 @@ EXPERIMENTS: list[dict[str, str]] = [
     {
         "id": "005",
         "title": "Do earnings surprises keep drifting? (PEAD)",
-        "status": "draft",
+        "status": "done",
         "bundle": "experiment_005.json",
         "question": "After an earnings report, does the stock keep moving in the direction of "
         "the surprise for weeks — the classic 'post-earnings drift' — even entered late?",
@@ -718,11 +718,11 @@ EXPERIMENTS: list[dict[str, str]] = [
         "why": "The first experiment designed after diagnosing why 001–004 failed: stop fighting "
         "the announcement pop, ride the documented drift that follows it. PEAD is real and "
         "widely replicated — the open question is whether it survives *here*, with costs.",
-        "result": "Development read (holdout reserved): the first real signal. The long/short is "
-        "weak (20-day Sharpe 0.14), but the pre-registered *long-only* variant clears the 0.30 "
-        "materiality bar (Sharpe 0.53, and 0.31 even at 25 bps costs) — PEAD is a long-side "
-        "effect. The honest catch: a per-year cut shows it decayed to *negative* by 2017–19, so "
-        "the reserved 2020–24 holdout inherits a fading signal. Promising, with eyes open.",
+        "result": "Killed by the holdout — the project's cleanest lesson. On development the "
+        "pre-registered long-only variant looked like a real win (Sharpe 0.53, survives 25 bps). "
+        "But it had already decayed to negative by 2017–19, and the single 2020–24 confirmatory "
+        "shot came back **−0.38**. A 0.53 'success' became −0.38 out-of-sample: exactly the false "
+        "discovery that pre-registration and a reserved holdout exist to catch.",
     },
     {
         "id": "RG",
@@ -790,12 +790,11 @@ FINDINGS: dict[str, tuple[str, str]] = {
         "filing rarely beats the market to its own news.",
     ),
     "005": (
-        "warning",
-        "The best result yet — with an honest asterisk. Long-only post-earnings drift clears the "
-        "0.30 materiality bar on development (Sharpe 0.53, survives 25 bps costs), the first "
-        "signal in the project to do so. But a year-by-year cut shows it faded to *negative* by "
-        "2017–19, so the reserved holdout inherits a decaying edge. A real lead, not yet a "
-        "discovery — and the holdout is deliberately unspent.",
+        "error",
+        "Development said 0.53, the holdout said −0.38. The pre-registered long-only variant "
+        "cleared the materiality bar on 2010–19 data, but it was a decayed early-2010s effect, "
+        "and the single 2020–24 confirmatory shot was negative. Not a signal — but the single "
+        "clearest proof the platform does its job: it caught a would-be false discovery.",
     ),
     "RG": (
         "info",
@@ -820,7 +819,7 @@ _RESULT_BADGE: dict[str, str] = {
     "002": "❌ Near-null",
     "003": "❌ Rejected — wrong sign",
     "004": "◑ Diagnostic — ~47% stale",
-    "005": "◐ Long-only clears bar on dev, but decaying",
+    "005": "❌ 0.53 on dev → −0.38 on holdout",
     "RG": "🔒 Not built (gated)",
 }
 _KEY_FINDING: dict[str, str] = {
@@ -829,9 +828,8 @@ _KEY_FINDING: dict[str, str] = {
     "003": "Buying least-changed / shorting most-changed 8-Ks loses money (20d Sharpe −0.87).",
     "004": "~47% of the average filing's move is already over before you can trade it; "
     "earnings 8-Ks are stalest at 57%.",
-    "005": "Long-only post-earnings drift clears the 0.30 bar on development (Sharpe 0.53, "
-    "survives 25 bps) — the first signal to do so — but a per-year cut shows it decaying to "
-    "negative by 2017–19; holdout reserved.",
+    "005": "Long-only PEAD looked like a win on development (Sharpe 0.53) but the single "
+    "out-of-sample shot came back −0.38 — a decayed effect caught by the reserved holdout.",
     "RG": "004 showed no cleanly-fresh event class, so this expensive branch was not built.",
 }
 
@@ -926,6 +924,45 @@ def render_003_results(bundle: dict[str, Any]) -> None:
 
 def render_005_results(bundle: dict[str, Any]) -> None:
     """PEAD long/short Sharpe by partition and horizon."""
+    shot = bundle.get("holdout_shot")
+    if shot:
+        st.error(
+            "**Holdout verdict: the development signal did not survive.** The frozen long-only "
+            "20-day construction scored **0.53 Sharpe on development** and **−0.38 out-of-sample** "
+            "(2020–24). This is the whole point of the platform — a would-be 'success' caught and "
+            "killed by one honest test."
+        )
+        lo20 = next(
+            (x["long_only"] for x in shot.get("book_comparison", []) if x["horizon"] == 20), None
+        )
+        ls20 = next(
+            (x["long_short"] for x in shot.get("book_comparison", []) if x["horizon"] == 20), None
+        )
+        cmp_rows = [
+            {
+                "construction (20-day, 10 bps)": "long/short (primary)",
+                "development Sharpe": 0.14,
+                "holdout Sharpe": round(ls20["sharpe_annualized"], 2) if ls20 else None,
+            },
+            {
+                "construction (20-day, 10 bps)": "long-only (frozen secondary)",
+                "development Sharpe": 0.53,
+                "holdout Sharpe": round(lo20["sharpe_annualized"], 2) if lo20 else None,
+            },
+        ]
+        st.dataframe(pd.DataFrame(cmp_rows), hide_index=True, use_container_width=True)
+        years = shot.get("by_year_long_only", [])
+        if years:
+            st.caption(
+                "Long-only 20-day Sharpe by holdout year — the development decay simply "
+                "continued (2024 alone: −2.72):"
+            )
+            ser = pd.DataFrame(years)
+            ser["sharpe"] = ser["sharpe"].astype(float).round(2)
+            st.bar_chart(ser.set_index("year")["sharpe"])
+        st.divider()
+        st.markdown("#### How we got here (development, 2010–19)")
+
     rows = []
     for r in bundle.get("results", []):
         rows.append(
@@ -1053,14 +1090,14 @@ def render_overview() -> None:
     c1.metric("8-K filings", "100K+")
     c2.metric("price observations", "1.58M")
     c3.metric("pre-registered experiments", "5")
-    c4.metric("signals that survived", "0", help="Nothing has cleared the pass/fail bar yet. "
-              "005 (post-earnings drift) is the first with the right sign, but it's below the "
-              "materiality bar on development and its holdout is still reserved.")
+    c4.metric("signals that survived", "0", help="Nothing cleared the pass/fail bar. 005 came "
+              "closest — a 0.53-Sharpe long-only signal on development — but the reserved holdout "
+              "returned −0.38, exactly the false discovery the discipline exists to catch.")
     st.caption(
         "A contamination-resistant research platform for testing whether SEC filings carry "
-        "tradeable information. Four honest nulls — the strongest explanation is that ~half the "
-        "price reaction happens before the filing is even public — and a fifth (post-earnings "
-        "drift) that finally shows the right sign and is still under test."
+        "tradeable information. Five experiments, none surviving — four explain each other "
+        "(~half the price reaction happens before the filing is public), and the fifth is the "
+        "cleanest lesson: a development 'win' killed by one honest out-of-sample test."
     )
     st.markdown(
         "**Hindsight asks a simple question honestly: can public company filings tell you "
@@ -1075,8 +1112,9 @@ def render_overview() -> None:
         "flip (001); the *type* of event doesn't rescue it (002); roughly **half the market's "
         "reaction is already over before the filing is even public** (004); and *new* wording "
         "doesn't predict returns either (003). Four honest nulls that explain each other — then "
-        "**005** uses that diagnosis to target the drift that *continues* after an earnings "
-        "surprise, and for the first time the sign comes out right (still under test)."
+        "**005** uses that diagnosis to target post-earnings drift, *looks* like a win on "
+        "development (Sharpe 0.53), and gets killed by the reserved holdout (−0.38): the cleanest "
+        "demonstration of why the whole apparatus exists."
     )
     st.markdown(
         "📄 **Read the [Findings] tab** for the full written narrative — the arc, what each "

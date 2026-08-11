@@ -22,6 +22,18 @@
       "is_meaningful": true
     },
     {
+      "partition": "holdout",
+      "horizon": 20,
+      "cost_bps": 10,
+      "n_months": 60,
+      "n_positions": 5683,
+      "mean_monthly": -0.00022020500197517817,
+      "sharpe_annualized": -0.03232251792284384,
+      "t_statistic": -0.07227534727943413,
+      "max_drawdown": 0.2453761984164674,
+      "is_meaningful": true
+    },
+    {
       "partition": "explore",
       "horizon": 40,
       "cost_bps": 10,
@@ -34,6 +46,18 @@
       "is_meaningful": true
     },
     {
+      "partition": "holdout",
+      "horizon": 40,
+      "cost_bps": 10,
+      "n_months": 60,
+      "n_positions": 5680,
+      "mean_monthly": -0.0002718848505613132,
+      "sharpe_annualized": -0.03422092677589682,
+      "t_statistic": -0.07652031852394801,
+      "max_drawdown": 0.22320108323376342,
+      "is_meaningful": true
+    },
+    {
       "partition": "explore",
       "horizon": 60,
       "cost_bps": 10,
@@ -43,6 +67,18 @@
       "sharpe_annualized": 0.23119347494757087,
       "t_statistic": 0.7310979610034013,
       "max_drawdown": 0.3475260948449622,
+      "is_meaningful": true
+    },
+    {
+      "partition": "holdout",
+      "horizon": 60,
+      "cost_bps": 10,
+      "n_months": 60,
+      "n_positions": 5675,
+      "mean_monthly": 0.005259595381438267,
+      "sharpe_annualized": 0.5057122312652095,
+      "t_statistic": 1.130806926162103,
+      "max_drawdown": 0.18163555772691575,
       "is_meaningful": true
     }
   ],
@@ -174,15 +210,16 @@
   },
   "manifest": {
     "stage": "experiment_005_pead",
-    "git_sha": "257eb16c22ff4c95ab7b04810a0220a7fbf61dc5-dirty",
-    "started_at_utc": "2026-08-11T17:51:07.392770+00:00",
-    "finished_at_utc": "2026-08-11T17:51:36.305706+00:00",
-    "duration_seconds": 28.9,
+    "git_sha": "eee7a7fae275491483e08af48c67b28ef2e432dd-dirty",
+    "started_at_utc": "2026-08-11T17:54:41.387091+00:00",
+    "finished_at_utc": "2026-08-11T17:55:22.226288+00:00",
+    "duration_seconds": 40.8,
     "python": "3.12.10",
     "platform": "Windows-11-10.0.26200-SP0",
     "params": {
       "partitions": [
-        "explore"
+        "explore",
+        "holdout"
       ]
     },
     "counts": {
@@ -192,7 +229,7 @@
     },
     "exclusions": {
       "missing_pre_window_price": 3,
-      "missing_price_in_window": 285,
+      "missing_price_in_window": 305,
       "no_event_date": 4144,
       "no_price_coverage_for_ticker": 1791,
       "no_prior_close_or_penny": 7708
@@ -232,7 +269,108 @@
         "0001615774-19-003356:h20"
       ]
     },
-    "total_excluded": 13931,
+    "total_excluded": 13951,
     "errors": []
+  },
+  "holdout_shot": {
+    "partition": "holdout",
+    "primary_horizon": 20,
+    "book_comparison": [
+      {
+        "horizon": 20,
+        "long_short": {
+          "months": 60,
+          "mean_monthly": -0.00022020500197517817,
+          "sharpe_annualized": -0.03232251792284384,
+          "t_statistic": -0.07227534727943413,
+          "max_drawdown": 0.2453761984164674
+        },
+        "long_only": {
+          "months": 60,
+          "mean_monthly": -0.003852385431709738,
+          "sharpe_annualized": -0.3834334653142792,
+          "t_statistic": -0.8573832932910361,
+          "max_drawdown": 0.31626131291396253
+        }
+      },
+      {
+        "horizon": 40,
+        "long_short": {
+          "months": 60,
+          "mean_monthly": -0.0002718848505613132,
+          "sharpe_annualized": -0.03422092677589682,
+          "t_statistic": -0.07652031852394801,
+          "max_drawdown": 0.22320108323376342
+        },
+        "long_only": {
+          "months": 60,
+          "mean_monthly": -0.011698260582053194,
+          "sharpe_annualized": -0.9923326972730134,
+          "t_statistic": -2.2189233673981783,
+          "max_drawdown": 0.5306697507427257
+        }
+      },
+      {
+        "horizon": 60,
+        "long_short": {
+          "months": 60,
+          "mean_monthly": 0.005259595381438267,
+          "sharpe_annualized": 0.5057122312652095,
+          "t_statistic": 1.130806926162103,
+          "max_drawdown": 0.18163555772691575
+        },
+        "long_only": {
+          "months": 60,
+          "mean_monthly": -0.00525156183857597,
+          "sharpe_annualized": -0.3672529944513334,
+          "t_statistic": -0.8212026605335346,
+          "max_drawdown": 0.4153863304831752
+        }
+      }
+    ],
+    "cost_sensitivity": [
+      {
+        "cost_bps": 0,
+        "long_short_sharpe": 0.11446124099688909,
+        "long_only_sharpe": -0.2839020263886297
+      },
+      {
+        "cost_bps": 10,
+        "long_short_sharpe": -0.03232251792284384,
+        "long_only_sharpe": -0.3834334653142792
+      },
+      {
+        "cost_bps": 25,
+        "long_short_sharpe": -0.2524981563024431,
+        "long_only_sharpe": -0.5327306237027533
+      }
+    ],
+    "by_year_long_only": [
+      {
+        "year": "2020",
+        "months": 12,
+        "sharpe": 0.4177296371115893
+      },
+      {
+        "year": "2021",
+        "months": 12,
+        "sharpe": -1.179192654160749
+      },
+      {
+        "year": "2022",
+        "months": 12,
+        "sharpe": 0.29757574588527513
+      },
+      {
+        "year": "2023",
+        "months": 12,
+        "sharpe": -0.9353121467569205
+      },
+      {
+        "year": "2024",
+        "months": 12,
+        "sharpe": -2.7167190193322033
+      }
+    ]
   }
 }

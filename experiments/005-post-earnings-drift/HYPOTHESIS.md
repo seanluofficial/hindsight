@@ -96,7 +96,27 @@ HOLDOUT 20-day; EXPLORE is development.
 
 ## 8. Results
 
-**EXPLORE (2010-2019) — development read. HOLDOUT (2020-2024) remains untouched.**
+### 8b. HOLDOUT (2020-2024) — the single confirmatory shot (spent once, frozen)
+
+The frozen long-only 20-day construction **did not survive out-of-sample.**
+
+| construction (20-day, 10 bps) | development Sharpe | HOLDOUT Sharpe (t) |
+|---|---|---|
+| long/short (primary) | 0.14 | −0.03 (−0.07) |
+| **long-only (frozen secondary)** | **0.53** | **−0.38 (−0.86)** |
+
+Long-only holdout is negative at every horizon (20d −0.38, 40d −0.99, 60d −0.37) and never
+clears the 0.30 floor at any cost level (0/10/25 bps → −0.28 / −0.38 / −0.53). The per-year decay
+seen on development **continued straight through** the holdout: long-only 20-day Sharpe by year
+was +0.42 (2020), −1.18 (2021), +0.30 (2022), −0.94 (2023), **−2.72 (2024)**.
+
+**Verdict: H1 not supported.** The development edge was an early-2010s phenomenon that had already
+decayed to zero by 2017-2019 and is absent-to-negative in 2020-2024. This is exactly the outcome
+§9 predicted, and exactly what the holdout discipline exists to catch: a construction that looked
+like a 0.53-Sharpe "success" on development delivered −0.38 out-of-sample. Pre-registration turned
+a would-be false discovery into an honest null.
+
+### 8a. EXPLORE (2010-2019) — development read
 30,375 earnings 8-Ks considered; 16,729 scored a surprise; exclusions counted (7,708 penny/no
 prior close, 4,144 no event date, 1,791 no price coverage, 288 missing window prices).
 
@@ -149,11 +169,10 @@ signal and should be expected to be weak or null; that is the honest prior going
 
 ## 10. Decision
 
-**Freeze the pre-registered long-only 20-day construction as the confirmatory endpoint and take
-the single HOLDOUT (2020-2024) shot on it — reported alongside the primary 20-day L/S, with the
-decay caveat foregrounded.** Rationale: long-only is the strongest *pre-specified* construction
-on development (not a post-hoc search — it was named in §4-5 before any run), and the honest way
-to close 005 is one clean out-of-sample test of it. Given §9's decay, the expected outcome is a
-weak or null holdout; if it nonetheless clears 0.30 out-of-sample, that is a genuine,
-costed, single-shot signal. Either way, no further EXPLORE iteration after this — that would be
-fishing.
+`null` — **H1 not supported.** The single holdout shot was taken on the frozen long-only 20-day
+construction and came back −0.38 Sharpe (vs 0.53 on development). PEAD, as constructed here from
+daily prices and a price-reaction surprise proxy, does not produce a costed, out-of-sample edge
+in 2020-2024; the development signal was a decayed early-2010s effect. No further iteration —
+the shot is spent and the construction is frozen. 005 joins 001-004 as an honest null, and is
+the clearest single illustration in the project of *why* the holdout discipline exists: it
+converted a 0.53-Sharpe development "win" into the −0.38 reality before it could be believed.

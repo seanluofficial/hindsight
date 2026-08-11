@@ -1,13 +1,14 @@
 # Findings
 
-**One sentence:** across four pre-registered experiments — three testing for a tradeable
+**One sentence:** across five pre-registered experiments — four testing for a tradeable
 signal, one diagnostic — the market appears to price the information in an 8-K *before the
 filing is even public*, so there is little left for a model — AI or otherwise — to predict
-from the filing itself. No signal survived, and the nulls explain each other. A fifth
-experiment (005), designed *from* that diagnosis, is the first to come out the right way —
-post-earnings drift — and is still under test. (A separate branch, Reaction Gap, was
-deliberately gated and never built — a branch you choose not to build is a decision, not a
-result.)
+from the filing itself. No signal survived. Four experiments are nulls that explain each other;
+the fifth (005, post-earnings drift) *looked* like a genuine win on development — a 0.53-Sharpe
+long-only signal that survived costs — and was then killed by the reserved holdout (−0.38),
+which is the single clearest demonstration of why this platform is built the way it is. (A
+separate branch, Reaction Gap, was deliberately gated and never built — a branch you choose not
+to build is a decision, not a result.)
 
 This is an honest measurement, not a trading system. A clean, well-explained null is the
 intended deliverable.
@@ -73,16 +74,19 @@ same way for weeks. Using the market's own immediate reaction as the surprise (o
 entry, no lookahead), we enter *after* the pop and hold a long-big-surprise / short-small-surprise
 book for 20–60 days.
 
-**Finding (development, holdout reserved):** the first real signal — with an honest asterisk.
-The long/short book is weak (20-day Sharpe 0.14), but the *pre-registered long-only variant* —
-PEAD is classically a long-side effect — **clears the 0.30 materiality bar (Sharpe 0.53, and
-still 0.31 at 25 bps costs)**, the first construction in the whole project to do so. The catch is
-decay: a year-by-year cut shows the long-only edge was strong through 2016 and then **negative in
-2017, 2018 and 2019**. The pooled number is carried by the early 2010s. So the reserved 2020–2024
-holdout inherits a *fading* signal, and the honest prior is that it will be weak. This is a
-genuine lead — the platform's best — but a right-signed, decaying development result is exactly
-the kind of thing that must survive a single clean out-of-sample test before it is called a
-discovery. That test is not yet spent.
+**Finding — a development win, killed by the holdout.** On development the pre-registered
+long-only variant (PEAD is classically a long-side effect) **cleared the 0.30 materiality bar:
+Sharpe 0.53, surviving even 25 bps of cost** — the first construction in the whole project to do
+so. It looked like the success. But a year-by-year cut showed the edge was strong through 2016
+and **negative in 2017–2019** — a decayed early-2010s effect. We froze that exact construction
+and took the **single confirmatory holdout shot on 2020–2024: it came back −0.38 Sharpe** (and
+−2.72 in 2024 alone). A 0.53 "win" on development became −0.38 out-of-sample.
+
+This is the most valuable single result in the project, precisely because it is a null. The
+machinery — a pre-registered construction, a materiality floor fixed in advance, and a holdout
+reserved for one shot — did exactly what it is for: it caught a signal that would have looked
+real in any ordinary backtest and proved it was a false discovery *before* anyone could act on
+it. That is the difference between a research platform and a story.
 
 ### Reaction Gap — the ambitious follow-up, deliberately not built
 The idea: reconstruct when news *first* went public, estimate the reaction historically
@@ -96,12 +100,19 @@ The cheap experiment saved months of building on a shaky premise.
 
 ## What it all means
 
-The four results converge on one explanation: **8-K filings are, on average, confirmation of
-news the market already has.** Roughly half the reaction predates the filing; the stalest and
+The first four results converge on one explanation: **8-K filings are, on average, confirmation
+of news the market already has.** Roughly half the reaction predates the filing; the stalest and
 largest category (earnings) predates it most; no event type beats the market to its own news;
 and neither an AI reading the text nor a measure of how the text changed adds tradeable
 signal on top. This is what an informationally efficient reaction to public disclosures looks
 like — and measuring it honestly, four ways, is the result.
+
+The fifth (005) adds a different kind of lesson. It went looking for a *known*, off-filing
+anomaly — post-earnings drift — and found it clearly on development (0.53 Sharpe, long-only,
+costed). That is exactly the moment a less careful project declares victory. Instead the
+reserved holdout said −0.38, and the year-by-year decay explained why: the effect was real once
+and has faded. The takeaway is not "PEAD is fake" — it is that **a signal is only what survives
+out-of-sample**, and the value of the platform is that it can tell the difference.
 
 ## Limitations (stated plainly)
 

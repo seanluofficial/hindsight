@@ -73,7 +73,14 @@ def run_005(partitions: tuple[str, ...]) -> dict[str, Any]:
             results = pead.evaluate(conn, scored, manifest, partitions=partitions)
             # Robustness is always EXPLORE-only so the single HOLDOUT shot stays reserved.
             robustness = pead.robustness(conn, scored, partition="explore")
-        return {
+            # The single confirmatory read: the frozen long-only construction on 2020-2024,
+            # computed only when the caller explicitly asks for the holdout partition.
+            holdout_shot = (
+                pead.robustness(conn, scored, partition="holdout")
+                if "holdout" in partitions
+                else None
+            )
+        bundle: dict[str, Any] = {
             "experiment": "005",
             "title": "Post-earnings-announcement drift (PEAD)",
             "primary": "20-day, 10bps quintile long/short Sharpe on the surprise signal (HOLDOUT)",
@@ -83,6 +90,9 @@ def run_005(partitions: tuple[str, ...]) -> dict[str, Any]:
             "robustness": robustness,
             "manifest": manifest.to_dict(),
         }
+        if holdout_shot is not None:
+            bundle["holdout_shot"] = holdout_shot
+        return bundle
 
 
 def main() -> None:
