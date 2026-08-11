@@ -98,7 +98,15 @@ def cmd_prices(args: argparse.Namespace) -> int:
         RunManifest("prices", start=start.isoformat(), end=padded_end.isoformat()) as manifest,
         db.session() as conn,
     ):
-        if args.tickers:
+        if args.tickers_file:
+            path = Path(args.tickers_file)
+            tickers = [
+                line.strip().upper()
+                for line in path.read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            ]
+            print(f"  loaded {len(tickers):,} tickers from {path}")
+        elif args.tickers:
             tickers = [t.strip().upper() for t in args.tickers.split(",") if t.strip()]
         else:
             # Every ticker that filed something we ingested, plus everyone who was a
@@ -183,6 +191,9 @@ def main(argv: list[str] | None = None) -> int:
     p_pri = sub.add_parser("prices", help="fetch daily OHLC + benchmark from Tiingo")
     p_pri.add_argument("--year", type=int)
     p_pri.add_argument("--tickers", help="comma-separated override")
+    p_pri.add_argument(
+        "--tickers-file", help="path to a file with one ticker per line (for large universes)"
+    )
     p_pri.set_defaults(func=cmd_prices)
 
     p_sta = sub.add_parser("status", help="row counts and coverage")

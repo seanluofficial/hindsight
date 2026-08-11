@@ -148,12 +148,34 @@ def run_008(partitions: tuple[str, ...]) -> dict[str, Any]:
         }
 
 
+def run_009(partitions: tuple[str, ...]) -> dict[str, Any]:
+    """Experiment 009 — insider cluster-buying on the whole-market (small-cap) universe.
+
+    Reuses the 006 signal code against the broadened purchases file (all Form-4 issuers with a
+    ticker, not just S&P 500). Requires prices for the small-cap tickers; see
+    scripts/ingest_insider.py --scope all and the ticker list from build_smallcap_ticker_list.
+    """
+    all_csv = config.DATA_DIR / "insider_purchases_all.csv"
+    with RunManifest("experiment_009_insider_smallcap", partitions=list(partitions)) as manifest:
+        with db.session() as conn:
+            payload = insider.run(conn, manifest, partitions=partitions, csv_path=all_csv)
+        return {
+            "experiment": "009",
+            "title": "Insider cluster-buying, whole-market / small-cap (Form 4)",
+            "primary": "20-day, 10bps mean market-excess of cluster-buy events, whole-market "
+            "universe (HOLDOUT); H1 positive",
+            "horizons": list(insider.INSIDER_HORIZONS),
+            **payload,
+            "manifest": manifest.to_dict(),
+        }
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "--experiment",
         required=True,
-        choices=["002", "003", "004", "005", "006", "007", "008"],
+        choices=["002", "003", "004", "005", "006", "007", "008", "009"],
     )
     ap.add_argument(
         "--partition",
@@ -172,6 +194,7 @@ def main() -> None:
         "006": run_006,
         "007": run_007,
         "008": run_008,
+        "009": run_009,
     }
     bundle = runners[args.experiment](partitions)
 

@@ -19,6 +19,7 @@ import statistics
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date, timedelta
+from pathlib import Path
 
 from hindsight import config
 from hindsight.evaluate.portfolio import MONTHS_PER_YEAR, max_drawdown
@@ -54,9 +55,9 @@ class Event:
     total_value: float
 
 
-def load_purchases() -> list[Purchase]:
+def load_purchases(csv_path: Path | None = None) -> list[Purchase]:
     out: list[Purchase] = []
-    with INSIDER_CSV.open(encoding="utf-8") as f:
+    with (csv_path or INSIDER_CSV).open(encoding="utf-8") as f:
         for row in csv.DictReader(f):
             fd = row["filing_date"].strip()
             if not fd:
@@ -227,8 +228,9 @@ def run(
     conn: sqlite3.Connection,
     manifest: RunManifest,
     partitions: tuple[str, ...] = ("explore", "holdout"),
+    csv_path: Path | None = None,
 ) -> dict[str, object]:
-    purchases = load_purchases()
+    purchases = load_purchases(csv_path)
     manifest.count("purchases_loaded", len(purchases))
     events = build_events(purchases)
     manifest.count("cluster_events", len(events))

@@ -20,6 +20,7 @@ import io
 import sqlite3
 import zipfile
 from datetime import date, datetime
+from pathlib import Path
 
 from hindsight import config, db
 from hindsight.ingest.http import CachedFetcher
@@ -30,6 +31,7 @@ DATASET_URL = (
     "{year}q{quarter}_form345.zip"
 )
 OUTPUT_CSV = config.DATA_DIR / "insider_purchases.csv"
+ALL_OUTPUT_CSV = config.DATA_DIR / "insider_purchases_all.csv"
 FIELDS = [
     "issuer_cik",
     "ticker",
@@ -89,7 +91,7 @@ def _read_tsv(zf: zipfile.ZipFile, name: str) -> tuple[list[str], list[list[str]
 
 
 def _process_quarter(
-    raw: bytes, universe: UniverseIndex, manifest: RunManifest
+    raw: bytes, universe: UniverseIndex, manifest: RunManifest, scope: str = "sp500"
 ) -> list[dict[str, object]]:
     zf = zipfile.ZipFile(io.BytesIO(raw))
 
@@ -136,10 +138,19 @@ def _process_quarter(
         if sub is None or not owner_list:
             continue
         issuer_cik, ticker, filed = sub
-        ticker_pit = universe.member_ticker(issuer_cik, ticker, filed)
-        if ticker_pit is None:
-            manifest.exclude("issuer_not_universe_member_at_filing")
-            continue
+        if scope == "all":
+            # Whole-market scope (experiment 009): keep any issuer with a usable ticker;
+            # point-in-time membership is enforced later by price coverage at the event date.
+            if not ticker.strip():
+                manifest.exclude("issuer_no_ticker")
+                continue
+            ticker_pit = ticker.strip().upper()
+        else:
+            member = universe.member_ticker(issuer_cik, ticker, filed)
+            if member is None:
+                manifest.exclude("issuer_not_universe_member_at_filing")
+                continue
+            ticker_pit = member
         trans_date = _parse_date(r[ti["TRANS_DATE"]])
         try:
             shares = float(r[ti["TRANS_SHARES"]] or 0)
@@ -170,9 +181,25 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--start-year", type=int, default=2010)
     ap.add_argument("--end-year", type=int, default=2024)
+    ap.add_argument(
+        "--scope",
+        choices=["sp500", "all"],
+        default="sp500",
+        help="'sp500' (default, experiment 006) keeps only S&P 500 members; 'all' keeps every "
+        "Form-4 issuer with a ticker (experiment 009, whole-market/small-cap).",
+    )
+    ap.add_argument(
+        "--output",
+        help="output CSV path (default depends on scope)",
+    )
     args = ap.parse_args()
 
-    with RunManifest("ingest_insider", start=args.start_year, end=args.end_year) as manifest:
+    default_csv = OUTPUT_CSV if args.scope == "sp500" else ALL_OUTPUT_CSV
+    output_csv = Path(args.output) if args.output else default_csv
+
+    with RunManifest(
+        "ingest_insider", start=args.start_year, end=args.end_year, scope=args.scope
+    ) as manifest:
         fetcher = CachedFetcher()
         with db.session() as conn:
             universe = UniverseIndex(conn)
@@ -186,19 +213,19 @@ def main() -> None:
                 except Exception as exc:  # noqa: BLE001 - a missing quarter is logged, not fatal
                     manifest.exclude("quarter_fetch_failed", f"{year}q{quarter}: {exc}")
                     continue
-                quarter_rows = _process_quarter(raw, universe, manifest)
+                quarter_rows = _process_quarter(raw, universe, manifest, scope=args.scope)
                 rows.extend(quarter_rows)
                 manifest.count("quarters_processed")
                 print(f"  {year}Q{quarter}: {len(quarter_rows):,} universe purchases")
 
         rows.sort(key=lambda d: (str(d["filing_date"]), str(d["ticker"])))
         config.DATA_DIR.mkdir(parents=True, exist_ok=True)
-        with OUTPUT_CSV.open("w", newline="", encoding="utf-8") as f:
+        with output_csv.open("w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=FIELDS)
             writer.writeheader()
             writer.writerows(rows)
         manifest.count("rows_written", len(rows))
-        print(f"\nwrote {OUTPUT_CSV} ({len(rows):,} rows)")
+        print(f"\nwrote {output_csv} ({len(rows):,} rows)")
 
 
 if __name__ == "__main__":
