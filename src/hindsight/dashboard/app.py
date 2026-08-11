@@ -903,6 +903,10 @@ def render_overview() -> None:
         "doesn't predict returns either (003). A coherent, honest set of null results — which "
         "is a legitimate and valuable outcome, not a failure."
     )
+    st.markdown(
+        "📄 **Read the [Findings] tab** for the full written narrative — the arc, what each "
+        "result means, the limitations, and what I'd do next."
+    )
     st.markdown("**The experiments at a glance** — open each tab above for the full story:")
     st.dataframe(
         pd.DataFrame(
@@ -928,6 +932,15 @@ def render_overview() -> None:
         "being built, so they're reported honestly as in-sample rather than as clean "
         "single-shot tests (see DEVIATIONS.md in the repo)."
     )
+
+
+def render_findings() -> None:
+    """Render the written narrative from FINDINGS.md (single source of truth)."""
+    path = config.ROOT / "FINDINGS.md"
+    if path.exists():
+        st.markdown(path.read_text(encoding="utf-8"))
+    else:
+        st.info("FINDINGS.md not found in the deployment.")
 
 
 def render_experiment_detail(exp: dict[str, str]) -> None:
@@ -990,11 +1003,17 @@ def main() -> None:
             "same code path."
         )
 
-    labels = ["Overview"] + [_TAB_LABELS[e["id"]] for e in EXPERIMENTS] + ["Live"]
+    labels = (
+        ["Overview", "Findings"]
+        + [_TAB_LABELS[e["id"]] for e in EXPERIMENTS]
+        + ["Live"]
+    )
     tabs = st.tabs(labels)
     with tabs[0]:
         render_overview()
-    for exp, tab in zip(EXPERIMENTS, tabs[1:], strict=False):
+    with tabs[1]:
+        render_findings()
+    for exp, tab in zip(EXPERIMENTS, tabs[2:], strict=False):
         with tab:
             render_experiment_detail(exp)
     with tabs[-1]:

@@ -32,10 +32,13 @@ experiments stay in the table — every test counts.
 
 | # | Title | Primary endpoint | Status | HOLDOUT result | Primary p |
 |---|---|---|---|---|---|
-| 001 | LLM analysis of anonymized 8-Ks → abnormal returns | 5-day, 10bps quintile L/S Sharpe (full sample; holdout already spent) | `running` | pending full run | — |
-| 002 | Event-type conditional returns | 5-day, 10bps high-impact−routine mean-excess difference (HOLDOUT) | `draft` | — | — |
-| 003 | Filing novelty / linguistic change vs. prior filings ("Lazy Prices") | 20-day, 10bps quintile L/S Sharpe on change-score (HOLDOUT) | `draft` | — | — |
-| 004 | Information staleness / first-disclosure (**diagnostic**) | Median staleness fraction > 0.5 on HOLDOUT (not a trading endpoint) | `draft` | — | — |
+| 001 | LLM analysis of anonymized 8-Ks → abnormal returns | 5-day, 10bps quintile L/S Sharpe (full sample; holdout already spent) | `running` | ~coin flip (pending full run) | — |
+| 002 | Event-type conditional returns | 5-day, 10bps high-impact−routine mean-excess difference (HOLDOUT) | `exploratory` | near-null (+1.9 bps, p 0.83) | 0.83 |
+| 003 | Filing novelty / linguistic change vs. prior filings ("Lazy Prices") | 20-day, 10bps quintile L/S Sharpe on change-score (HOLDOUT) | `exploratory` | null, wrong sign (Sharpe −0.87) | — |
+| 004 | Information staleness / first-disclosure (**diagnostic**) | Median staleness fraction > 0.5 on HOLDOUT (not a trading endpoint) | `exploratory` | ~47% (H1 not supported) | — |
+
+**Read the narrative:** [`../FINDINGS.md`](../FINDINGS.md). All results are in-sample (see
+`../DEVIATIONS.md` D-EXP1); nothing survived, so no family-wise correction was needed.
 
 Planned but not yet drafted (kept here so the family is declared up front, not discovered —
 see `PROTOCOL.md` §3): model-disagreement-as-uncertainty (005); event-severity × market
