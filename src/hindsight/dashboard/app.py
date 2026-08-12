@@ -802,6 +802,23 @@ EXPERIMENTS: list[dict[str, str]] = [
         "worst days, sneaking survivorship bias back in. Real on paper, gone out-of-sample.",
     },
     {
+        "id": "010",
+        "title": "The most persistent anomaly there is: does momentum survive here?",
+        "status": "dev_reserved",
+        "bundle": "experiment_010.json",
+        "question": "Stocks that rose over the past year tend to keep rising (momentum) — the "
+        "most-replicated anomaly in finance. Does it clear our cost bar in small caps?",
+        "how": "Each month, rank the whole market by 12-month-minus-1 return, buy winners / short "
+        "losers, hold, and charge realistic costs — reusing 009's price data, no new ingest.",
+        "why": "After nine nulls, a deliberate test of the strongest textbook factor, in the "
+        "universe where it's strongest. The best genuine shot at an out-of-sample survivor.",
+        "result": "Null at the pre-registered 1-month hold (Sharpe 0.16, negative after 25 bps). "
+        "At longer holds the long/short *clears* the bar (60-day 0.51 even at 25 bps) — but the "
+        "entire edge is the **short leg**; the long-only, retail-tradeable book is strongly "
+        "negative. A short-borrow illusion: the winners you can buy don't work, the losers that "
+        "do work you can't cheaply short. Holdout preserved.",
+    },
+    {
         "id": "RG",
         "title": "Reaction Gap — did the market move *enough*? (future branch)",
         "status": "gated",
@@ -904,9 +921,19 @@ FINDINGS: dict[str, tuple[str, str]] = {
         "The sharpest false-discovery catch in the project. The best-prior candidate — small-cap "
         "insider buying, refined the way the literature says — was the strongest result on "
         "development (+65 bps/20d, Sharpe 0.30, cleared the bar). Frozen and given one holdout "
-        "shot, it **reversed to −128 bps (Sharpe −0.34)**. A daily-book variant looked like a "
-        "win (+0.40) but was discarded for smuggling survivorship bias back in. Real on paper, "
-        "gone out-of-sample — exactly what the one-shot holdout exists to expose.",
+        "shot, it **reversed to −122 bps**; and the **forward test on 2025+ data that didn't "
+        "exist when it was built agrees (−65 bps)**. A daily-book variant looked like a win "
+        "(+0.40) but was discarded for smuggling survivorship bias back in. Real on paper, gone "
+        "on two independent out-of-sample periods — exactly what the holdout and forward exist "
+        "to expose.",
+    ),
+    "010": (
+        "warning",
+        "Even momentum — the most persistent anomaly in finance — doesn't hand you a tradeable "
+        "edge here. At the pre-registered 1-month hold it's a null. At longer holds the "
+        "long/short clears the bar (60-day Sharpe 0.51 even at 25 bps), but the whole edge is in "
+        "**shorting** small-cap losers you can't cheaply borrow; the long-only book you could "
+        "actually hold is strongly negative. A short-borrow illusion.",
     ),
     "RG": (
         "info",
@@ -935,7 +962,8 @@ _RESULT_BADGE: dict[str, str] = {
     "006": "❌ Dev null (−37 bps, 20d)",
     "007": "◑ Significant, not material (Sharpe 0.22)",
     "008": "❌ Null (overlap-inflated t; book −0.17)",
-    "009": "❌ +65 bps on dev → −128 bps on holdout",
+    "009": "❌ +65 bps dev → −122 holdout → −65 forward",
+    "010": "◑ L/S clears bar, but short-side only (long-only < 0)",
     "RG": "🔒 Not built (gated)",
 }
 _KEY_FINDING: dict[str, str] = {
@@ -954,8 +982,10 @@ _KEY_FINDING: dict[str, str] = {
     "008": "Industry peers don't lag a filer's reaction (20d +1.4 bps, coin flip); a 'significant' "
     "60d t-stat is an artifact of correlated peers — the monthly book is −0.17 Sharpe.",
     "009": "Refined small-cap insider buying was the best result on development (+65 bps/20d, "
-    "Sharpe 0.30) then reversed to −128 bps out-of-sample; a positive daily-book variant was "
-    "discarded for survivorship bias.",
+    "Sharpe 0.30) then reversed on both the holdout (−122 bps) and the live forward test "
+    "(−65 bps); a positive daily-book variant was discarded for survivorship bias.",
+    "010": "Momentum is a null at a 1-month hold; at longer holds the long/short clears the bar "
+    "but only via an un-borrowable short leg — the long-only book is negative.",
     "RG": "004 showed no cleanly-fresh event class, so this expensive branch was not built.",
 }
 
@@ -1317,10 +1347,15 @@ def render_009_results(bundle: dict[str, Any]) -> None:
         )
 
     rows = []
-    for part, label in [("explore", "development (2010–19)"), ("holdout", "HOLDOUT (2020–24)")]:
+    part_labels = [
+        ("explore", "development (2010–19)"),
+        ("holdout", "HOLDOUT (2020–24)"),
+        ("forward", "FORWARD (2025+, live)"),
+    ]
+    for part, label in part_labels:
         x = cell(part, 20)
         mat = ref.get("materiality", {}).get(part, {}).get("monthly", {})
-        if x:
+        if x and x["n_events"]:
             rows.append(
                 {
                     "data": label,
@@ -1330,8 +1365,9 @@ def render_009_results(bundle: dict[str, Any]) -> None:
                 }
             )
     st.markdown(
-        "**The refined small-cap signal: development vs. the one holdout shot.** It was the "
-        "project's best result on development — then reversed sign out-of-sample."
+        "**The refined small-cap signal across all three eras.** It was the project's best result "
+        "on development, then reversed on the holdout — and the *forward* test on 2025+ data that "
+        "didn't exist when it was built agrees: negative again."
     )
     if rows:
         st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
@@ -1343,6 +1379,28 @@ def render_009_results(bundle: dict[str, Any]) -> None:
     )
 
 
+def render_010_results(bundle: dict[str, Any]) -> None:
+    """Momentum L/S and long-only Sharpe by hold and cost (development)."""
+    rows = [
+        {
+            "cost": f"{int(r['cost_bps'])} bps",
+            "long/short Sharpe": round(r["ls_sharpe"], 2),
+            "long-only Sharpe": round(r["long_only_sharpe"], 2),
+            "months": r["n_months"],
+        }
+        for r in bundle.get("results", [])
+        if r["partition"] == "explore"
+    ]
+    st.markdown(
+        "**Momentum on development, at the pre-registered 1-month hold.** The long/short is a "
+        "coin flip after costs, and the long-only leg is negative. At longer holds (60–120 days, "
+        "not shown) the long/short clears 0.30 — but the long-only leg stays negative, so the "
+        "edge is entirely in shorting small-cap losers you can't cheaply borrow."
+    )
+    if rows:
+        st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+
+
 _RESULT_RENDERERS = {
     "002": render_002_results,
     "003": render_003_results,
@@ -1352,6 +1410,7 @@ _RESULT_RENDERERS = {
     "007": render_007_results,
     "008": render_008_results,
     "009": render_009_results,
+    "010": render_010_results,
 }
 
 
@@ -1360,7 +1419,7 @@ def render_overview() -> None:
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("8-K filings", "100K+")
     c2.metric("price observations", "1.58M")
-    c3.metric("pre-registered experiments", "9")
+    c3.metric("pre-registered experiments", "10")
     c4.metric("signals that survived", "0", help="Nothing cleared the pass/fail bar. 005 came "
               "closest — a 0.53-Sharpe long-only signal on development — but the reserved holdout "
               "returned −0.38, exactly the false discovery the discipline exists to catch.")
@@ -1472,6 +1531,7 @@ _TAB_LABELS: dict[str, str] = {
     "007": "007 · Timing",
     "008": "008 · Peers",
     "009": "009 · Small-cap",
+    "010": "010 · Momentum",
     "RG": "Reaction Gap",
 }
 

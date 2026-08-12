@@ -1,21 +1,21 @@
 # Findings
 
-**One sentence:** across nine pre-registered experiments — eight testing for a tradeable signal,
-one diagnostic — no signal cleared both the significance and the materiality gate, and the
-failures explain each other: the market prices public information (8-K filings, earnings, insider
-purchases, the timing of disclosure, and one firm's news reaching its peers) faster than a late
-reader can trade it. Two experiments looked like wins on development and were then killed by their
-reserved holdouts — 005 (post-earnings drift): 0.53 Sharpe → −0.38; and 009 (small-cap insider
-buying): +65 bps/20d → **−128 bps**, a full sign reversal. Those two catches are the single
-clearest demonstration of why this platform is built the way it is: a signal is only what survives
-out-of-sample. Experiment 006 (insider cluster-buying) was a development null in the S&P 500, which
-*motivated* 009's small-cap test. Experiment 007 ("bury bad news" timing) is the subtlest: buried
-filings *do* underperform, detectably (−24 bps vs control over 20 days, p ≈ 0.04) — but the short
-book scores only 0.22 Sharpe, a textbook significant-but-not-economic result. Experiment 008 (peer
-lead-lag) is the methodological bookend: a 60-day peer effect *looks* significant (t ≈ 4) until you
-notice it double-counts thousands of correlated peers, and the honest monthly book is negative.
-(A separate branch, Reaction Gap, was deliberately gated and never built — a branch you choose not
-to build is a decision, not a result.)
+**One sentence:** across ten pre-registered experiments — nine testing for a tradeable signal, one
+diagnostic — no signal cleared both the significance and the materiality gate out-of-sample, and
+the failures explain each other: the market prices public information (8-K filings, earnings,
+insider purchases, disclosure timing, peer news) faster than a late reader can trade it, and where
+a raw edge does appear it is eaten by a real-world cost the flat model ignores. Two experiments
+looked like wins on development and were killed out-of-sample — 005 (post-earnings drift): 0.53
+Sharpe → −0.38; and 009 (small-cap insider buying): +65 bps/20d → **−122 bps on the holdout and
+−65 bps on a live 2025+ forward test.** And the project names *three distinct ways* a small-cap
+backtest lies: **007** dies on the bid-ask **spread** (significant −24 bps, but a 0.22 Sharpe);
+**009** nearly smuggled in **survivorship** (a positive daily book that dropped delisted names'
+worst days, caught and discarded); and **010 (momentum)** — the most persistent anomaly in finance
+— dies on **short-borrow**: its long/short clears the bar at longer holds, but the entire edge is
+in shorting losers you can't cheaply borrow, and the long-only book is negative. 006 (S&P insider
+buying) was the null that *motivated* 009; 008 (peer lead-lag) is a worked example of the overlap
+correction turning a t ≈ 4 into a negative book. (Reaction Gap was deliberately gated and never
+built — a branch you choose not to build is a decision, not a result.)
 
 This is an honest measurement, not a trading system. A clean, well-explained null is the
 intended deliverable.
@@ -177,6 +177,29 @@ drops its worst days — survivorship bias (invariant 2) re-entering through the
 The survivorship-safe measures (event-study mean, monthly book) are the verdict, and they say the
 signal failed. Catching that artifact *before* it became a false headline is exactly the platform's
 job.
+
+009 was later given the strongest test there is. Because the price data was extended to 2025–2026,
+the frozen recipe was scored on the **FORWARD** partition — filings that *did not exist when the
+signal was built*, the one kind of evidence that cannot be contaminated or p-hacked. It came back
+**−65 bps (Sharpe −1.35)**: underpowered on its own (814 events, ~15 months) but the *same sign* as
+the holdout. The signal is negative on two independent out-of-sample periods. This also stood up the
+FORWARD leg of the platform — the design's final, uncontaminable gate — as a working capability.
+
+### 010 — momentum: the most persistent anomaly, and the third way a backtest lies
+After nine signal experiments, 010 is a deliberate test of the single most-replicated anomaly in
+equities — 12-1 cross-sectional momentum (Jegadeesh-Titman) — in the small-cap universe where it is
+strongest, reusing 009's prices. Rank the market each month by its past-year return (skipping the
+last month), buy winners, short losers, hold, and charge real costs.
+
+**Finding — a null at the pre-registered hold, and a short-borrow illusion at longer ones.** The
+one-month-hold primary is a null (Sharpe 0.16, negative after 25 bps). At 60–120-day holds the
+long/short *clears the bar even at 25 bps* (0.51–0.71) — the only construction to do so on
+development at realistic cost. **But the entire edge is the short leg:** the long-only, actually
+holdable book is strongly *negative* (−0.7 to −1.1 Sharpe). In small caps, high-momentum names are
+lottery/pump stocks that reverse, and the money is in shorting the losers — precisely the
+hardest-to-borrow, highest-fee names, whose true short cost the flat bps model badly understates. So
+momentum joins 007 and 009 as the project's third named way a small-cap backtest lies: **007 dies on
+spread, 009 nearly died on survivorship, 010 dies on short-borrow.**
 
 ### Reaction Gap — the ambitious follow-up, deliberately not built
 The idea: reconstruct when news *first* went public, estimate the reaction historically
