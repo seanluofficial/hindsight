@@ -1,0 +1,39 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install
+        run: uv sync --dev --python ${{ matrix.python-version }}
+
+      - name: Lint
+        run: uv run ruff check .
+
+      # mypy runs in strict mode (see pyproject). It is a gate, not a warning.
+      - name: Types
+        run: uv run mypy src
+
+      # No test is marked `network` and none reads an API key, so the suite runs
+      # without secrets. That is a property worth protecting: if it ever stops being
+      # true, this job is where it will surface.
+      - name: Tests
+        run: uv run pytest

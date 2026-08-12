@@ -1,7 +1,14 @@
 # hindsight
 
+[![ci](https://github.com/seanluofficial/hindsight/actions/workflows/ci.yml/badge.svg)](https://github.com/seanluofficial/hindsight/actions/workflows/ci.yml)
+[![live dashboard](https://img.shields.io/badge/live-streamlit-C0392F)](https://hindsight-hpunstepzzu536epfhsjwz.streamlit.app)
+[![mypy strict](https://img.shields.io/badge/mypy-strict-2a6f97)](pyproject.toml)
+[![license](https://img.shields.io/badge/license-MIT-informational)](LICENSE)
+
 A **contamination-resistant research platform** for testing whether public market data carries
 tradeable information — and, more importantly, for *honestly measuring* when it does not.
+
+![Ten pre-registered experiments, none producing a signal that survives out-of-sample after costs](docs/media/experiments.png)
 
 It began by asking whether an LLM can predict returns from an SEC 8-K it isn't allowed to
 identify (the name is that thesis: the model was trained on the outcomes, so *hindsight*
