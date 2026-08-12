@@ -1,0 +1,60 @@
+{
+  "cost_bps": 10,
+  "results": [
+    {
+      "label": "Trend allocation",
+      "partition": "backtest 2011-2024",
+      "n_months": 167,
+      "cagr": 0.04042257700124696,
+      "vol_annual": 0.05092667864314181,
+      "sharpe": 0.8046644525793264,
+      "max_drawdown": 0.07168461602568976
+    },
+    {
+      "label": "Trend allocation",
+      "partition": "forward 2025+",
+      "n_months": 19,
+      "cagr": 0.161057278816787,
+      "vol_annual": 0.07187316092858105,
+      "sharpe": 2.1245614737146976,
+      "max_drawdown": 0.03545291946007356
+    },
+    {
+      "label": "Buy & hold SPY",
+      "partition": "backtest 2011-2024",
+      "n_months": 167,
+      "cagr": 0.13588450137651398,
+      "vol_annual": 0.1427994486549347,
+      "sharpe": 0.9680619791891056,
+      "max_drawdown": 0.2392798680665792
+    },
+    {
+      "label": "Buy & hold SPY",
+      "partition": "forward 2025+",
+      "n_months": 19,
+      "cagr": 0.17816652934886323,
+      "vol_annual": 0.13197746969134758,
+      "sharpe": 1.3121216426946758,
+      "max_drawdown": 0.0757915191528078
+    },
+    {
+      "label": "Static 60/40",
+      "partition": "backtest 2011-2024",
+      "n_months": 167,
+      "cagr": 0.0910969281137135,
+      "vol_annual": 0.08990544028794167,
+      "sharpe": 1.0179216413103236,
+      "max_drawdown": 0.20507443967726957
+    },
+    {
+      "label": "Static 60/40",
+      "partition": "forward 2025+",
+      "n_months": 19,
+      "cagr": 0.12357010354823617,
+      "vol_annual": 0.08113249377789766,
+      "sharpe": 1.481164518608673,
+      "max_drawdown": 0.0388801324555067
+    }
+  ],
+  "strategy": "Diversified absolute-momentum (trend) on 6 liquid ETFs, monthly"
+}

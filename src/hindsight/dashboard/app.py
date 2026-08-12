@@ -1483,6 +1483,45 @@ def render_overview() -> None:
     )
 
 
+def render_allocation() -> None:
+    st.subheader("Allocation — the honest way to actually use this")
+    st.markdown(
+        "The ten experiments showed the *hard* path — hunting alpha in public data — is a "
+        "graveyard for an individual. This is the sibling that shows the path that **does** work: "
+        "not a clever signal, but a disciplined, fixed-rule **trend / absolute-momentum** "
+        "allocation over six liquid ETFs (US & int'l equity, long & intermediate Treasuries, gold, "
+        "commodities), holding cash when an asset's 12-month trend is negative. Same rigor — "
+        "point-in-time, real costs, no lookahead, a live 2025+ forward window."
+    )
+    bundle = load_experiment_bundle("allocation.json")
+    if not bundle:
+        st.info("Run `scripts/run_allocate.py` to populate this.")
+        return
+    rows = [
+        {
+            "strategy": r["label"],
+            "window": r["partition"],
+            "months": r["n_months"],
+            "CAGR": f"{r['cagr'] * 100:.1f}%",
+            "volatility": f"{r['vol_annual'] * 100:.1f}%",
+            "Sharpe": round(r["sharpe"], 2),
+            "worst drawdown": f"{r['max_drawdown'] * 100:.1f}%",
+        }
+        for r in bundle.get("results", [])
+    ]
+    st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+    st.warning(
+        "**Read this honestly.** Over the 2011–2024 bull market the trend allocation had a *far* "
+        "smaller worst drawdown (~7% vs. buy-and-hold SPY's ~24%) — but it also earned *far* less "
+        "(~4% vs. ~14% a year), and its risk-adjusted return (Sharpe 0.80) actually trailed both "
+        "SPY (0.97) and a static 60/40 (1.02). The lesson is the point: **trend-following is "
+        "drawdown insurance, not a return machine**, and in a strong bull decade that insurance "
+        "cost a lot of upside. The flattering 2025+ forward numbers are only ~19 months — noise, "
+        "not proof. For long-term wealth, boring low-cost buy-and-hold is very hard to beat; this "
+        "is a risk-management tool and a learning artifact, not financial advice."
+    )
+
+
 def render_findings() -> None:
     """Render the written narrative from FINDINGS.md (single source of truth)."""
     path = config.ROOT / "FINDINGS.md"
@@ -1564,7 +1603,7 @@ def main() -> None:
     labels = (
         ["Overview", "Findings"]
         + [_TAB_LABELS[e["id"]] for e in EXPERIMENTS]
-        + ["Live"]
+        + ["💰 Allocation", "Live"]
     )
     tabs = st.tabs(labels)
     with tabs[0]:
@@ -1574,6 +1613,8 @@ def main() -> None:
     for exp, tab in zip(EXPERIMENTS, tabs[2:], strict=False):
         with tab:
             render_experiment_detail(exp)
+    with tabs[-2]:
+        render_allocation()
     with tabs[-1]:
         st.caption("Phase 8 — automatic scoring of new filings as they are published.")
         render_track_record()
