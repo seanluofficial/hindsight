@@ -56,15 +56,20 @@ EXPLORE_START = date(2010, 1, 1)
 EXPLORE_END = date(2019, 12, 31)
 HOLDOUT_START = date(2020, 1, 1)
 HOLDOUT_END = date(2024, 12, 31)
+# FORWARD: post-study-freeze data that did not exist when the signals were built. The only
+# truly uncontaminable evidence — a frozen signal scored on the future. Begins after STUDY_END.
+FORWARD_START = date(2025, 1, 1)
 
 
 def partition_of(accepted_at_utc: str) -> str:
-    """'explore' | 'holdout' | 'other' for a filing's acceptance timestamp (YYYY-... str)."""
+    """'explore' | 'holdout' | 'forward' | 'other' for a timestamp (YYYY-... str)."""
     year = int(accepted_at_utc[:4])
     if EXPLORE_START.year <= year <= EXPLORE_END.year:
         return "explore"
     if HOLDOUT_START.year <= year <= HOLDOUT_END.year:
         return "holdout"
+    if year >= FORWARD_START.year:
+        return "forward"
     return "other"
 
 # Exclusions fixed in advance (§3). Each is counted and reported, never silently applied.

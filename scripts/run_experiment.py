@@ -20,6 +20,7 @@ from hindsight.experiments import (
     diffusion,
     event_type,
     insider,
+    momentum,
     novelty,
     pead,
     staleness,
@@ -170,22 +171,40 @@ def run_009(partitions: tuple[str, ...]) -> dict[str, Any]:
         }
 
 
+def run_010(partitions: tuple[str, ...]) -> dict[str, Any]:
+    with RunManifest("experiment_010_momentum", partitions=list(partitions)) as manifest:
+        with db.session() as conn:
+            payload = momentum.run(conn, manifest, partitions=partitions)
+        return {
+            "experiment": "010",
+            "title": "Cross-sectional momentum (12-1), whole-market / small-cap",
+            "primary": "20-day, 10bps quintile L/S Sharpe on 12-1 momentum (HOLDOUT); H1 positive",
+            **payload,
+            "manifest": manifest.to_dict(),
+        }
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument(
         "--experiment",
         required=True,
-        choices=["002", "003", "004", "005", "006", "007", "008", "009"],
+        choices=["002", "003", "004", "005", "006", "007", "008", "009", "010"],
     )
     ap.add_argument(
         "--partition",
-        choices=["both", "explore", "holdout"],
+        choices=["both", "explore", "holdout", "forward", "all"],
         default="both",
-        help="which partitions to compute (default both). Use 'explore' before locking.",
+        help="partitions to compute. 'both'=explore+holdout; 'all' adds forward (2025+, "
+        "uncontaminable); a single name computes only that one. Use 'explore' before locking.",
     )
     args = ap.parse_args()
 
-    partitions = ("explore", "holdout") if args.partition == "both" else (args.partition,)
+    partition_sets: dict[str, tuple[str, ...]] = {
+        "both": ("explore", "holdout"),
+        "all": ("explore", "holdout", "forward"),
+    }
+    partitions = partition_sets.get(args.partition, (args.partition,))
     runners = {
         "002": run_002,
         "003": run_003,
@@ -195,6 +214,7 @@ def main() -> None:
         "007": run_007,
         "008": run_008,
         "009": run_009,
+        "010": run_010,
     }
     bundle = runners[args.experiment](partitions)
 

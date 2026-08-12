@@ -1,0 +1,48 @@
+{
+  "experiment": "010",
+  "title": "Cross-sectional momentum (12-1), whole-market / small-cap",
+  "primary": "20-day, 10bps quintile L/S Sharpe on 12-1 momentum (HOLDOUT); H1 positive",
+  "results": [
+    {
+      "partition": "explore",
+      "cost_bps": 10.0,
+      "n_months": 108,
+      "ls_mean_monthly": 0.0007044033736232407,
+      "ls_sharpe": 0.1605987092780185,
+      "long_only_sharpe": -0.3698450837969556,
+      "ls_max_drawdown": 0.17439958250664578
+    },
+    {
+      "partition": "explore",
+      "cost_bps": 25.0,
+      "n_months": 108,
+      "ls_mean_monthly": -0.0007955966263767598,
+      "ls_sharpe": -0.18139008994921985,
+      "long_only_sharpe": -0.5791940625138007,
+      "ls_max_drawdown": 0.21189456148909736
+    }
+  ],
+  "hold_days": 20,
+  "manifest": {
+    "stage": "experiment_010_momentum",
+    "git_sha": "6ebd2167419b115d29ef2896c874832746f4d7cc-dirty",
+    "started_at_utc": "2026-08-12T02:34:56.824248+00:00",
+    "finished_at_utc": "2026-08-12T02:36:47.264531+00:00",
+    "duration_seconds": 110.4,
+    "python": "3.12.10",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "params": {
+      "partitions": [
+        "explore"
+      ]
+    },
+    "counts": {
+      "explore_formations": 108,
+      "tickers": 6345
+    },
+    "exclusions": {},
+    "exclusion_examples": {},
+    "total_excluded": 0,
+    "errors": []
+  }
+}
