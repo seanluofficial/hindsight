@@ -1458,7 +1458,8 @@ def render_overview() -> None:
     )
     st.markdown(
         "🔗 **The programme continues in a sibling project.** "
-        "[Market Structure Radar](https://github.com/seanluofficial/marketradar) carries the "
+        "[Market Structure Radar](https://marketradar-9m9rrx4hps5vpywf2dqfn5.streamlit.app) "
+        "([code](https://github.com/seanluofficial/marketradar)) carries the "
         "same pre-registration discipline into correlation structure and risk analytics, and "
         "adds experiments **011** (time-series momentum) and **012** (volatility management, "
         "low-volatility anomaly) — 25 further declared cells, none surviving. Twelve "
