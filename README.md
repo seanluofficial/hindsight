@@ -1,16 +1,20 @@
 # hindsight
 
-Can a large language model extract predictive signal from SEC 8-K filings **when it cannot
-identify the company or the date?**
+A **contamination-resistant research platform** for testing whether public market data carries
+tradeable information — and, more importantly, for *honestly measuring* when it does not.
 
-The name is the thesis. The model was trained on data that includes the outcomes of the
-events it is being asked to predict, so contamination by hindsight is the central threat,
-and every design decision defends against it. The deliverable is an honest measurement —
-including a null result — not a profitable trading system.
+It began by asking whether an LLM can predict returns from an SEC 8-K it isn't allowed to
+identify (the name is that thesis: the model was trained on the outcomes, so *hindsight*
+contamination is the central threat). It grew into **ten pre-registered experiments** on a full
+**EXPLORE → HOLDOUT → live-FORWARD** design. None produced a signal that survives out-of-sample
+after costs — and the value is in *how* they fail: **two "wins" caught by the reserved holdout**
+(post-earnings drift; small-cap insider buying, which also failed a live 2025+ forward test), and
+**three distinct real-world costs** that each kill a small-cap backtest — the bid-ask **spread**
+(007), **survivorship** (009), and **short-borrow** (010, momentum). The deliverable is an honest
+measurement, not a profitable bot.
 
-- **[`FINDINGS.md`](FINDINGS.md) — the written narrative: four pre-registered experiments, no
-  surviving signal, and why the nulls explain each other (plus a fifth branch deliberately not
-  built). Start here.**
+- **[`FINDINGS.md`](FINDINGS.md) — the written narrative: ten pre-registered experiments, no
+  surviving signal, and the mechanisms behind each failure. Start here.**
 - [`experiments/`](experiments/README.md) — the research platform: pre-registered hypotheses,
   the holdout architecture, and the multiple-testing alpha budget ([`PROTOCOL.md`](experiments/PROTOCOL.md)).
 - [`PREREGISTRATION.md`](PREREGISTRATION.md) — the specification. Locked. It wins any disagreement.

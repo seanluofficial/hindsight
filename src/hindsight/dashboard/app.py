@@ -1417,34 +1417,39 @@ _RESULT_RENDERERS = {
 def render_overview() -> None:
     st.subheader("What this project is")
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("8-K filings", "100K+")
-    c2.metric("price observations", "1.58M")
+    c1.metric("filings + insider trades", "480K+", help="100K+ point-in-time 8-Ks and "
+              "380K+ SEC Form 4 insider transactions.")
+    c2.metric("price observations", "11.5M", help="Daily OHLC across ~4,900 whole-market "
+              "tickers incl. delisted names (survivorship-safe), 2010–2026.")
     c3.metric("pre-registered experiments", "10")
     c4.metric("signals that survived", "0", help="Nothing cleared the pass/fail bar. 005 came "
               "closest — a 0.53-Sharpe long-only signal on development — but the reserved holdout "
               "returned −0.38, exactly the false discovery the discipline exists to catch.")
     st.caption(
-        "A contamination-resistant research platform for testing whether SEC filings carry "
-        "tradeable information. Five experiments, none surviving — four explain each other "
-        "(~half the price reaction happens before the filing is public), and the fifth is the "
-        "cleanest lesson: a development 'win' killed by one honest out-of-sample test."
+        "A contamination-resistant research platform for testing whether public market data "
+        "carries tradeable information. Ten pre-registered experiments, none surviving out-of-"
+        "sample — on a full EXPLORE → HOLDOUT → live-FORWARD design. The value is in *how* they "
+        "fail: two 'wins' caught by the holdout, and three distinct real-world costs that eat a "
+        "small-cap backtest."
     )
     st.markdown(
-        "**Hindsight asks a simple question honestly: can public company filings tell you "
-        "where a stock is headed?** Instead of one flashy strategy, it runs a small family of "
-        "**pre-registered experiments** — each one written down, with its pass/fail test fixed "
-        "*before* the answer is looked at. That's the discipline serious quant research runs on, "
-        "and it's what stops 'we tried a bunch of things and one happened to work' from being "
-        "mistaken for a discovery."
+        "**Hindsight asks a simple question honestly: can public data tell you where a stock is "
+        "headed — enough to trade it after costs?** Instead of one flashy strategy, it runs a "
+        "family of **pre-registered experiments** — each written down, with its pass/fail test "
+        "fixed *before* the answer is looked at, then tested once on quarantined years and, "
+        "finally, on live data that didn't exist when the signal was built. That discipline is "
+        "what stops 'we tried a bunch of things and one worked' from being mistaken for a "
+        "discovery."
     )
     st.markdown(
-        "**The story so far, in one line:** an AI reading anonymized filings can't beat a coin "
-        "flip (001); the *type* of event doesn't rescue it (002); roughly **half the market's "
-        "reaction is already over before the filing is even public** (004); and *new* wording "
-        "doesn't predict returns either (003). Four honest nulls that explain each other — then "
-        "**005** uses that diagnosis to target post-earnings drift, *looks* like a win on "
-        "development (Sharpe 0.53), and gets killed by the reserved holdout (−0.38): the cleanest "
-        "demonstration of why the whole apparatus exists."
+        "**The story in two lines.** *Filings are efficient:* an AI reading anonymized 8-Ks is a "
+        "coin flip (001), event type doesn't help (002), ~half the reaction is over before the "
+        "filing is even public (004), and linguistic novelty adds nothing (003). *Signals that "
+        "looked real, weren't:* post-earnings drift (005) and small-cap insider buying (009) both "
+        "cleared the bar on development, then died out-of-sample — 009 on both its holdout **and** "
+        "a live 2025+ forward test. And three experiments each name a **different real-world cost** "
+        "that kills a small-cap edge: **007** the bid-ask **spread**, **009** **survivorship**, "
+        "**010 (momentum)** **short-borrow**. Knowing all the ways an edge isn't real is the skill."
     )
     st.markdown(
         "📄 **Read the [Findings] tab** for the full written narrative — the arc, what each "
