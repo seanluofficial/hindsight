@@ -1422,9 +1422,10 @@ def render_overview() -> None:
     c2.metric("price observations", "11.5M", help="Daily OHLC across ~4,900 whole-market "
               "tickers incl. delisted names (survivorship-safe), 2010–2026.")
     c3.metric("pre-registered experiments", "10")
-    c4.metric("signals that survived", "0", help="Nothing cleared the pass/fail bar. 005 came "
-              "closest — a 0.53-Sharpe long-only signal on development — but the reserved holdout "
-              "returned −0.38, exactly the false discovery the discipline exists to catch.")
+    c4.metric("signals that survived", "0", help="Nothing cleared the pass/fail bar out-of-"
+              "sample. 005 and 009 came closest — development 'wins' (Sharpe 0.53 and 0.30) that "
+              "the reserved holdout killed; 009 also failed a live 2025+ forward test. Exactly "
+              "the false discoveries the discipline exists to catch.")
     st.caption(
         "A contamination-resistant research platform for testing whether public market data "
         "carries tradeable information. Ten pre-registered experiments, none surviving out-of-"
@@ -1616,10 +1617,20 @@ def main() -> None:
     with tabs[-2]:
         render_allocation()
     with tabs[-1]:
-        st.caption("Phase 8 — automatic scoring of new filings as they are published.")
-        render_track_record()
-        st.divider()
-        render_today()
+        st.subheader("Live / forward")
+        st.markdown(
+            "The **forward** leg of the platform is real and already producing evidence: "
+            "Experiment 009's frozen signal was scored on 2025+ data that did not exist when it "
+            "was built (see the **009** tab). What is *not* yet built is **Phase 8** — a "
+            "scheduled job that polls EDGAR and scores every new filing automatically through the "
+            "identical code path, so predictions accumulate on their own. That is the natural next "
+            "step to make the project continuously live."
+        )
+        if has_database():
+            st.divider()
+            render_track_record()
+            st.divider()
+            render_today()
 
     st.caption(f"Data as of {date.today().isoformat()} · schema v{db.SCHEMA_VERSION}")
 
