@@ -28,3 +28,8 @@ build/
 .idea/
 .DS_Store
 Thumbs.db
+
+# transient ingest logs / pids and the large regenerable whole-market purchases file
+data/*.log
+data/*.pid
+data/insider_purchases_all.csv

@@ -784,6 +784,24 @@ EXPERIMENTS: list[dict[str, str]] = [
         "Holdout unspent.",
     },
     {
+        "id": "009",
+        "title": "Insider buying, but in small caps — where the edge is supposed to live",
+        "status": "done",
+        "bundle": "experiment_009.json",
+        "question": "006 found nothing in the S&P 500. The literature says the insider-buying "
+        "edge lives in *small caps* — so does the same signal work on the whole market?",
+        "how": "Rerun the insider signal on 31k whole-market cluster buys, then refine it the way "
+        "the research says (opportunistic-only insiders + bigger buys + a better portfolio), and "
+        "take one frozen shot at the held-out years.",
+        "why": "The best-prior candidate in the project, aimed by a *previous* experiment's "
+        "failure analysis. If anything was going to survive, it was this.",
+        "result": "The sharpest false-discovery catch yet. On development it was the project's "
+        "best result — refined to +65 bps over 20 days and a 0.30 Sharpe, clearing the bar. Frozen "
+        "and given one shot at 2020–24, it **reversed to −128 bps (Sharpe −0.34)**. A daily-book "
+        "variant looked positive (+0.40) but was discarded — it let delisted small-caps drop their "
+        "worst days, sneaking survivorship bias back in. Real on paper, gone out-of-sample.",
+    },
+    {
         "id": "RG",
         "title": "Reaction Gap — did the market move *enough*? (future branch)",
         "status": "gated",
@@ -881,6 +899,15 @@ FINDINGS: dict[str, tuple[str, str]] = {
         "correlated peers — the monthly tradeable book is negative (Sharpe −0.17). In large "
         "caps, industry news is priced together, not with a lag. Holdout preserved.",
     ),
+    "009": (
+        "error",
+        "The sharpest false-discovery catch in the project. The best-prior candidate — small-cap "
+        "insider buying, refined the way the literature says — was the strongest result on "
+        "development (+65 bps/20d, Sharpe 0.30, cleared the bar). Frozen and given one holdout "
+        "shot, it **reversed to −128 bps (Sharpe −0.34)**. A daily-book variant looked like a "
+        "win (+0.40) but was discarded for smuggling survivorship bias back in. Real on paper, "
+        "gone out-of-sample — exactly what the one-shot holdout exists to expose.",
+    ),
     "RG": (
         "info",
         "Not built. The cheap check (004) said the premise is only half-true, so this stays "
@@ -908,6 +935,7 @@ _RESULT_BADGE: dict[str, str] = {
     "006": "❌ Dev null (−37 bps, 20d)",
     "007": "◑ Significant, not material (Sharpe 0.22)",
     "008": "❌ Null (overlap-inflated t; book −0.17)",
+    "009": "❌ +65 bps on dev → −128 bps on holdout",
     "RG": "🔒 Not built (gated)",
 }
 _KEY_FINDING: dict[str, str] = {
@@ -925,6 +953,9 @@ _KEY_FINDING: dict[str, str] = {
     "20 days (p≈0.04) — real, but the short book scores 0.22 Sharpe, below the materiality bar.",
     "008": "Industry peers don't lag a filer's reaction (20d +1.4 bps, coin flip); a 'significant' "
     "60d t-stat is an artifact of correlated peers — the monthly book is −0.17 Sharpe.",
+    "009": "Refined small-cap insider buying was the best result on development (+65 bps/20d, "
+    "Sharpe 0.30) then reversed to −128 bps out-of-sample; a positive daily-book variant was "
+    "discarded for survivorship bias.",
     "RG": "004 showed no cleanly-fresh event class, so this expensive branch was not built.",
 }
 
@@ -1275,6 +1306,43 @@ def render_008_results(bundle: dict[str, Any]) -> None:
         )
 
 
+def render_009_results(bundle: dict[str, Any]) -> None:
+    """009 refined recipe: development win vs. the holdout reversal."""
+    ref = bundle.get("refined", {})
+    es = ref.get("event_study", [])
+
+    def cell(part: str, horizon: int) -> dict[str, Any] | None:
+        return next(
+            (x for x in es if x["partition"] == part and x["horizon"] == horizon), None
+        )
+
+    rows = []
+    for part, label in [("explore", "development (2010–19)"), ("holdout", "HOLDOUT (2020–24)")]:
+        x = cell(part, 20)
+        mat = ref.get("materiality", {}).get(part, {}).get("monthly", {})
+        if x:
+            rows.append(
+                {
+                    "data": label,
+                    "20-day mean excess": f"{x['mean_excess_bps']:+.0f} bps",
+                    "t-stat": round(x["t_statistic"], 2),
+                    "long-only Sharpe": round(mat.get("sharpe", 0.0), 2),
+                }
+            )
+    st.markdown(
+        "**The refined small-cap signal: development vs. the one holdout shot.** It was the "
+        "project's best result on development — then reversed sign out-of-sample."
+    )
+    if rows:
+        st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+    st.caption(
+        "The run also produced a positive *daily* book on the holdout (+0.40 Sharpe). It is "
+        "**discarded, not reported as a result**: the daily construction skips missing price "
+        "days, so a small-cap that delists silently drops its worst days — survivorship bias "
+        "re-entering through the back door. The survivorship-safe numbers above are the verdict."
+    )
+
+
 _RESULT_RENDERERS = {
     "002": render_002_results,
     "003": render_003_results,
@@ -1283,6 +1351,7 @@ _RESULT_RENDERERS = {
     "006": render_006_results,
     "007": render_007_results,
     "008": render_008_results,
+    "009": render_009_results,
 }
 
 
@@ -1291,7 +1360,7 @@ def render_overview() -> None:
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("8-K filings", "100K+")
     c2.metric("price observations", "1.58M")
-    c3.metric("pre-registered experiments", "8")
+    c3.metric("pre-registered experiments", "9")
     c4.metric("signals that survived", "0", help="Nothing cleared the pass/fail bar. 005 came "
               "closest — a 0.53-Sharpe long-only signal on development — but the reserved holdout "
               "returned −0.38, exactly the false discovery the discipline exists to catch.")
@@ -1402,6 +1471,7 @@ _TAB_LABELS: dict[str, str] = {
     "006": "006 · Insiders",
     "007": "007 · Timing",
     "008": "008 · Peers",
+    "009": "009 · Small-cap",
     "RG": "Reaction Gap",
 }
 

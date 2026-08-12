@@ -85,11 +85,46 @@ HOLDOUT shot. Event-study mean market-excess return with the shared harness timi
 long-only book for the materiality floor. The size split is computed on EXPLORE as the key
 diagnostic. Small-cap spreads make the 25 bps cost level the one to believe.
 
-## 8. Results (EXPLORE / development only — HOLDOUT preserved)
-_(blocked on small-cap price ingest; filled after the EXPLORE run)_
+## 8. Results — development, refinement, and the single HOLDOUT shot
+
+**Development (2010-2019), blunt recipe (006 signal, whole market).** 31,360 cluster events.
+20-day mean market-excess **+40 bps (t 4.76)** — the first positive, significant primary in the
+project — vs. −37 bps in the S&P (006). The size-split mechanism is confirmed: the effect is
+absent in large caps, present in small/mid. But the monthly long-only book was **0.20 Sharpe**,
+below the 0.30 materiality floor.
+
+**Development, refined recipe (pre-committed).** Opportunistic insiders only (drop routine
+same-month-every-year buyers; Cohen-Malloy-Pomorski) + clustered purchases ≥ $50k + an
+overlapping daily-rebalanced book. 16,791 events. The refinement *strengthened* the signal
+(20-day mean **+65 bps, t 4.84**) and lifted the book to **0.30 (monthly) / 0.36 (daily)** —
+clearing the bar. Per the pre-agreed plan, this recipe was frozen and taken to the holdout.
+
+**HOLDOUT (2020-2024) — the single frozen shot.**
+
+| metric | development | HOLDOUT |
+|---|---|---|
+| refined 20-day mean excess | +65 bps (t 4.84) | **−128 bps (t −5.43)** |
+| refined monthly long-only Sharpe | 0.30 | **−0.34** |
+
+The signal **reversed sign** out-of-sample, as significantly negative as it was positive. H1 is
+decisively **not supported.**
+
+**A discarded number, flagged honestly.** The overlapping *daily* book reported +0.40 on the
+holdout — contradicting the −128 bps mean and the −0.34 monthly book. It is **not trusted and
+not used**: the daily construction skips missing price days, so a small-cap that craters and
+delists silently drops its worst days — survivorship bias (invariant 2) re-entering through the
+construction. The survivorship-safe numbers (event-study mean, monthly book) are the verdict.
 
 ## 9. Failure analysis
-_(filled after the EXPLORE run)_
+Same lesson as 005, starker: a signal real and significant across a full development decade,
+right-signed, literature-backed, and cleared for materiality — reversed completely on the
+untouched years. The 2020-2024 period (COVID crash and small-cap boom/bust) is unlike 2010-2019;
+insiders buying small-cap dips in 2020-22 were, on average, early. The daily-book artifact is a
+second, independent lesson: even a "better" construction can smuggle survivorship back in, and
+the fix is to trust only the survivorship-safe measure.
 
 ## 10. Decision
-_(filled after the EXPLORE run)_
+`null` — H1 rejected on the HOLDOUT (sign reversal). The best-prior candidate, refined the right
+way and given one clean shot, did not survive. 009 joins the multiple-testing family; with
+nothing surviving, no family-wise correction is needed. The small-cap price data acquired for
+009 remains a reusable asset for any future whole-market or FORWARD test.

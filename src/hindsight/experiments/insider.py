@@ -18,10 +18,10 @@ import sqlite3
 import statistics
 from collections import defaultdict
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
-from hindsight import config
+from hindsight import config, trading_calendar
 from hindsight.evaluate.portfolio import MONTHS_PER_YEAR, max_drawdown
 from hindsight.evaluate.returns import PriceLookup
 from hindsight.experiments.common import filing_excess_return
@@ -36,6 +36,16 @@ MIN_CLUSTER_INSIDERS = 2
 COOLDOWN_DAYS = 30
 # Entry timestamp: 23:00 UTC is after the US close year-round, so entry is the next open.
 _ENTRY_SUFFIX = "T23:00:00+00:00"
+
+# --- Refined recipe (experiment 009, development build) ----------------------
+# One recipe, fixed a priori from the insider-trading literature; evaluated once on EXPLORE.
+# 1. Opportunistic-only: drop "routine" insiders — those who buy in the same calendar month
+#    in >= ROUTINE_YEARS distinct years (predictable, uninformative; Cohen-Malloy-Pomorski 2012).
+# 2. Conviction: require the clustered opportunistic purchases to total >= MIN_CLUSTER_VALUE_USD.
+# 3. Construction: an overlapping daily-rebalanced long-only book (below), not monthly binning.
+ROUTINE_YEARS = 3
+MIN_CLUSTER_VALUE_USD = 50_000.0
+HOLD_DAYS = 20
 
 
 @dataclass(frozen=True)
@@ -74,7 +84,9 @@ def load_purchases(csv_path: Path | None = None) -> list[Purchase]:
 
 
 def build_events(
-    purchases: list[Purchase], min_insiders: int = MIN_CLUSTER_INSIDERS
+    purchases: list[Purchase],
+    min_insiders: int = MIN_CLUSTER_INSIDERS,
+    min_value: float = 0.0,
 ) -> list[Event]:
     """Collapse bursts of insider buying into distinct cluster-buy events per issuer."""
     by_ticker: dict[str, list[Purchase]] = defaultdict(list)
@@ -93,7 +105,8 @@ def build_events(
                 p for p in plist[: i + 1] if anchor.filing_date - p.filing_date <= window
             ]
             insiders = {p.owner_cik for p in in_window}
-            if len(insiders) < min_insiders:
+            total = sum(p.value for p in in_window)
+            if len(insiders) < min_insiders or total < min_value:
                 continue
             if last_event is not None and anchor.filing_date - last_event < cooldown:
                 continue
@@ -104,10 +117,74 @@ def build_events(
                     event_date=anchor.filing_date,
                     partition=config.partition_of(anchor.filing_date.isoformat()),
                     n_insiders=len(insiders),
-                    total_value=sum(p.value for p in in_window),
+                    total_value=total,
                 )
             )
     return events
+
+
+def opportunistic_purchases(purchases: list[Purchase]) -> list[Purchase]:
+    """Drop 'routine' insiders — those who buy in the same calendar month in >= 3 distinct
+    years — keeping only opportunistic (out-of-pattern) buys, which carry the signal."""
+    month_years: dict[str, dict[int, set[int]]] = defaultdict(lambda: defaultdict(set))
+    for p in purchases:
+        month_years[p.owner_cik][p.filing_date.month].add(p.filing_date.year)
+    routine: dict[str, set[int]] = {}
+    for owner, mm in month_years.items():
+        routine[owner] = {m for m, yrs in mm.items() if len(yrs) >= ROUTINE_YEARS}
+    return [p for p in purchases if p.filing_date.month not in routine.get(p.owner_cik, set())]
+
+
+def overlapping_daily_sharpe(
+    events: list[Event],
+    prices: PriceLookup,
+    partition: str,
+    hold_days: int = HOLD_DAYS,
+    cost_bps: float = config.BASE_CASE_COST_BPS,
+) -> dict[str, float]:
+    """Overlapping, daily-rebalanced long-only book — the honest tradeable construction.
+
+    Each day the book equal-weights every position currently inside its `hold_days` window;
+    the daily portfolio return is the mean of those positions' daily market-excess returns.
+    This diversifies across overlapping cohorts instead of lumping events by calendar month.
+    """
+    day_returns: dict[date, list[float]] = defaultdict(list)
+    for ev in events:
+        if ev.partition != partition:
+            continue
+        entry = trading_calendar.entry_date_for(
+            datetime.fromisoformat(ev.event_date.isoformat() + _ENTRY_SUFFIX)
+        )
+        try:
+            days = trading_calendar.trading_days(
+                entry, trading_calendar.add_trading_days(entry, hold_days)
+            )
+        except ValueError:
+            continue
+        prev: date | None = None
+        charged = False
+        for d in days:
+            if prev is not None:
+                s1, s0 = prices.bar(ev.ticker, d), prices.bar(ev.ticker, prev)
+                b1, b0 = prices.bar(config.BENCHMARK_TICKER, d), prices.bar(
+                    config.BENCHMARK_TICKER, prev
+                )
+                if s1 and s0 and b1 and b0 and s0.adj_close > 0 and b0.adj_close > 0:
+                    exc = (s1.adj_close / s0.adj_close - 1) - (b1.adj_close / b0.adj_close - 1)
+                    if not charged:
+                        exc -= cost_bps / 10_000.0
+                        charged = True
+                    day_returns[d].append(exc)
+            prev = d
+
+    series = [statistics.fmean(v) for _, v in sorted(day_returns.items()) if v]
+    n = len(series)
+    if n < 2:
+        return {"n_days": n, "sharpe": 0.0, "max_drawdown": 0.0}
+    mean = statistics.fmean(series)
+    sd = statistics.stdev(series)
+    sharpe = (mean / sd) * math.sqrt(252) if sd > 0 else 0.0
+    return {"n_days": n, "sharpe": sharpe, "max_drawdown": max_drawdown(series)}
 
 
 @dataclass(frozen=True)
@@ -240,11 +317,34 @@ def run(
     prices = PriceLookup(conn)
     cluster = event_study(events, prices, manifest, partitions)
     baseline = event_study(single, prices, manifest, partitions, horizons=(20,))
-
     materiality = {p: long_only_sharpe(events, prices, p) for p in partitions}
+
+    # --- Refined recipe: opportunistic insiders + conviction + overlapping daily book -------
+    refined_purchases = opportunistic_purchases(purchases)
+    manifest.count("opportunistic_purchases", len(refined_purchases))
+    refined_events = build_events(refined_purchases, min_value=MIN_CLUSTER_VALUE_USD)
+    manifest.count("refined_cluster_events", len(refined_events))
+    refined_study = event_study(refined_events, prices, manifest, partitions)
+
+    refined_materiality = {
+        p: {
+            "monthly": long_only_sharpe(refined_events, prices, p),
+            "overlapping_daily": overlapping_daily_sharpe(refined_events, prices, p),
+        }
+        for p in partitions
+    }
+    # The construction lever alone (blunt event set, better book) — to separate the two effects.
+    blunt_daily = {p: overlapping_daily_sharpe(events, prices, p) for p in partitions}
+
     return {
         "cluster": [r.as_dict() for r in cluster],
         "baseline_any_buy": [r.as_dict() for r in baseline],
         "materiality_long_only": materiality,
         "n_cluster_events": len(events),
+        "refined": {
+            "n_events": len(refined_events),
+            "event_study": [r.as_dict() for r in refined_study],
+            "materiality": refined_materiality,
+            "blunt_overlapping_daily": blunt_daily,
+        },
     }

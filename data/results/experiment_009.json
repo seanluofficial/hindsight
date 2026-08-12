@@ -1,0 +1,268 @@
+{
+  "experiment": "009",
+  "title": "Insider cluster-buying, whole-market / small-cap (Form 4)",
+  "primary": "20-day, 10bps mean market-excess of cluster-buy events, whole-market universe (HOLDOUT); H1 positive",
+  "horizons": [
+    5,
+    20,
+    60
+  ],
+  "cluster": [
+    {
+      "partition": "explore",
+      "horizon": 5,
+      "n_events": 12837,
+      "mean_excess_bps": 23.967802917271232,
+      "median_excess_bps": 4.706885538889871,
+      "t_statistic": 4.9109997539184915,
+      "hit_rate": 0.5055698371893744
+    },
+    {
+      "partition": "holdout",
+      "horizon": 5,
+      "n_events": 6367,
+      "mean_excess_bps": -38.64647976439659,
+      "median_excess_bps": -46.470765079663636,
+      "t_statistic": -3.6555543719818853,
+      "hit_rate": 0.45563059525679284
+    },
+    {
+      "partition": "explore",
+      "horizon": 20,
+      "n_events": 12831,
+      "mean_excess_bps": 40.01615932269324,
+      "median_excess_bps": 2.5771991989520515,
+      "t_statistic": 4.760575805601812,
+      "hit_rate": 0.5015197568389058
+    },
+    {
+      "partition": "holdout",
+      "horizon": 20,
+      "n_events": 6361,
+      "mean_excess_bps": -111.20309226313427,
+      "median_excess_bps": -119.8890969197719,
+      "t_statistic": -5.74270742965404,
+      "hit_rate": 0.4406539852224493
+    },
+    {
+      "partition": "explore",
+      "horizon": 60,
+      "n_events": 12803,
+      "mean_excess_bps": 20.66216070899005,
+      "median_excess_bps": -52.4314679992921,
+      "t_statistic": 1.3555035290279256,
+      "hit_rate": 0.47887213934234163
+    },
+    {
+      "partition": "holdout",
+      "horizon": 60,
+      "n_events": 6343,
+      "mean_excess_bps": -87.46135590839019,
+      "median_excess_bps": -227.66646228139953,
+      "t_statistic": -2.8932669442495325,
+      "hit_rate": 0.43843607125965633
+    }
+  ],
+  "baseline_any_buy": [
+    {
+      "partition": "explore",
+      "horizon": 20,
+      "n_events": 29212,
+      "mean_excess_bps": 31.393895988052673,
+      "median_excess_bps": -10.01570171273225,
+      "t_statistic": 5.852768026996272,
+      "hit_rate": 0.4917841982746816
+    },
+    {
+      "partition": "holdout",
+      "horizon": 20,
+      "n_events": 14249,
+      "mean_excess_bps": -86.23102172448753,
+      "median_excess_bps": -117.26284839898682,
+      "t_statistic": -7.2535856187695344,
+      "hit_rate": 0.44094322408590075
+    }
+  ],
+  "materiality_long_only": {
+    "explore": {
+      "n_months": 121,
+      "mean_monthly": 0.001161547311864138,
+      "sharpe": 0.19910158621304747,
+      "max_drawdown": 0.17220754799542626
+    },
+    "holdout": {
+      "n_months": 61,
+      "mean_monthly": -0.005089886831560868,
+      "sharpe": -0.46070006594093554,
+      "max_drawdown": 0.3293995103955122
+    }
+  },
+  "n_cluster_events": 31360,
+  "refined": {
+    "n_events": 16791,
+    "event_study": [
+      {
+        "partition": "explore",
+        "horizon": 5,
+        "n_events": 6625,
+        "mean_excess_bps": 35.88096672265583,
+        "median_excess_bps": 6.584050837112887,
+        "t_statistic": 4.6784638183707274,
+        "hit_rate": 0.5077735849056604
+      },
+      {
+        "partition": "holdout",
+        "horizon": 5,
+        "n_events": 3790,
+        "mean_excess_bps": -41.02571899055494,
+        "median_excess_bps": -51.83996900760768,
+        "t_statistic": -2.6399106967598356,
+        "hit_rate": 0.4556728232189974
+      },
+      {
+        "partition": "explore",
+        "horizon": 20,
+        "n_events": 6621,
+        "mean_excess_bps": 64.78992786047874,
+        "median_excess_bps": 14.263069001871909,
+        "t_statistic": 4.837744868088328,
+        "hit_rate": 0.5092886270956049
+      },
+      {
+        "partition": "holdout",
+        "horizon": 20,
+        "n_events": 3788,
+        "mean_excess_bps": -127.61814283767495,
+        "median_excess_bps": -138.31370057037827,
+        "t_statistic": -5.425439465628028,
+        "hit_rate": 0.44376979936642025
+      },
+      {
+        "partition": "explore",
+        "horizon": 60,
+        "n_events": 6608,
+        "mean_excess_bps": 30.37742935133422,
+        "median_excess_bps": -56.38380368249207,
+        "t_statistic": 1.2363574902605403,
+        "hit_rate": 0.47790556900726394
+      },
+      {
+        "partition": "holdout",
+        "horizon": 60,
+        "n_events": 3779,
+        "mean_excess_bps": -40.56009715770896,
+        "median_excess_bps": -218.0857148957527,
+        "t_statistic": -0.9780241896353231,
+        "hit_rate": 0.44535591426303256
+      }
+    ],
+    "materiality": {
+      "explore": {
+        "monthly": {
+          "n_months": 121,
+          "mean_monthly": 0.0028987843122778587,
+          "sharpe": 0.299591884623503,
+          "max_drawdown": 0.2474623765534265
+        },
+        "overlapping_daily": {
+          "n_days": 2534,
+          "sharpe": 0.36248080030269,
+          "max_drawdown": 0.21145640985442626
+        }
+      },
+      "holdout": {
+        "monthly": {
+          "n_months": 61,
+          "mean_monthly": -0.0042236270294585855,
+          "sharpe": -0.3415851384741882,
+          "max_drawdown": 0.2992895407880527
+        },
+        "overlapping_daily": {
+          "n_days": 1277,
+          "sharpe": 0.3999027026163121,
+          "max_drawdown": 0.4274685796503911
+        }
+      }
+    },
+    "blunt_overlapping_daily": {
+      "explore": {
+        "n_days": 2535,
+        "sharpe": 0.48417772556420763,
+        "max_drawdown": 0.11947195169761415
+      },
+      "holdout": {
+        "n_days": 1277,
+        "sharpe": 0.40314865929170113,
+        "max_drawdown": 0.3016464850522691
+      }
+    }
+  },
+  "manifest": {
+    "stage": "experiment_009_insider_smallcap",
+    "git_sha": "f6f580aabe60f48e7657186f0d71e488fe666918-dirty",
+    "started_at_utc": "2026-08-12T01:47:31.443439+00:00",
+    "finished_at_utc": "2026-08-12T01:50:59.848584+00:00",
+    "duration_seconds": 208.4,
+    "python": "3.12.10",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "params": {
+      "partitions": [
+        "explore",
+        "holdout"
+      ]
+    },
+    "counts": {
+      "any_buy_events": 78034,
+      "cluster_events": 31360,
+      "opportunistic_purchases": 238811,
+      "purchases_loaded": 360570,
+      "refined_cluster_events": 16791
+    },
+    "exclusions": {
+      "missing_price_in_window": 235,
+      "no_price_coverage_for_ticker": 36607,
+      "no_prior_close": 12952,
+      "prior_close_below_5_usd": 40426,
+      "security_did_not_trade_on_entry": 53
+    },
+    "exclusion_examples": {
+      "no_price_coverage_for_ticker": [
+        "insider:ALTH:2010-07-02:h5",
+        "insider:CRRB:2010-02-26:h5",
+        "insider:CRRB:2010-05-05:h5",
+        "insider:CRRB:2010-08-19:h5",
+        "insider:CRRB:2010-11-18:h5"
+      ],
+      "prior_close_below_5_usd": [
+        "insider:AXAS:2010-04-05:h5",
+        "insider:AXAS:2013-01-08:h5",
+        "insider:AXAS:2013-03-11:h5",
+        "insider:AXAS:2013-12-12:h5",
+        "insider:AXAS:2014-03-24:h5"
+      ],
+      "no_prior_close": [
+        "insider:PRM:2010-02-25:h5",
+        "insider:PRM:2010-04-01:h5",
+        "insider:PRM:2010-08-26:h5",
+        "insider:PRM:2010-10-01:h5",
+        "insider:PRM:2011-04-01:h5"
+      ],
+      "security_did_not_trade_on_entry": [
+        "insider:CMTV:2018-12-28:h5",
+        "insider:SPRT:2021-09-15:h5",
+        "insider:BKGM:2018-12-26:h5",
+        "insider:BKGM:2019-08-14:h5",
+        "insider:CSBB:2018-10-29:h5"
+      ],
+      "missing_price_in_window": [
+        "insider:SGB:2015-07-24:h5",
+        "insider:SOCB:2016-06-17:h5",
+        "insider:IHRC:2016-05-04:h5",
+        "insider:FRAF:2019-03-08:h5",
+        "insider:TICC:2018-03-14:h5"
+      ]
+    },
+    "total_excluded": 90273,
+    "errors": []
+  }
+}

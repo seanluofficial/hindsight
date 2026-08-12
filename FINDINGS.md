@@ -1,23 +1,21 @@
 # Findings
 
-**One sentence:** across eight pre-registered experiments — seven testing for a tradeable signal,
+**One sentence:** across nine pre-registered experiments — eight testing for a tradeable signal,
 one diagnostic — no signal cleared both the significance and the materiality gate, and the
 failures explain each other: the market prices public information (8-K filings, earnings, insider
 purchases, the timing of disclosure, and one firm's news reaching its peers) faster than a late
-reader can trade it. The most
-instructive result is 005 (post-earnings drift), which *looked* like a genuine win on development
-— a 0.53-Sharpe long-only signal that survived costs — and was then killed by the reserved
-holdout (−0.38): the single clearest demonstration of why this platform is built the way it is.
-Experiment 006 (insider cluster-buying) was a development null, confirming the insider-buying
-edge is a small-cap effect this S&P 500 universe cannot capture. Experiment 007 ("bury bad news"
-timing) is the subtlest: buried filings *do* underperform, and detectably so (−24 bps vs control
-over 20 days, p ≈ 0.04 on development) — but the tradeable short book scores only 0.22 Sharpe,
-below the materiality floor, a textbook statistically-significant-but-not-economic result.
-Experiment 008 (peer lead-lag diffusion) is the methodological bookend: a 60-day peer effect
-*looks* significant (t ≈ 4) until you notice it double-counts thousands of correlated peers, at
-which point the honest monthly book is negative — the pre-registered overlap correction turning
-a would-be discovery back into a null. (A separate branch, Reaction Gap, was deliberately gated
-and never built — a branch you choose not to build is a decision, not a result.)
+reader can trade it. Two experiments looked like wins on development and were then killed by their
+reserved holdouts — 005 (post-earnings drift): 0.53 Sharpe → −0.38; and 009 (small-cap insider
+buying): +65 bps/20d → **−128 bps**, a full sign reversal. Those two catches are the single
+clearest demonstration of why this platform is built the way it is: a signal is only what survives
+out-of-sample. Experiment 006 (insider cluster-buying) was a development null in the S&P 500, which
+*motivated* 009's small-cap test. Experiment 007 ("bury bad news" timing) is the subtlest: buried
+filings *do* underperform, detectably (−24 bps vs control over 20 days, p ≈ 0.04) — but the short
+book scores only 0.22 Sharpe, a textbook significant-but-not-economic result. Experiment 008 (peer
+lead-lag) is the methodological bookend: a 60-day peer effect *looks* significant (t ≈ 4) until you
+notice it double-counts thousands of correlated peers, and the honest monthly book is negative.
+(A separate branch, Reaction Gap, was deliberately gated and never built — a branch you choose not
+to build is a decision, not a result.)
 
 This is an honest measurement, not a trading system. A clean, well-explained null is the
 intended deliverable.
@@ -153,6 +151,32 @@ overlap into a **monthly long/short book** — one observation per month — and
 universe of large-cap S&P 500 names, industry news is priced across peers *together*, not with a
 tradeable lag; the small-cap, supply-chain venue where the effect lives is out of scope here.
 The holdout was left unspent.
+
+### 009 — insider buying where the edge is supposed to live, done properly
+006 found no insider-buying edge in the S&P 500; the literature places that edge in *small caps*,
+which the S&P universe excludes by construction. So 009 acquired whole-market daily prices and
+reran the identical signal on **31,360 cluster buys across ~6,900 tickers** (23× the S&P sample),
+with a survivorship-safe, EDGAR-filer-defined universe. This is the one experiment a *prior*
+experiment's failure analysis explicitly aimed — the best-prior candidate in the family — and it
+was worked the full, disciplined way: build on development, refine, freeze, one holdout shot.
+
+**Finding — the sharpest false-discovery catch in the project.** On development the blunt signal
+was already the first positive, significant primary (+40 bps/20d, t 4.76), confirming the size-split
+mechanism (absent in large caps, present in small). Refining it the way the literature prescribes —
+*opportunistic* insiders only (dropping routine, calendar-clockwork buyers), a $50k conviction
+floor, and a proper overlapping portfolio — **strengthened it to +65 bps/20d and lifted the book to
+0.30 Sharpe, clearing the materiality bar.** It was, on development, the project's best result. We
+froze that exact recipe and took the single holdout shot on 2020–2024: it **reversed to −128 bps
+(t −5.43), monthly Sharpe −0.34.** A convincing, literature-backed, decade-strong signal was
+negative out-of-sample.
+
+There is a second lesson buried in 009. One variant — a *daily-rebalanced* book — reported a
+positive holdout Sharpe (+0.40), contradicting everything else. It was **discarded, not reported**:
+the daily construction skips missing price days, so a small-cap that craters and delists silently
+drops its worst days — survivorship bias (invariant 2) re-entering through the construction itself.
+The survivorship-safe measures (event-study mean, monthly book) are the verdict, and they say the
+signal failed. Catching that artifact *before* it became a false headline is exactly the platform's
+job.
 
 ### Reaction Gap — the ambitious follow-up, deliberately not built
 The idea: reconstruct when news *first* went public, estimate the reaction historically
