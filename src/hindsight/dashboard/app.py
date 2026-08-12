@@ -1456,6 +1456,14 @@ def render_overview() -> None:
         "📄 **Read the [Findings] tab** for the full written narrative — the arc, what each "
         "result means, the limitations, and what I'd do next."
     )
+    st.markdown(
+        "🔗 **The programme continues in a sibling project.** "
+        "[Market Structure Radar](https://github.com/seanluofficial/marketradar) carries the "
+        "same pre-registration discipline into correlation structure and risk analytics, and "
+        "adds experiments **011** (time-series momentum) and **012** (volatility management, "
+        "low-volatility anomaly) — 25 further declared cells, none surviving. Twelve "
+        "hypotheses across the two repositories; zero edges found."
+    )
     st.markdown("**The experiments at a glance** — open each tab above for the full story:")
     cols = st.columns(2)
     for i, e in enumerate(EXPERIMENTS):

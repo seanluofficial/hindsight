@@ -24,6 +24,12 @@ measurement, not a profitable bot.
 
 **Live dashboard:** https://hindsight-hpunstepzzu536epfhsjwz.streamlit.app
 
+**Sibling project:** [Market Structure Radar](https://github.com/seanluofficial/marketradar)
+continues this programme — the same pre-registration discipline applied to correlation
+structure and risk analytics, adding experiments **011** (time-series momentum) and **012**
+(volatility management, low-volatility anomaly): 25 further declared cells, none surviving.
+Twelve hypotheses across the two repositories; zero edges found.
+
 ## Status
 
 **Phases 1, 2 and 4 run end-to-end on a 500-filing pilot.** The LLM half of Phase 2 is
