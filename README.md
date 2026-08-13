@@ -14,58 +14,38 @@ It began by asking whether an LLM can predict returns from an SEC 8-K it isn't a
 identify (the name is that thesis: the model was trained on the outcomes, so *hindsight*
 contamination is the central threat). It grew into **ten pre-registered experiments** on a full
 **EXPLORE → HOLDOUT → live-FORWARD** design. None produced a signal that survives out-of-sample
-after costs — and the value is in *how* they fail: **two "wins" caught by the reserved holdout**
-(post-earnings drift; small-cap insider buying, which also failed a live 2025+ forward test), and
-**three distinct real-world costs** that each kill a small-cap backtest — the bid-ask **spread**
-(007), **survivorship** (009), and **short-borrow** (010, momentum). The deliverable is an honest
-measurement, not a profitable bot.
+after costs — and the value is in *how* they fail: **two "wins" caught by the reserved holdout**,
+and **three distinct real-world costs** that each kill a small-cap backtest. The deliverable is an
+honest measurement, not a profitable bot.
 
-- **[`FINDINGS.md`](FINDINGS.md) — the written narrative: ten pre-registered experiments, no
-  surviving signal, and the mechanisms behind each failure. Start here.**
-- [`experiments/`](experiments/README.md) — the research platform: pre-registered hypotheses,
-  the holdout architecture, and the multiple-testing alpha budget ([`PROTOCOL.md`](experiments/PROTOCOL.md)).
-- [`PREREGISTRATION.md`](PREREGISTRATION.md) — the specification. Locked. It wins any disagreement.
-- [`CLAUDE.md`](CLAUDE.md) — build brief, invariants, architecture.
-- [`DEVIATIONS.md`](DEVIATIONS.md) — append-only log of departures and open questions.
-- [`ROADMAP.md`](ROADMAP.md) — what remains, and an honest read on whether this can make money.
+**[Live dashboard](https://hindsight-hpunstepzzu536epfhsjwz.streamlit.app)** ·
+**[`FINDINGS.md`](FINDINGS.md) — the full written narrative, start here** ·
+[`experiments/`](experiments/README.md) ·
+[`PREREGISTRATION.md`](PREREGISTRATION.md)
 
-**Live dashboard:** https://hindsight-hpunstepzzu536epfhsjwz.streamlit.app
-
-**Sibling project:** [Market Structure Radar](https://github.com/seanluofficial/marketradar)
-([live app](https://marketradar-9m9rrx4hps5vpywf2dqfn5.streamlit.app)) continues this
-programme — the same pre-registration discipline applied to correlation structure and risk
-analytics, adding experiments **011** (time-series momentum) and **012** (volatility
-management, low-volatility anomaly): 25 further declared cells, none surviving. Twelve
-hypotheses across the two repositories; zero edges found.
-
-## Status
-
-**Phases 1, 2 and 4 run end-to-end on a 500-filing pilot.** The LLM half of Phase 2 is
-written but unrun — it needs an `ANTHROPIC_API_KEY`.
+## By the numbers
 
 | | |
 |---|---|
-| Point-in-time universe | 886 intervals, 501–506 members per study year |
-| 2018 8-K filings | 6,720 across 501 tickers, mean 13.4 per company |
-| 2018 prices | 156,987 rows, 512/530 tickers, SPY complete at 251 sessions |
-| Filings joinable to prices | 97.6% |
-| Anonymized | 6,720, zero lexical leaks, ~124 redactions per filing |
-| Scored (dictionary) | 6,720 by the Loughran-McDonald baseline |
-| Scored (LLM) | 84 by `openai/gpt-oss-120b` — halted by a free-tier daily token cap |
-| Contamination audit | 150 filings, **38.7% identified** |
-| Evaluated | 19,614 trades across 3 horizons × 3 cost levels, 13 monthly rebalances |
+| 8-K filings ingested | **100,559**, 2010–2024, point-in-time S&P 500 membership |
+| Filings anonymized | **75,756**, zero lexical leaks |
+| Insider transactions (Form 4) | **380,000+** |
+| Daily price observations | **11.5M** across ~4,900 tickers, delisted names included |
+| Pre-registered experiments | **10** |
+| Signals that survived out-of-sample | **0** |
 
-Exclusion accounting reconciles exactly: 6,835 in-universe filings = 6,720 stored + 107
-accepted outside the 04:00–20:00 ET window (§3) + 8 with no acceptance timestamp.
+## Key findings
 
-### Headline result — the disguise fails 38.7% of the time
+**An AI reading an anonymized 8-K is a coin flip.** Across 5,000 anonymized filings
+(DeepSeek, temperature 0), directional hit rate is 49.9% / 51.2% / 49.8% at 1 / 5 / 20 days,
+and the 5-day quintile long/short Sharpe is +0.14 after 10 bps — below the pre-registered
+threshold, so **H1 is not supported (§14)**. It reads fluently and predicts nothing. The
+Loughran-McDonald dictionary baseline is likewise negative at every horizon and cost level.
 
-The contamination audit is the number that decides what everything else means. Asked to
-name the issuer of an anonymized filing, the model got it right on **58 of 150 (38.7%)** —
-nearly double the 20% threshold fixed in §6 before any code was written.
-
-It succeeds because **filings describe themselves**, and no amount of name-redaction
-touches that:
+**The disguise fails 38.7% of the time.** Asked to name the issuer of an anonymized filing,
+the model got it right on 58 of 150 — nearly double the 20% threshold fixed in §6 before any
+code was written. It succeeds because **filings describe themselves**, and no amount of
+name-redaction touches that:
 
 | Actual | Guessed | The clue it used |
 |---|---|---|
@@ -75,60 +55,50 @@ touches that:
 | ORLY | O'Reilly Automotive | "leading retailer in the automotive aftermarket, 5,000+ stores" |
 | AGN | Allergan | named subsidiary "Forest Laboratories, LLC" |
 
-The anonymizer removes names, tickers, dates, addresses, executives and cities, and it does
-that well — zero lexical leaks across 6,720 filings. But it cannot remove *self-description*
-without destroying the content being analysed. **Redaction defeats string matching, not
-comprehension.**
+The anonymizer removes names, tickers, dates, addresses, executives and cities, and does it
+well. But it cannot remove *self-description* without destroying the content being analysed.
+**Redaction defeats string matching, not comprehension.** §6 fixed the consequence in
+advance: above 20%, the primary analysis is restricted to filings the model failed to
+identify, and both versions reported. **This rate is a lower bound** — quota limits forced
+the audit onto a smaller model than the one used for scoring, and smaller models recognise
+fewer companies.
 
-§6 fixed the consequence in advance: above 20%, the primary analysis must be restricted to
-filings the model failed to identify, and both versions reported. That rule now binds.
+**Confidence is uninformative.** The model is overconfident by ~0.08 (Brier 0.263) and its
+reliability curve is flat: when it states 80%+ confidence it is right about half the time.
 
-**This measured rate is a lower bound.** Free-tier quotas forced the audit onto an 8B model
-while scoring used a 120B one, and a smaller model recognises fewer companies. The real
-contamination of the scored predictions is worse than 38.7%.
+**Half the move is gone before you can trade it.** The median 8-K already has ~47% of its
+abnormal move complete before the filing reaches EDGAR. Earnings 8-Ks are the stalest at
+57%, and no event type is cleanly "fresh" — every class has ~38%+ gone by filing time.
 
-### The lexicon baseline is a null, and a costly one
+## The ten experiments
 
-Full-year 2018: 6,720 filings scored, **19,614 evaluable trades**, 13 monthly rebalances.
+| # | Question | Outcome |
+|---|---|---|
+| 001 | Can an AI predict the move from anonymized filing text? | Coin flip; 38.7% contamination |
+| 002 | Does the type of event matter? | Near-null (p ≈ 0.4–0.8) |
+| 003 | Does changed language beat boilerplate? ("Lazy Prices") | Null, and the sign is backwards |
+| 004 | Was the news already old when filed? | Diagnostic: ~47% of the move already gone |
+| 005 | Post-earnings drift | **0.53 Sharpe on development → −0.38 on the holdout** |
+| 006 | Insider cluster buying (S&P 500) | Null — the result that motivated 009 |
+| 007 | Do firms bury bad news? | Significant −24 bps, but a 0.22 Sharpe: dies on **spread** |
+| 008 | Peer lead-lag diffusion | t ≈ 4 becomes a negative book after the overlap correction |
+| 009 | Small-cap insider buying | **+65 bps → −122 bps holdout, −65 bps live 2025+**; **survivorship** |
+| 010 | Small-cap momentum | Long/short clears the bar; the edge is all in shorts you can't **borrow** |
 
-**The dictionary has no directional skill and loses money after costs.** Every horizon and
-every cost level is negative:
+Full narrative and mechanisms in [`FINDINGS.md`](FINDINGS.md).
 
-| horizon | 0 bps | 10 bps (base) | 25 bps |
-|---|---|---|---|
-| 1 day | −1.49 | **−3.86** | −7.42 |
-| 5 days | −1.02 | **−1.28** | −1.68 |
-| 20 days | −1.07 | **−1.25** | −1.53 |
+## Method
 
-*Annualized Sharpe, quintile long/short, market-excess.*
-
-Against the pre-registered §14 threshold — 5-day Sharpe below 0.3 after 10 bps — the
-verdict is **H1 not supported**. Directional hit rate is 48.5% at 1 day and 49.6% at
-20 days, against a 50% null.
-
-Note the 1-day row: costs dominate at short horizons, which is exactly why §10 forbids
-presenting results cost-free alone.
-
-**Overconfident, with the gap widening as confidence rises** — the pattern H2 predicts for
-the LLM, here in the baseline (20-day horizon):
-
-| stated confidence | n | realised | gap |
-|---|---|---|---|
-| 0.50–0.60 | 2,959 | 0.493 | +0.055 |
-| 0.60–0.70 | 1,713 | 0.508 | +0.136 |
-| 0.70–0.80 | 925 | 0.498 | +0.245 |
-| 0.80–0.90 | 494 | 0.496 | +0.347 |
-| 0.90–1.00 | 430 | 0.467 | **+0.504** |
-
-At its most confident the dictionary is right 46.7% of the time. Read the *calibration* as
-a property of the arbitrary score→probability mapping rather than a claim about the
-dictionary; the mapping is monotonic, so it cannot affect H1 or H3. The *hit rate* is not
-arbitrary — it depends only on the sign.
-
-Brier ≈ 0.292, worse than the 0.25 an always-say-0.50 forecaster scores.
-
-This is the comparator H3 measures the LLM against. Phases 3, 5, 6, 8 not started; see the
-build order in `CLAUDE.md`.
+- **Pre-registration.** Each hypothesis and its pass/fail threshold is fixed in
+  [`PREREGISTRATION.md`](PREREGISTRATION.md) before the answer is looked at. The
+  specification is locked and wins any disagreement.
+- **EXPLORE → HOLDOUT → live-FORWARD.** Development years, then reserved years touched once,
+  then data that did not exist when the signal was built.
+- **A multiple-testing alpha budget** across the experiment family — see
+  [`PROTOCOL.md`](experiments/PROTOCOL.md).
+- **Nothing is silently dropped.** Every run writes a manifest recording the git SHA,
+  parameters, row counts, and every exclusion with its reason.
+- **Deviations are logged, not absorbed.** [`DEVIATIONS.md`](DEVIATIONS.md) is append-only.
 
 ## Dashboard
 
@@ -137,13 +107,13 @@ uv run streamlit run src/hindsight/dashboard/app.py
 ```
 
 Research, Track record and Today. Research leads with sample size, anonymization counts and
-sample-size warnings *before* any performance figure, then calibration, then returns at
-every horizon and cost level, then the full exclusion ledger.
+sample-size warnings *before* any performance figure, then calibration, then returns at every
+horizon and cost level, then the full exclusion ledger.
 
 The working database is ~95MB and the raw filing cache ~2.8GB, so neither is deployable.
-`scripts/export_results.py` writes a ~700KB bundle of evaluated trades plus a summary
-stamped with its git SHA, and the dashboard reads that when no database is present — both
-paths build identical `Trade` objects, so figures are computed by the same code either way.
+`scripts/export_results.py` writes a ~700KB bundle of evaluated trades plus a summary stamped
+with its git SHA, and the dashboard reads that when no database is present — both paths build
+identical `Trade` objects, so figures are computed by the same code either way.
 
 ## Setup
 
@@ -161,7 +131,7 @@ Two credentials matter:
 | `HINDSIGHT_EDGAR_CONTACT` | SEC requires a User-Agent with real contact info. Requests without one are throttled, then blocked. |
 | `TIINGO_API_KEY` | Price data. Free key at [tiingo.com](https://www.tiingo.com/account/api/token). |
 
-## Running stage 1
+## Reproducing the pipeline
 
 ```bash
 # Reconstruct point-in-time S&P 500 membership and freeze it to data/sp500_membership.csv
@@ -179,25 +149,33 @@ uv run python scripts/run_ingest.py status
 ```
 
 Every fetch is cached under `data/raw/`, so re-running never refetches and a crashed crawl
-resumes where it stopped. Every run writes a manifest to `data/manifests/` recording the
-git SHA, parameters, row counts, and **every exclusion with its reason** — invariant 5 says
-nothing is silently dropped, so dropping something requires naming a reason.
+resumes where it stopped.
 
 ## Checks
 
 ```bash
-uv run pytest
+uv run pytest                                    # 371 tests
 uv run ruff check . && uv run ruff format --check .
-uv run mypy src scripts
+uv run mypy src scripts                          # strict
 ```
+
+## Limitations
+
+- **Contamination cannot be fully removed.** The 38.7% identification rate is a measured
+  lower bound, so even the null results are measured under contamination.
+- **Ten experiments is a family, not a sweep.** The alpha budget accounts for the ones run;
+  it cannot account for hypotheses never written down.
+- **Costs are modelled, not paid.** Spread, borrow and survivorship are handled explicitly
+  where they proved decisive (007, 009, 010), but a flat bps model is still a model.
+- **This is not a trading system**, and no result here supports deploying capital.
 
 ## Two things worth knowing about the data
 
 **EDGAR acceptance timestamps are Eastern, not UTC.** The archive header records
 `<ACCEPTANCE-DATETIME>20180201163017` for a filing the submissions API reports as
-`2018-02-01T21:30:17Z`. Reading it as UTC would shift every event five hours and move
-filings across the 16:00 ET cutoff in §4 without raising anything. Ingest converts once, at
-the boundary; everything downstream is UTC.
+`2018-02-01T21:30:17Z`. Reading it as UTC would shift every event five hours and move filings
+across the 16:00 ET cutoff in §4 without raising anything. Ingest converts once, at the
+boundary; everything downstream is UTC.
 
 **Prices are stored raw, with `adj_close` alongside.** Returns must not mix the two — a
 2-for-1 split between entry and exit would read as −50%. Use
@@ -221,6 +199,17 @@ tests/
 ```
 
 The four pipeline stages are independently runnable and communicate only through SQLite.
+
+## Related
+
+**Sibling project:** [Market Structure Radar](https://github.com/seanluofficial/marketradar)
+([live app](https://marketradar-9m9rrx4hps5vpywf2dqfn5.streamlit.app)) continues this
+programme — the same pre-registration discipline applied to correlation structure and risk
+analytics, adding experiments **011** (time-series momentum) and **012** (volatility
+management, low-volatility anomaly): 25 further declared cells, none surviving. Twelve
+hypotheses across the two repositories; zero edges found.
+
+The superseded 2018 pilot run is kept in [`docs/legacy-pilot.md`](docs/legacy-pilot.md).
 
 ## License
 

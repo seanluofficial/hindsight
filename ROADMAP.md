@@ -12,22 +12,25 @@ plainly and then lays out what would move each.
 
 ## Where the project actually stands
 
+The pre-registered study is **complete**: ten experiments, run through EXPLORE → HOLDOUT and,
+for 009, a live 2025+ forward test.
+
 | | |
 |---|---|
 | Ingest, anonymization, evaluation, dashboard | built, tested, reproducible |
-| Historical coverage | 2018 only, of a pre-registered 2010–2024 |
-| Dictionary baseline | 6,720 filings, hit rate 50.2%, Sharpe −1.42 after costs |
-| LLM | 84 filings — one month, not interpretable for returns |
+| Historical coverage | 100,559 filings, 2010–2024 |
+| Dictionary baseline | negative Sharpe at every horizon and cost level |
+| LLM | 5,000 anonymized filings scored (DeepSeek, temperature 0) — a coin flip |
 | Contamination | 38.7% identified, versus a 20% pre-set limit |
-| Robustness splits (§12) | specified, not run |
-| Live out-of-sample (§15) | not started |
+| Experiments | 10 pre-registered, 0 surviving out-of-sample |
+| Live out-of-sample (§15) | run for 009; failed at −65 bps |
 
-The binding constraint has never been engineering, and it is barely money — see C1. Free
-tiers allow ~100 filings/day and a local model ~1,700/day, while DeepSeek scores a
-statistically sufficient 5,000-filing sample for about **$5**.
+The earlier 2018 pilot, when the LLM pass had scored only 84 filings, is preserved in
+[`docs/legacy-pilot.md`](docs/legacy-pilot.md).
 
-**Budget for everything below: $0–15.** The only item that genuinely needs more is
-volatility prediction (P2), which requires options history, and it is deliberately last.
+The binding constraint was never engineering, and it was barely money: DeepSeek scored a
+statistically sufficient 5,000-filing sample for about **$5**. What follows is what would
+move each goal *from here*, not what remains of the original study.
 
 ---
 
@@ -99,10 +102,12 @@ P1's surprise measure, this is a documented effect rather than a hopeful one.
 
 These do not need a profitable result. Several are *stronger* without one.
 
-### C1. Finish the pre-registered study (Phases 5–6) — **do this first, and it is free**
+### C1. Finish the pre-registered study (Phases 5–6) — ✅ **done**
 
-Scale to 2010–2024 and run every §12 robustness split: market-cap terciles, three time
-periods, item type, and the contamination-excluded subset.
+Scaling to 2010–2024 and running the §12 robustness splits is complete: 100,559 filings
+ingested, 5,000 scored by DeepSeek, ten experiments carried through the holdout. The cost
+analysis below is kept because the estimate was wrong in an instructive way, and because it
+is what made finishing the study affordable.
 
 **Cost: $0.** An earlier draft of this file put it at $60–210. That was wrong, and the
 correction matters enough to record:

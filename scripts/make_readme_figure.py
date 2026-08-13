@@ -79,8 +79,8 @@ def build() -> None:
 
     ax.plot([0.02, 1.98], [0.52, 0.52], color=RULE, lw=1)
     ax.text(0.02, 0.24,
-            "005 post-earnings drift, the closest call: long/short Sharpe 0.141 on the "
-            "exploration sample → −0.032 on the reserved holdout.",
+            "005 post-earnings drift, the closest call: 0.53 Sharpe on development "
+            "→ −0.38 on the reserved holdout.",
             fontsize=10, color=MUTED, va="center")
 
     fig.tight_layout()
